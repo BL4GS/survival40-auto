@@ -44,21 +44,7 @@ jobs:
           python .github/scripts/patch_dryeye_0189.py
           python .github/scripts/patch_eye_taxonomy_01810.py
           python .github/scripts/patch_photochromic_01811.py
-
-      - name: Inspect automation methods for 0.19
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('survival40-auto/survival40-auto.php')
-          lines=p.read_text(encoding='utf-8').splitlines()
-          targets=['private function generate_planned_article','private function insert_affiliate_markers','private function call_gemini(','private function trusted_sources(','private function source_context(','private function source_block(','private function append_auto_related_links']
-          for target in targets:
-              for i,line in enumerate(lines):
-                  if target in line:
-                      print('===',target,'===')
-                      for n in range(i,min(len(lines),i+220)): print(f'{n+1}: {lines[n]}')
-                      break
-          PY
+          python .github/scripts/patch_self_research_0190.py
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
