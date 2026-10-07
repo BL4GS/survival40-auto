@@ -68,3 +68,5 @@ jobs:
               --notes "Automated build from main. Current plugin version: $VERSION"
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
+
+# retry-0185
