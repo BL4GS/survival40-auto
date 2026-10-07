@@ -2,8 +2,13 @@ name: Build WordPress Plugin ZIP
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - 'survival40-auto/**'
+      - 'version.txt'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -25,11 +30,22 @@ jobs:
 
       - name: Build ZIP
         run: |
+          rm -rf dist
           mkdir -p dist
           zip -r dist/survival40-auto.zip survival40-auto             -x "*.DS_Store" "*/.git/*" "*.gz.b64"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/survival40-auto.zip
-          generate_release_notes: true
+      - name: Read version
+        id: version
+        run: echo "version=$(tr -d '\r\n' < version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update fixed release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release edit latest               --title "Survival40 Auto v$VERSION"               --notes "Automated build from main. Current plugin version: $VERSION"
+          else
+            gh release create latest               --target main               --title "Survival40 Auto v$VERSION"               --notes "Automated build from main. Current plugin version: $VERSION"
+          fi
+          gh release upload latest dist/survival40-auto.zip --clobber
