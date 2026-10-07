@@ -58,15 +58,16 @@ jobs:
           python .github/scripts/patch_evidence_relevance_0197.py
           python .github/scripts/patch_self_updater_0197.py
           python .github/scripts/patch_version_test_0198.py
+          python .github/scripts/patch_version_test_0199.py
 
       - name: Verify built plugin version surfaces
         run: |
           grep -n "Version:" survival40-auto/survival40-auto.php | head -1
           grep -n "const VERSION" survival40-auto/survival40-auto.php | head -1
           grep -n "Survival40 Auto v" survival40-auto/survival40-auto.php | head -1
-          grep -q "Version: 0.19.8" survival40-auto/survival40-auto.php
-          grep -q "const VERSION = '0.19.8';" survival40-auto/survival40-auto.php
-          grep -q "Survival40 Auto v0.19.8" survival40-auto/survival40-auto.php
+          grep -q "Version: 0.19.9" survival40-auto/survival40-auto.php
+          grep -q "const VERSION = '0.19.9';" survival40-auto/survival40-auto.php
+          grep -q "Survival40 Auto v0.19.9" survival40-auto/survival40-auto.php
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
@@ -99,4 +100,4 @@ jobs:
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
 
-# retry-0198-no-cron-self-updater
+# retry-0199-self-update-test
