@@ -36,7 +36,9 @@ jobs:
           rm -f survival40-auto/source.b64
 
       - name: Patch plugin to current release
-        run: python .github/scripts/patch_plugin_0185.py
+        run: |
+          python .github/scripts/patch_plugin_0185.py
+          python .github/scripts/patch_planner_0186.py
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
