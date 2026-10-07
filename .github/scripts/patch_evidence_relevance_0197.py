@@ -104,8 +104,22 @@ new_fallback='''        $mode = count($accepted) >= 2 ? 'dynamic' : 'research_fa
             }
             return ['mode'=>'research_failed','sources'=>$accepted,'context'=>implode("\n",$lines)];
         }'''
-if old_fallback not in s: raise SystemExit("fallback anchor not found")
-s=s.replace(old_fallback,new_fallback,1)
+if old_fallback in s:
+    s=s.replace(old_fallback,new_fallback,1)
+else:
+    # 0.19.4 already replaced the fatal empty-research branch; patch the
+    # remaining curated fallback independently.
+    curated=re.compile(r'''        \$mode = count\(\$accepted\) >= 2 \? 'dynamic' : 'fallback';\n        if \(count\(\$accepted\) < 2\) \{.*?\n        \}''', re.S)
+    m=curated.search(s)
+    if not m: raise SystemExit("fallback anchor not found")
+    s=s[:m.start()]+'''        $mode = count($accepted) >= 2 ? 'dynamic' : 'research_failed';
+        if (count($accepted) < 2) {
+            $lines = ["【調査結果】記事テーマを直接裏付ける資料が2件揃いませんでした。公開不可として下書き保存し、裏付けのない主張は書かないでください。"];
+            foreach ($accepted as $i => $src) {
+                $lines[] = "採用資料" . ($i + 1) . ": " . ($src['name'] ?? '') . " " . ($src['url'] ?? '');
+            }
+            return ['mode'=>'research_failed','sources'=>$accepted,'context'=>implode("\\n",$lines)];
+        }'''+s[m.end():]
 
 # Reviewer must reject topic drift and generic age hooks, and verify evidence coverage.
 old_review='''            . "記事内で扱う主要論点ごとに、取得済み資料のどれが直接支えているか確認してください。資料にない重要主張が1つでもあればpassにしないでください。\\n"
