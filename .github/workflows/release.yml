@@ -56,6 +56,7 @@ jobs:
           python .github/scripts/patch_version_sync_0195.py
           python .github/scripts/patch_autopilot_0196.py
           python .github/scripts/patch_evidence_relevance_0197.py
+          python .github/scripts/patch_self_updater_0197.py
 
       - name: Verify built plugin version surfaces
         run: |
@@ -97,4 +98,4 @@ jobs:
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
 
-# retry-0197-release-safe
+# retry-0197-self-updater
