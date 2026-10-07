@@ -35,6 +35,9 @@ jobs:
           gunzip -f survival40-auto/survival40-auto.php.gz
           rm -f survival40-auto/source.b64
 
+      - name: Patch plugin to current release
+        run: python .github/scripts/patch_plugin_0183.py
+
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
 
