@@ -22,6 +22,7 @@ jobs:
 
       - name: Restore plugin source
         run: |
+          sha256sum survival40-auto/source.part01 survival40-auto/source.part02 survival40-auto/source.part03 survival40-auto/source.part04 survival40-auto/source.part05 survival40-auto/source.part06
           cat survival40-auto/source.part01 \
               survival40-auto/source.part02 \
               survival40-auto/source.part03 \
