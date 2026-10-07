@@ -31,15 +31,12 @@ methods=r'''    public function github_schedule_self_update() {
         $lock_key = 'survival40_self_update_scheduled_' . $remote;
         if (get_transient($lock_key)) return;
 
-        if (!wp_next_scheduled('survival40_self_update_event')) {
-            wp_schedule_single_event(time() + 10, 'survival40_self_update_event');
-        }
         set_transient($lock_key, 1, 10 * MINUTE_IN_SECONDS);
 
-        // Give wp-cron a chance to run without blocking the admin page.
-        if (function_exists('spawn_cron')) {
-            spawn_cron(time());
-        }
+        // Do not depend on WP-Cron. Run the upgrader after the current admin
+        // response has finished rendering, so a normal wp-admin reload is enough
+        // to trigger the update even when loopback cron is disabled or delayed.
+        add_action('shutdown', [$this, 'github_run_self_update'], 999);
     }
 
     public function github_run_self_update() {
