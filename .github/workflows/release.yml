@@ -43,6 +43,7 @@ jobs:
           python .github/scripts/patch_eye_sources_0188.py
           python .github/scripts/patch_dryeye_0189.py
           python .github/scripts/patch_eye_taxonomy_01810.py
+          python .github/scripts/patch_photochromic_01811.py
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
