@@ -22,8 +22,16 @@ jobs:
 
       - name: Restore plugin source
         run: |
-          base64 -d survival40-auto/survival40-auto.php.gz.b64 > survival40-auto/survival40-auto.php.gz
+          cat survival40-auto/source.part01 \
+              survival40-auto/source.part02 \
+              survival40-auto/source.part03 \
+              survival40-auto/source.part04 \
+              survival40-auto/source.part05 \
+              survival40-auto/source.part06 \
+            > survival40-auto/source.b64
+          base64 -d survival40-auto/source.b64 > survival40-auto/survival40-auto.php.gz
           gunzip -f survival40-auto/survival40-auto.php.gz
+          rm -f survival40-auto/source.b64
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
