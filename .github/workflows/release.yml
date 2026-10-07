@@ -22,10 +22,8 @@ jobs:
 
       - name: Restore plugin source
         run: |
-          cat survival40-auto/source.part01               survival40-auto/source.part02               survival40-auto/source.part03               survival40-auto/source.part04               survival40-auto/source.part05               survival40-auto/source.part06             > survival40-auto/source.b64
-          base64 -d survival40-auto/source.b64 > survival40-auto/survival40-auto.php.gz
+          base64 -d survival40-auto/survival40-auto.php.gz.b64 > survival40-auto/survival40-auto.php.gz
           gunzip -f survival40-auto/survival40-auto.php.gz
-          rm -f survival40-auto/source.b64
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
@@ -34,7 +32,8 @@ jobs:
         run: |
           rm -rf dist
           mkdir -p dist
-          zip -r dist/survival40-auto.zip survival40-auto             -x "*.DS_Store" "*/.git/*" "*.gz.b64" "*/source.part*"
+          zip -r dist/survival40-auto.zip survival40-auto \
+            -x "*.DS_Store" "*/.git/*" "*.gz.b64" "*/source.part*"
 
       - name: Read version
         id: version
@@ -46,8 +45,13 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           if gh release view latest >/dev/null 2>&1; then
-            gh release edit latest               --title "Survival40 Auto v$VERSION"               --notes "Automated build from main. Current plugin version: $VERSION"
+            gh release edit latest \
+              --title "Survival40 Auto v$VERSION" \
+              --notes "Automated build from main. Current plugin version: $VERSION"
           else
-            gh release create latest               --target main               --title "Survival40 Auto v$VERSION"               --notes "Automated build from main. Current plugin version: $VERSION"
+            gh release create latest \
+              --target main \
+              --title "Survival40 Auto v$VERSION" \
+              --notes "Automated build from main. Current plugin version: $VERSION"
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
