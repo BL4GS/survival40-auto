@@ -99,4 +99,4 @@ jobs:
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
 
-# retry-0198-self-update-test
+# retry-0198-no-cron-self-updater
