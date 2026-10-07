@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: survival40-release
+  cancel-in-progress: true
+
 jobs:
   build-release:
     runs-on: ubuntu-latest
