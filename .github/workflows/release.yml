@@ -97,4 +97,4 @@ jobs:
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
 
-# retry-0195
+# retry-0197-release-safe
