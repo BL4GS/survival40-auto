@@ -91,6 +91,8 @@ eye_rules = r'''        } elseif ($resolved_source_group === 'eye') {
                 . "- UV対策とブルーライト対策を分ける。\n"
                 . "- 見え方の変化、痛み、急なかすみ等がある場合は眼科受診を案内する。\n"
                 . "- 記事の参考情報は眼科・眼鏡領域の資料だけを使い、睡眠・皮膚など別分野の資料を流用しない。\n\n";
+        }
+
 '''
 text = text[:idx] + eye_rules + text[idx+len("        }\n"):]
 
