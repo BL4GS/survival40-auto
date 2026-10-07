@@ -51,6 +51,7 @@ jobs:
           python .github/scripts/patch_self_research_0190.py
           python .github/scripts/patch_review_guard_0191.py
           python .github/scripts/patch_updater_0192.py
+          python .github/scripts/patch_self_heal_0193.py
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
