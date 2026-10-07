@@ -41,19 +41,19 @@ jobs:
           python .github/scripts/patch_planner_0186.py
           python .github/scripts/patch_quality_0187.py
 
-      - name: Diagnose REST output risks
+      - name: Diagnose target methods
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p=Path('survival40-auto/survival40-auto.php')
           lines=p.read_text(encoding='utf-8').splitlines()
-          pats=[r'\becho\b',r'\bprint\b',r'var_dump',r'print_r',r'wp_die',r'rest_',r'admin_post',r'wp_head',r'wp_footer',r'\?>']
-          for i,line in enumerate(lines,1):
-              if any(re.search(x,line) for x in pats):
-                  lo=max(1,i-2); hi=min(len(lines),i+2)
-                  print(f'--- lines {lo}-{hi} ---')
-                  for n in range(lo,hi+1): print(f'{n}: {lines[n-1]}')
+          targets=['private function source_block','public function handle_run_auto_once','private function run_auto_once','private function auto_category_map']
+          for target in targets:
+              for i,line in enumerate(lines):
+                  if target in line:
+                      print('===',target,'===')
+                      for n in range(i,min(len(lines),i+160)): print(f'{n+1}: {lines[n]}')
+                      break
           PY
 
       - name: Validate PHP
