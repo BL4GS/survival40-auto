@@ -40,21 +40,7 @@ jobs:
           python .github/scripts/patch_plugin_0185.py
           python .github/scripts/patch_planner_0186.py
           python .github/scripts/patch_quality_0187.py
-
-      - name: Diagnose target methods
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('survival40-auto/survival40-auto.php')
-          lines=p.read_text(encoding='utf-8').splitlines()
-          targets=['private function source_block','public function handle_run_auto_once','private function run_auto_once','private function auto_category_map']
-          for target in targets:
-              for i,line in enumerate(lines):
-                  if target in line:
-                      print('===',target,'===')
-                      for n in range(i,min(len(lines),i+160)): print(f'{n+1}: {lines[n]}')
-                      break
-          PY
+          python .github/scripts/patch_eye_sources_0188.py
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
