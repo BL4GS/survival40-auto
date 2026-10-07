@@ -15,10 +15,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore plugin source
+        run: |
+          base64 -d survival40-auto/survival40-auto.php.gz.b64 > survival40-auto/survival40-auto.php.gz
+          gunzip -f survival40-auto/survival40-auto.php.gz
+
+      - name: Validate PHP
+        run: php -l survival40-auto/survival40-auto.php
+
       - name: Build ZIP
         run: |
           mkdir -p dist
-          zip -r dist/survival40-auto.zip survival40-auto -x "*.DS_Store" "*/.git/*"
+          zip -r dist/survival40-auto.zip survival40-auto             -x "*.DS_Store" "*/.git/*" "*.gz.b64"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
