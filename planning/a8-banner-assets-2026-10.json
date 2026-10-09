@@ -1,0 +1,45 @@
+{
+  "source": "A8 affiliate HTML supplied by site owner",
+  "stage_only": true,
+  "not_deployed": true,
+  "do_not_embed_before_review": true,
+  "note": "Keep supplied click/banner/impression URLs unchanged. Impression pixel must render only when a compliant banner is displayed; never track for unseen banners.",
+  "assets": [
+    {
+      "ledger_id": "ultora",
+      "name": "ULTORA",
+      "program_id": "s00000021719001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH",
+      "banner_src": "https://www20.a8.net/svt/bgt?aid=261009831903&wid=005&eno=01&mid=s00000021719001006000&mc=1",
+      "impression_src": "https://www13.a8.net/0.gif?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH",
+      "width": 300,
+      "height": 250,
+      "approved_status": "per prior supplied account screenshots",
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH\" rel=\"nofollow sponsored\"><img border=\"0\" width=\"300\" height=\"250\" alt=\"ULTORA\" src=\"https://www20.a8.net/svt/bgt?aid=261009831903&wid=005&eno=01&mid=s00000021719001006000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www13.a8.net/0.gif?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH\" alt=\"\">"
+    },
+    {
+      "ledger_id": "s00000014286004",
+      "name": "NULL オールインワンジェル",
+      "program_id": "s00000014286004",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4AZHW9+D0K8YA+328C+NV1XD",
+      "banner_src": "https://www26.a8.net/svt/bgt?aid=260317017787&wid=005&eno=01&mid=s00000014286004008000&mc=1",
+      "impression_src": "https://www11.a8.net/0.gif?a8mat=4AZHW9+D0K8YA+328C+NV1XD",
+      "width": 300,
+      "height": 250,
+      "approved_status": "per prior supplied account screenshots",
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4AZHW9+D0K8YA+328C+NV1XD\" rel=\"nofollow sponsored\"><img border=\"0\" width=\"300\" height=\"250\" alt=\"NULL オールインワンジェル\" src=\"https://www26.a8.net/svt/bgt?aid=260317017787&wid=005&eno=01&mid=s00000014286004008000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www11.a8.net/0.gif?a8mat=4AZHW9+D0K8YA+328C+NV1XD\" alt=\"\">"
+    },
+    {
+      "ledger_id": "s0000007191012",
+      "name": "プレミアムブラックシャンプー",
+      "program_id": "s00000007191012",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX",
+      "banner_src": "https://www24.a8.net/svt/bgt?aid=261009827972&wid=005&eno=01&mid=s00000007191012038000&mc=1",
+      "impression_src": "https://www15.a8.net/0.gif?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX",
+      "width": 300,
+      "height": 250,
+      "approved_status": "per prior supplied account screenshots",
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX\" rel=\"nofollow sponsored\"><img border=\"0\" width=\"300\" height=\"250\" alt=\"プレミアムブラックシャンプー\" src=\"https://www24.a8.net/svt/bgt?aid=261009827972&wid=005&eno=01&mid=s00000007191012038000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www15.a8.net/0.gif?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX\" alt=\"\">"
+    }
+  ]
+}
