@@ -40,5 +40,26 @@ method="""    private function s40_affiliate_match_preview($article_topic) {
 
 """
 s=s.replace(anchor,method+anchor,1)
+# Append a read-only match check on the private ledger screen.
+# This adds no scheduled jobs, frontend output, or automatic posting.
+preview_anchor="          <?php submit_button('広告台帳を保存'); ?>"
+assert s.count(preview_anchor)==1, "Ledger save button anchor changed"
+preview="""          <?php submit_button('広告台帳を保存'); ?>
+          <h2>記事テーマ別の照合プレビュー（広告は掲載されません）</h2>
+          <p>このプレビューは台帳の保存済みURLだけを使います。未登録・審査中の案件は非表示です。記事への自動掲載はまだ有効化していません。</p>
+          <table class="widefat striped"><thead><tr><th>記事テーマ</th><th>掲載候補</th><th>状態</th></tr></thead><tbody>
+          <?php foreach ([
+            'aircon-cleaning'=>'エアコン掃除・業者への依頼',
+            'cordless-vacuum'=>'コードレス掃除機選び',
+            'sleep-tracking'=>'睡眠データ・スマートリング',
+          ] as $topic=>$label):
+            $matches = $this->s40_affiliate_match_preview($topic);
+          ?>
+          <tr><td><?php echo esc_html($label); ?></td>
+          <td><?php echo esc_html(implode('、', array_column($matches,'name')) ?: '候補なし'); ?></td>
+          <td><?php echo $matches ? '審査・広告表示の個別確認が必要' : 'URL未登録等のため掲載不可'; ?></td></tr>
+          <?php endforeach; ?></tbody></table>
+"""
+s=s.replace(preview_anchor,preview,1)
 p.write_text(s,encoding="utf-8")
 print("staged 3 ledger rows and guarded matching preview; nothing auto-publishes")
