@@ -28,10 +28,10 @@ method = r'''    public function survival40_brand_separation() {
           if(!scope)return;
           var links=scope.querySelectorAll('a');
           links.forEach(function(link){
-            if((link.textContent||'').trim().replace(/\\s+/g,'')!=='BL4GS作品集')return;
+            if((link.textContent||'').trim().replace(/\s+/g,'')!=='BL4GS作品集')return;
             var node=link;
             for(var i=0;i<4&&node&&node!==scope;i++,node=node.parentElement){
-              var t=(node.textContent||'').trim().replace(/\\s+/g,'');
+              var t=(node.textContent||'').trim().replace(/\s+/g,'');
               if(t.indexOf('小説も書いてます')>=0 && t.indexOf('BL4GS作品集')>=0 && t.length<110){
                 node.remove();
                 return;
