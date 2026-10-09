@@ -1,0 +1,99 @@
+{
+  "project": "Survival40",
+  "source": "A8.net account screenshots provided by site owner",
+  "purpose": "Staging only; not published to WordPress or embedded as ads",
+  "rules": {
+    "publisher_link": "Only original A8 generated HTTPS tracking URL. No affiliate URLs provided yet.",
+    "placement": "Do not auto-place without approved status, verified target item, policy check, article relevance and PR disclosure.",
+    "health": "Do not claim RingConn diagnoses diseases or guarantees sleep improvement."
+  },
+  "programs": [
+    {
+      "id": "s00000015223035",
+      "name": "ハウスクリーニング110番",
+      "company": "シェアリングテクノロジー株式会社",
+      "status": "approved",
+      "category": "住まい・季節の掃除",
+      "reward": "新規見積依頼 1300円",
+      "epc": 1.77,
+      "approval_rate": "33.33%",
+      "conversion": "WEBまたは電話申込みから30日以内の加盟店手配完了",
+      "restrictions": [
+        "同一世帯2回以上・重複申込み否認",
+        "SNSによる同一誘導の連続投稿等は否認",
+        "申込みだけで成果確定とみなさない"
+      ],
+      "link": null
+    },
+    {
+      "id": "s00000022315001",
+      "name": "SharkNinja公式ストア",
+      "company": "シャークニンジャ合同会社",
+      "status": "approved",
+      "category": "家電・家事効率化",
+      "reward": "購入額2%",
+      "epc": 9.66,
+      "approval_rate": "59.32%",
+      "conversion": "WEB注文後の決済完了",
+      "restrictions": [
+        "アクセサリー・アウトレット商品のみの購入は対象外",
+        "提供外の広告画像・素材の無断使用不可",
+        "PR表示が必要"
+      ],
+      "link": null
+    },
+    {
+      "id": "s00000026776002",
+      "name": "RingConn 第2世代",
+      "company": "株式会社Acalie",
+      "status": "approved",
+      "category": "睡眠・健康管理",
+      "reward": "購入額7%",
+      "epc": null,
+      "approval_rate": null,
+      "conversion": "WEB注文後30日以内の入金確認",
+      "restrictions": [
+        "成果対象はLP掲載のRingConn第2世代のみ",
+        "LINE経由の購入は対象外",
+        "AIによる価格・機能・世代の誤記に注意",
+        "医療・診断効果は断定しない"
+      ],
+      "link": null
+    }
+  ],
+  "article_candidates": [
+    {
+      "title": "エアコンは自分でどこまで掃除していい？",
+      "topics": [
+        "清掃範囲",
+        "内部洗浄の注意",
+        "業者の選択肢"
+      ],
+      "relevance": [
+        "s00000015223035"
+      ]
+    },
+    {
+      "title": "コードレス掃除機の選び方｜40代の家事を少し楽に",
+      "topics": [
+        "重量",
+        "集じん方式",
+        "収納と充電"
+      ],
+      "relevance": [
+        "s00000022315001"
+      ]
+    },
+    {
+      "title": "睡眠スコアの見方｜40代が数値と付き合うコツ",
+      "topics": [
+        "記録の利点と限界",
+        "生活習慣",
+        "スマートリング"
+      ],
+      "relevance": [
+        "s00000026776002"
+      ]
+    }
+  ]
+}
