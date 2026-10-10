@@ -1,8 +1,5 @@
 name: Survival40 Nightly AI Engineering Review
 on:
-  push:
-    paths:
-      - '.github/workflows/nightly-ai-review.yml'
   schedule:
     - cron: '20 18 * * *'
   workflow_dispatch:
