@@ -1,0 +1,74 @@
+name: Validate A8 integration (staging only)
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-affiliate-staged.yml'
+      - '.github/scripts/patch_affiliate_integration_staged.py'
+      - '.github/scripts/test_affiliate_integration_staged.py'
+      - 'planning/a8-banner-assets-unified-2026-10.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline validation
+        run: python .github/scripts/test_affiliate_integration_staged.py
+      - name: Restore plugin source
+        run: |
+          sha256sum survival40-auto/source.part01 survival40-auto/source.part02 survival40-auto/source.part03 survival40-auto/source.part04 survival40-auto/source.part05 survival40-auto/source.part06 survival40-auto/source.part07
+          cat survival40-auto/source.part01 \
+              survival40-auto/source.part02 \
+              survival40-auto/source.part03 \
+              survival40-auto/source.part04 \
+              survival40-auto/source.part05 \
+              survival40-auto/source.part06 \
+              survival40-auto/source.part07 \
+            > survival40-auto/source.b64
+          base64 -d survival40-auto/source.b64 > survival40-auto/survival40-auto.php.gz
+          gunzip -f survival40-auto/survival40-auto.php.gz
+          rm -f survival40-auto/source.b64
+
+      - name: Apply existing production patches
+        run: |
+          python .github/scripts/patch_plugin_0185.py
+          python .github/scripts/patch_planner_0186.py
+          python .github/scripts/patch_quality_0187.py
+          python .github/scripts/patch_eye_sources_0188.py
+          python .github/scripts/patch_dryeye_0189.py
+          python .github/scripts/patch_eye_taxonomy_01810.py
+          python .github/scripts/patch_photochromic_01811.py
+          python .github/scripts/patch_self_research_0190.py
+          python .github/scripts/patch_review_guard_0191.py
+          python .github/scripts/patch_updater_0192.py
+          python .github/scripts/patch_self_heal_0193.py
+          python .github/scripts/patch_research_resilience_0194.py
+          python .github/scripts/patch_version_sync_0195.py
+          python .github/scripts/patch_autopilot_0196.py
+          python .github/scripts/patch_evidence_relevance_0197.py
+          python .github/scripts/patch_self_updater_0197.py
+          python .github/scripts/patch_version_test_0198.py
+          python .github/scripts/patch_version_test_0199.py
+          python .github/scripts/patch_quality_evidence_01910.py
+          python .github/scripts/patch_navigator_01911.py
+          python .github/scripts/patch_navigator_alignment_01912.py
+          python .github/scripts/patch_navigator_visibility_01913.py
+          python .github/scripts/patch_navigator_timing_01914.py
+          python .github/scripts/patch_navigator_anchor_01915.py
+          python .github/scripts/patch_home_guide_01916.py
+          python .github/scripts/patch_brand_separation_01917.py
+          python .github/scripts/patch_affiliate_ledger_01918.py
+          python .github/scripts/patch_author_display_01919.py
+          python .github/scripts/patch_author_update_stability_01920.py
+
+      - name: Stage advertising changes without releasing
+        run: python .github/scripts/patch_affiliate_integration_staged.py
+      - name: PHP syntax
+        run: php -l survival40-auto/survival40-auto.php
+      - name: Check no unexpected public publishing hook was added
+        run: |
+          grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
+          grep -q "s40_affiliate_match_preview" survival40-auto/survival40-auto.php
+          grep -q "if (\$id === 's00000022947002') continue;" survival40-auto/survival40-auto.php
