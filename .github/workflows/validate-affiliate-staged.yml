@@ -208,6 +208,29 @@ jobs:
           php /tmp/wp-cli.phar plugin status survival40-auto --allow-root
           POST_ID="$(cat /tmp/s40-post-id)"
           php /tmp/wp-cli.phar post get "$POST_ID" --field=post_status --allow-root | grep -qx draft
+      - name: Simulate genuine version change in isolated WordPress
+        run: |
+          set -eu
+          cd /tmp/s40-wp
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          php /tmp/wp-cli.phar plugin get survival40-auto --field=version --allow-root | grep -qx '0.19.20'
+          mkdir -p /tmp/s40-version-change/survival40-auto
+          cp wp-content/plugins/survival40-auto/survival40-auto.php /tmp/s40-version-change/survival40-auto/survival40-auto.php
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/s40-version-change/survival40-auto/survival40-auto.php')
+          s=p.read_text(encoding='utf-8')
+          old=' * Version: 0.19.20'
+          assert s.count(old)==1
+          s=s.replace(old,' * Version: 0.19.21',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          (cd /tmp/s40-version-change && zip -qr /tmp/s40-version-change.zip survival40-auto)
+          php /tmp/wp-cli.phar plugin install /tmp/s40-version-change.zip --force --allow-root
+          php /tmp/wp-cli.phar plugin get survival40-auto --field=version --allow-root | grep -qx '0.19.21'
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          php /tmp/wp-cli.phar post get "$(cat /tmp/s40-post-id)" --field=post_status --allow-root | grep -qx draft
+          echo 'PASS: version changed and plugin remained active in isolated environment'
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
