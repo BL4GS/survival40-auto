@@ -445,6 +445,57 @@ jobs:
           php /tmp/wp-cli.phar eval-file /tmp/s40-auto-update-test.php --allow-root
           php /tmp/wp-cli.phar plugin status survival40-auto --allow-root
           test -f /tmp/s40-loopback-server.log
+      - name: Verify existing narrator and legacy behavior invariants
+        run: |
+          set -eu
+          python - <<'PY'
+          from pathlib import Path
+          text=Path('survival40-auto/survival40-auto.php').read_text()
+          required=[
+            'header.entry-header',
+            'scope.querySelectorAll',
+            'document.createTreeWalker',
+            'github_schedule_self_update',
+            'github_run_self_update',
+            's40_affiliate_append_reviewed_banner',
+            's40_affiliate_frontend_enabled',
+          ]
+          for item in required:
+            assert item in text, 'Missing protected code identifier: '+item
+          assert "add_action('admin_init', [$this, 'github_schedule_self_update']);" not in text
+          assert "add_action('survival40_self_update_event', [$this, 'github_run_self_update']);" not in text
+          print('PASS: narrator-related source signatures retained; competing updater hooks disconnected')
+          PY
+      - name: Assemble candidate ZIP without publishing or updating live site
+        run: |
+          set -eu
+          mkdir -p /tmp/s40-rc/survival40-auto
+          cp survival40-auto/survival40-auto.php /tmp/s40-rc/survival40-auto/survival40-auto.php
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/s40-rc/survival40-auto/survival40-auto.php')
+          s=p.read_text(encoding='utf-8')
+          keys=[
+            (' * Version: 0.19.20',' * Version: 0.19.21'),
+            ("const VERSION = '0.19.20';","const VERSION = '0.19.21';"),
+            ('Survival40 Auto v0.19.20</h1>','Survival40 Auto v0.19.21</h1>')
+          ]
+          for before,after in keys:
+            assert s.count(before)==1, 'version marker mismatch: '+before
+            s=s.replace(before,after,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          php -l /tmp/s40-rc/survival40-auto/survival40-auto.php
+          mkdir -p /tmp/s40-artifact
+          (cd /tmp/s40-rc && zip -qr /tmp/s40-artifact/survival40-auto-0.19.21-rc.zip survival40-auto)
+          sha256sum /tmp/s40-artifact/survival40-auto-0.19.21-rc.zip > /tmp/s40-artifact/SHA256SUMS
+          printf '%s\\n' 'NOT RELEASED - staging review candidate; public release unchanged.' > /tmp/s40-artifact/README.txt
+      - name: Store candidate build as private workflow artifact only
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-0.19.21-review-candidate
+          path: /tmp/s40-artifact/
+          retention-days: 14
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
