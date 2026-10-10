@@ -94,6 +94,14 @@ jobs:
         run: php .github/scripts/test_affiliate_php_behavior.php
       - name: Execute post-save behavior checks
         run: php .github/scripts/test_affiliate_postsave_behavior.php
+      - name: Install isolated WordPress test instance
+        run: |
+          set -eu
+          curl -fsSL https://wordpress.org/latest.tar.gz -o /tmp/wordpress.tar.gz
+          mkdir -p /tmp/s40-wp
+          tar -xzf /tmp/wordpress.tar.gz -C /tmp/s40-wp --strip-components=1
+          php -l /tmp/s40-wp/wp-includes/plugin.php
+          php -l /tmp/s40-wp/wp-includes/meta.php
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
