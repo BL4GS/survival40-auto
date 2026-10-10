@@ -15,7 +15,7 @@ match = {
     "skincare":["s00000014286004","s00000020317006"],
     "haircare":["s00000007191012"],
     "sleep":["s00000016652002","s00000026776002","s00000022516001"],
-    "cleaning":["s00000015223035","s00000022315001"],
+    "cleaning":["s00000015223035"],
     "vacuum":["s00000022315001"],
     "meal-delivery":["s00000023792001"],
     "bbq":["s00000019450001"],
@@ -119,5 +119,26 @@ s=s[:start]+method+s[end:]
 # Explicitly disallow an unverified cleaning campaign even if status is edited.
 s=s.replace("            if (($row['status'] ?? '') !== 'approved') continue;",
             "            if ($id === 's00000022947002') continue;\n            if (($row['status'] ?? '') !== 'approved') continue;",1)
+# Add a private, read-only topic/advertiser preview. An admin view must not fire tracking beacons.
+anchor = "          <?php submit_button('広告台帳を保存'); ?>"
+assert s.count(anchor)==1
+preview = """          <?php submit_button('広告台帳を保存'); ?>
+          <h2>テーマ別広告候補（確認用・自動掲載なし）</h2>
+          <p>広告候補は編集画面内だけで計算します。広告画像と計測ピクセルはここでは読み込みません。</p>
+          <table class="widefat striped"><thead><tr><th>記事テーマ</th><th>広告候補</th></tr></thead><tbody>
+          <?php foreach ([
+            'protein'=>'プロテイン・栄養','skincare'=>'スキンケア・紫外線対策',
+            'haircare'=>'ヘアケア','sleep'=>'睡眠・寝具',
+            'cleaning'=>'ハウスクリーニング','vacuum'=>'掃除機',
+            'meal-delivery'=>'宅配食','bbq'=>'BBQ','fashion'=>'ファッション',
+            'fitness'=>'筋トレ用品','fragrance'=>'身だしなみ・香り'
+          ] as $topic=>$label):
+            $matches = $this->s40_affiliate_match_preview($topic); ?>
+            <tr><td><?php echo esc_html($label); ?></td><td><?php
+              echo esc_html($matches ? implode('、', array_column($matches,'name')) : '候補なし');
+            ?></td></tr>
+          <?php endforeach; ?></tbody></table>
+"""
+s = s.replace(anchor, preview, 1)
 p.write_text(s,encoding="utf-8")
 print("16 creatives staged, canonical aliases retained, guarded thematic preview; no frontend hooks")
