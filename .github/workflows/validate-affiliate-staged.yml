@@ -335,7 +335,22 @@ jobs:
             'new_version'=>'0.19.23','package'=>'file:///tmp/s40-auto-update.zip',
             'url'=>'http://localhost/'
           ];
+          $events=[];
+          $record=function($name) use (&$events,$plugin) {
+            $active=(array)get_option('active_plugins',[]);
+            $events[]=['event'=>$name,'active'=>in_array($plugin,$active,true)];
+          };
+          add_action('upgrader_pre_install',function($response) use ($record){$record('pre_install'); return $response;},10,1);
+          add_action('upgrader_post_install',function($response) use ($record){$record('post_install'); return $response;},10,1);
+          add_action('upgrader_process_complete',function() use ($record){$record('process_complete');},999,0);
+          add_filter('pre_update_option_active_plugins',function($value,$old) use (&$events,$plugin) {
+            $events[]=['event'=>'active_plugins_option_write','old'=>in_array($plugin,(array)$old,true),'new'=>in_array($plugin,(array)$value,true)];
+            return $value;
+          },10,2);
+          $record('before_auto_update');
           $result=$runner->update('plugin',$item);
+          $record('after_auto_update');
+          echo 'ACTIVE_STATE_TIMELINE '.wp_json_encode($events)."\\n";
           if (is_wp_error($result)) {
             echo 'AUTO_UPDATER_ERROR '.wp_json_encode([
               'code'=>$result->get_error_code(),
