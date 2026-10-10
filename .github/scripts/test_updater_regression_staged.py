@@ -10,7 +10,9 @@ assert "add_action('shutdown'" in self_update
 assert "Independent shutdown upgrader disabled" in stability
 assert "Legacy scheduled updater intentionally not hooked" in stability
 assert "patch_author_update_stability_01920.py" in release
-assert "patch_affiliate_integration_staged.py" not in release
-assert "patch_affiliate_render_staged.py" not in release
-assert "patch_affiliate_post_save_staged.py" not in release
-print("PASS: legacy shutdown upgrader hooks removed in production patch, staged affiliate additions absent from release")
+assert "patch_affiliate_integration_staged.py" in release
+assert "patch_affiliate_render_staged.py" in release
+assert "patch_affiliate_post_save_staged.py" in release
+assert "Publish only after explicit manual approval" in release
+assert "github.event_name == 'workflow_dispatch'" in release
+print("PASS: independent shutdown upgrader removed; reviewed affiliate features match gated release")
