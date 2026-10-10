@@ -300,6 +300,14 @@ jobs:
             sleep 1
           done
           curl -fsS --max-time 5 http://127.0.0.1:8085/ >/dev/null
+          # WP background plugin upgrades run under DOING_CRON.
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/s40-wp/wp-config.php')
+          c=p.read_text()
+          assert c.startswith('<?php')
+          p.write_text(c.replace('<?php', "<?php\ndefine('DOING_CRON', true);",1))
+          PY
           mkdir -p /tmp/s40-auto-update/survival40-auto
           cp wp-content/plugins/survival40-auto/survival40-auto.php /tmp/s40-auto-update/survival40-auto/survival40-auto.php
           python - <<'PY'
