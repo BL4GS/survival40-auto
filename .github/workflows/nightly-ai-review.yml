@@ -1,0 +1,29 @@
+name: Survival40 Nightly AI Engineering Review
+on:
+  schedule:
+    - cron: '20 18 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: s40-nightly-ai-review
+  cancel-in-progress: false
+jobs:
+  advisory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: gpt-4.1-mini
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bounded advisory AI review
+        run: python3 .github/agent/nightly_review.py
+      - name: Archive proposal if generated
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s40-nightly-ai-proposal
+          path: agent-output/
+          if-no-files-found: ignore
+          retention-days: 7
