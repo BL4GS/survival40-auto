@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/validate-affiliate-staged.yml'
       - '.github/scripts/patch_affiliate_integration_staged.py'
+      - '.github/scripts/patch_affiliate_render_staged.py'
       - '.github/scripts/test_affiliate_integration_staged.py'
       - 'planning/a8-banner-assets-unified-2026-10.json'
   workflow_dispatch:
@@ -65,10 +66,13 @@ jobs:
 
       - name: Stage advertising changes without releasing
         run: python .github/scripts/patch_affiliate_integration_staged.py
+      - name: Stage reviewed banner renderer (no active hook)
+        run: python .github/scripts/patch_affiliate_render_staged.py
       - name: PHP syntax
         run: php -l survival40-auto/survival40-auto.php
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
+          grep -q "s40_ad_markup_for_post" survival40-auto/survival40-auto.php
           grep -q "s40_affiliate_match_preview" survival40-auto/survival40-auto.php
           grep -q "if (\$id === 's00000022947002') continue;" survival40-auto/survival40-auto.php
