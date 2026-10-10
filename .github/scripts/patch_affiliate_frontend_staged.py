@@ -20,7 +20,7 @@ s=s.replace(anchor,method+anchor,1)
 # Only this reviewed banner uses the content filter; all other article rendering untouched.
 hook="        add_filter('the_content', array($this, 's40_affiliate_append_reviewed_banner'), 99);"
 # Attach to known class constructor by insertion adjacent to an existing hook added in staged post-save patch.
-needle="        add_action('save_post_post', array($this, 's40_affiliate_on_post_saved'), 20, 3);"
+needle="        add_action('save_post_post', [$this, 's40_affiliate_on_post_saved'], 20, 3);"
 assert s.count(needle)==1
 s=s.replace(needle, needle+"\n"+hook,1)
 p.write_text(s, encoding="utf-8")
