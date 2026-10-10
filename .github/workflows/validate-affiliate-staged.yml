@@ -490,6 +490,48 @@ jobs:
           (cd /tmp/s40-rc && zip -qr /tmp/s40-artifact/survival40-auto-0.19.21-rc.zip survival40-auto)
           sha256sum /tmp/s40-artifact/survival40-auto-0.19.21-rc.zip > /tmp/s40-artifact/SHA256SUMS
           printf '%s\\n' 'NOT RELEASED - staging review candidate; public release unchanged.' > /tmp/s40-artifact/README.txt
+      - name: Validate candidate ZIP through cron WordPress updater
+        run: |
+          set -eu
+          cd /tmp/s40-wp
+          # Keep the already-running loopback server, but run this isolated check
+          # with the same DOING_CRON context as WordPress background updates.
+          cat >/tmp/s40-release-candidate-check.php <<'PHP'
+          <?php
+          require_once ABSPATH.'wp-admin/includes/plugin.php';
+          require_once ABSPATH.'wp-admin/includes/class-wp-upgrader.php';
+          $plugin='survival40-auto/survival40-auto.php';
+          if (!wp_doing_cron()) throw new RuntimeException('Cron context required');
+          if (!is_plugin_active($plugin)) throw new RuntimeException('Plugin inactive before candidate test');
+          $before=get_plugin_data(WP_PLUGIN_DIR.'/'.$plugin)['Version'];
+          $updates=get_site_transient('update_plugins');
+          if (!is_object($updates)) $updates=new stdClass();
+          if (!is_array($updates->response??null)) $updates->response=[];
+          $updates->response[$plugin]=(object)[
+            'slug'=>'survival40-auto',
+            'plugin'=>$plugin,
+            'new_version'=>'0.19.21',
+            'package'=>'file:///tmp/s40-artifact/survival40-auto-0.19.21-rc.zip',
+            'url'=>'http://localhost/'
+          ];
+          set_site_transient('update_plugins',$updates);
+          $u=new WP_Automatic_Updater();
+          add_filter('automatic_updater_disabled','__return_false',100);
+          add_filter('auto_update_plugin','__return_true',100);
+          $result=$u->update('plugin',$updates->response[$plugin]);
+          if ($result!==true) {
+            if (is_wp_error($result)) throw new RuntimeException($result->get_error_code().':'.$result->get_error_message());
+            throw new RuntimeException('Candidate update returned non-true');
+          }
+          wp_clean_plugins_cache(true);
+          $after=get_plugin_data(WP_PLUGIN_DIR.'/'.$plugin)['Version'];
+          if ($after!=='0.19.21') throw new RuntimeException('Candidate version mismatch '.$after);
+          if (!is_plugin_active($plugin)) throw new RuntimeException('Candidate upgrade deactivated plugin');
+          if (get_option('s40_affiliate_frontend_enabled','no')!=='no') throw new RuntimeException('Ads enabled by candidate update');
+          echo 'PASS candidate upgraded via WP_Automatic_Updater: '.$before.' -> '.$after.'; active, ads off'.PHP_EOL;
+          PHP
+          php /tmp/wp-cli.phar eval-file /tmp/s40-release-candidate-check.php --allow-root
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
       - name: Store candidate build as private workflow artifact only
         uses: actions/upload-artifact@v4
         with:
