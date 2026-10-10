@@ -26,7 +26,7 @@ assert 's40_affiliate_match_preview' in script
 assert "if ($id === 's00000022947002') continue;" in script
 assert "if (($row['status'] ?? '') !== 'approved') continue;" in script
 assert "In-memory alias migration" in script
-assert "No automatic posting" in script
+assert "no automatic posting" in script
 # Compile test verifies Python syntax; this script does not patch or deploy PHP.
 compile(script,str(src),"exec")
 print("PASS: 16 campaigns, URL/impression pairs, ID consistency, topic guardrails and patch syntax")
