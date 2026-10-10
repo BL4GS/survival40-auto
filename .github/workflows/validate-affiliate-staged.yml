@@ -469,8 +469,12 @@ jobs:
       - name: Assemble candidate ZIP without publishing or updating live site
         run: |
           set -eu
-          mkdir -p /tmp/s40-rc/survival40-auto
+          mkdir -p /tmp/s40-rc/survival40-auto/assets/navigator
           cp survival40-auto/survival40-auto.php /tmp/s40-rc/survival40-auto/survival40-auto.php
+          for name in normal explain caution summary; do
+            base64 -d ".github/assets/navigator/${name}.webp.b64" > "/tmp/s40-rc/survival40-auto/assets/navigator/${name}.webp"
+            test -s "/tmp/s40-rc/survival40-auto/assets/navigator/${name}.webp"
+          done
           python - <<'PY'
           from pathlib import Path
           p=Path('/tmp/s40-rc/survival40-auto/survival40-auto.php')
@@ -543,7 +547,16 @@ jobs:
           p=Path('/tmp/s40-artifact/survival40-auto-0.19.21-rc.zip')
           with zipfile.ZipFile(p) as z:
               paths=z.namelist()
-              assert paths == ['survival40-auto/', 'survival40-auto/survival40-auto.php'], paths
+              expected = {
+                  'survival40-auto/',
+                  'survival40-auto/survival40-auto.php',
+                  'survival40-auto/assets/',
+                  'survival40-auto/assets/navigator/',
+                  *('survival40-auto/assets/navigator/'+n+'.webp' for n in ('normal','explain','caution','summary')),
+              }
+              assert set(paths) == expected, paths
+              for name in ('normal','explain','caution','summary'):
+                  assert len(z.read('survival40-auto/assets/navigator/'+name+'.webp')) > 0
               code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
           assert 's40_affiliate_frontend_enabled' in code
           assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in code
