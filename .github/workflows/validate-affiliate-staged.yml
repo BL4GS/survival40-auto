@@ -318,6 +318,9 @@ jobs:
           ];
           set_site_transient('update_plugins',$updates);
           // The auto-update runner has additional lifecycle handling beyond Plugin_Upgrader.
+          // Override the isolated environment's disabled policy for this invocation.
+          add_filter('automatic_updater_disabled', '__return_false', 100);
+          add_filter('auto_update_plugin', '__return_true', 100);
           $runner=new WP_Automatic_Updater();
           $item=(object)[
             'slug'=>'survival40-auto','plugin'=>$plugin,
