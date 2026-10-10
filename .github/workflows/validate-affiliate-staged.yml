@@ -194,6 +194,20 @@ jobs:
           echo "PASS: no ad before review, banner after review, no ad when disabled; draft retained\n";
           PHP
           php /tmp/wp-cli.phar eval-file /tmp/s40-check-ad.php --allow-root
+      - name: Simulate ZIP update of installed plugin and verify activation
+        run: |
+          set -eu
+          cd /tmp/s40-wp
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          mkdir -p /tmp/s40-upgrade-package/survival40-auto
+          cp wp-content/plugins/survival40-auto/survival40-auto.php /tmp/s40-upgrade-package/survival40-auto/survival40-auto.php
+          # Local update package: identical code, no remote release, no version bump.
+          (cd /tmp/s40-upgrade-package && zip -qr /tmp/s40-local-update.zip survival40-auto)
+          php /tmp/wp-cli.phar plugin install /tmp/s40-local-update.zip --force --allow-root
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          php /tmp/wp-cli.phar plugin status survival40-auto --allow-root
+          POST_ID="$(cat /tmp/s40-post-id)"
+          php /tmp/wp-cli.phar post get "$POST_ID" --field=post_status --allow-root | grep -qx draft
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
