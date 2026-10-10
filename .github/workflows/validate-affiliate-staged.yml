@@ -140,6 +140,24 @@ jobs:
           php /tmp/wp-cli.phar plugin activate sqlite-database-integration --allow-root
           php /tmp/wp-cli.phar post create --post_type=post --post_status=draft --post_title="プロテインの飲み方" --porcelain --allow-root > /tmp/s40-post-id
           php /tmp/wp-cli.phar post get "$(cat /tmp/s40-post-id)" --field=post_status --allow-root | grep -qx draft
+      - name: Activate staged Survival40 in isolated WordPress
+        run: |
+          set -eu
+          mkdir -p /tmp/s40-wp/wp-content/plugins/survival40-auto
+          cp survival40-auto/survival40-auto.php /tmp/s40-wp/wp-content/plugins/survival40-auto/survival40-auto.php
+          cd /tmp/s40-wp
+          php /tmp/wp-cli.phar plugin activate survival40-auto --allow-root
+          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          POST_ID="$(cat /tmp/s40-post-id)"
+          php /tmp/wp-cli.phar post update "$POST_ID" --post_title="プロテインの選び方と飲み方" --allow-root
+          php /tmp/wp-cli.phar post meta get "$POST_ID" _s40_affiliate_proposed_ids --format=json --allow-root > /tmp/s40-affiliate-result.json
+          python - <<'PY'
+          import json
+          with open('/tmp/s40-affiliate-result.json') as f: result=json.load(f)
+          assert 's00000021719001' in result, result
+          print('PASS: real WordPress post save created protein ad proposal')
+          PY
+          php /tmp/wp-cli.phar post get "$POST_ID" --field=post_status --allow-root | grep -qx draft
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
