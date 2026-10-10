@@ -532,6 +532,35 @@ jobs:
           PHP
           php /tmp/wp-cli.phar eval-file /tmp/s40-release-candidate-check.php --allow-root
           php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+      - name: Final release candidate integrity and safety gate
+        run: |
+          set -eu
+          unzip -t /tmp/s40-artifact/survival40-auto-0.19.21-rc.zip
+          (cd /tmp/s40-artifact && sha256sum -c SHA256SUMS)
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          p=Path('/tmp/s40-artifact/survival40-auto-0.19.21-rc.zip')
+          with zipfile.ZipFile(p) as z:
+              paths=z.namelist()
+              assert paths == ['survival40-auto/', 'survival40-auto/survival40-auto.php'], paths
+              code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
+          assert 's40_affiliate_frontend_enabled' in code
+          assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in code
+          assert "add_action('admin_init', [$this, 'github_schedule_self_update']);" not in code
+          assert "add_action('survival40_self_update_event', [$this, 'github_run_self_update']);" not in code
+          print('PASS: ZIP checksum, contents, default-off gate and updater isolation')
+          PY
+          cat > /tmp/s40-artifact/RELEASE-CHECKLIST.txt <<'EOF'
+          S40 v0.19.21 REVIEW CANDIDATE -- NOT RELEASED
+          PASS: syntax, ad proposal and WordPress integration checks
+          PASS: local WordPress cron update of this ZIP retained activation
+          PASS: advertising remains globally OFF without opt-in
+          NOT YET VERIFIED: actual GitHub Release delivery and update metadata
+          NOT YET VERIFIED: narrator visual behavior in a browser against real site/theme
+          NOT YET VERIFIED: live 23-post preservation with backup/rollback confirmation
+          DO NOT deploy or flip advertisement switch until these checks are completed.
+          EOF
       - name: Store candidate build as private workflow artifact only
         uses: actions/upload-artifact@v4
         with:
