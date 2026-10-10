@@ -1,0 +1,153 @@
+{
+  "source": "16 user-supplied A8 banner HTML snippets in project conversation",
+  "status": "STAGED, NOT DEPLOYED",
+  "created": "2026-10-10",
+  "policy": "The 1x1 impression image must only load when the advertisement is visibly rendered. Match only approved programs, relevant articles, verify specific campaign terms. PR disclosure required. Preserve tracking URLs exactly. No auto placement until integration reviewed.",
+  "count": 16,
+  "assets": [
+    {
+      "name": "ULTORA",
+      "program_id": "s00000021719001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH",
+      "banner_src": "https://www20.a8.net/svt/bgt?aid=261009831903&wid=005&eno=01&mid=s00000021719001006000&mc=1",
+      "impression_src": "https://www13.a8.net/0.gif?a8mat=4BECH3+EXMJ4I+4NL2+5ZMCH",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "NULL オールインワンジェル",
+      "program_id": "s00000014286004",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4AZHW9+D0K8YA+328C+NV1XD",
+      "banner_src": "https://www26.a8.net/svt/bgt?aid=260317017787&wid=005&eno=01&mid=s00000014286004008000&mc=1",
+      "impression_src": "https://www11.a8.net/0.gif?a8mat=4AZHW9+D0K8YA+328C+NV1XD",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "プレミアムブラックシャンプー",
+      "program_id": "s00000007191012",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX",
+      "banner_src": "https://www24.a8.net/svt/bgt?aid=261009827972&wid=005&eno=01&mid=s00000007191012038000&mc=1",
+      "impression_src": "https://www15.a8.net/0.gif?a8mat=4BECGZ+G2PFV6+1JHI+1ZO5SX",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "DELISH KITCHEN Meals",
+      "program_id": "s00000023792001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=459F3W+8KEN82+53KW+5ZMCH",
+      "banner_src": "https://www25.a8.net/svt/bgt?aid=250702268518&wid=005&eno=01&mid=s00000023792001006000&mc=1",
+      "impression_src": "https://www13.a8.net/0.gif?a8mat=459F3W+8KEN82+53KW+5ZMCH",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "ハウスクリーニング110番",
+      "program_id": "s00000015223035",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=459FVT+BTP1EA+39GM+5SHSC1",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=250703273715&wid=005&eno=01&mid=s00000015223035019000&mc=1",
+      "impression_src": "https://www15.a8.net/0.gif?a8mat=459FVT+BTP1EA+39GM+5SHSC1",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "シャークニンジャ",
+      "program_id": "s00000022315001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=459FVT+CPUG2A+4S6M+6AC5D",
+      "banner_src": "https://www29.a8.net/svt/bgt?aid=250703273769&wid=005&eno=01&mid=s00000022315001056000&mc=1",
+      "impression_src": "https://www16.a8.net/0.gif?a8mat=459FVT+CPUG2A+4S6M+6AC5D",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "マイまくら（寝具専門店）",
+      "program_id": "s00000016652002",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=459FVT+BOC4YA+3KHK+BXYE9",
+      "banner_src": "https://www20.a8.net/svt/bgt?aid=250703273706&wid=005&eno=01&mid=s00000016652002006000&mc=1",
+      "impression_src": "https://www14.a8.net/0.gif?a8mat=459FVT+BOC4YA+3KHK+BXYE9",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "ミートガイ",
+      "program_id": "s00000019450001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=457TZJ+56CS7M+462S+64RJ5",
+      "banner_src": "https://www26.a8.net/svt/bgt?aid=250628239313&wid=005&eno=01&mid=s00000019450001030000&mc=1",
+      "impression_src": "https://www12.a8.net/0.gif?a8mat=457TZJ+56CS7M+462S+64RJ5",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "HOLO BELL プロテクト保湿UV",
+      "program_id": "s00000020317006",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=457NRW+8CO0CY+4CRM+ZRXQP",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=250620188505&wid=005&eno=01&mid=s00000020317006009000&mc=1",
+      "impression_src": "https://www10.a8.net/0.gif?a8mat=457NRW+8CO0CY+4CRM+ZRXQP",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "RingConn",
+      "program_id": "s00000026776002",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=457DOC+5PENKI+5QLS+BYDTT",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=250607100345&wid=005&eno=01&mid=s00000026776002008000&mc=1",
+      "impression_src": "https://www14.a8.net/0.gif?a8mat=457DOC+5PENKI+5QLS+BYDTT",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "SIX-CHANGE",
+      "program_id": "s00000018173002",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=45790D+8DUVKI+3W82+BZO4H",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=250601053507&wid=005&eno=01&mid=s00000018173002014000&mc=1",
+      "impression_src": "https://www18.a8.net/0.gif?a8mat=45790D+8DUVKI+3W82+BZO4H",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "ボディセンス",
+      "program_id": "s00000017106008",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=455N3R+1Y998Y+3NZO+1BNYOX",
+      "banner_src": "https://www22.a8.net/svt/bgt?aid=250526007118&wid=005&eno=01&mid=s00000017106008006000&mc=1",
+      "impression_src": "https://www12.a8.net/0.gif?a8mat=455N3R+1Y998Y+3NZO+1BNYOX",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "MPNプロテイン",
+      "program_id": "s00000024389001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=3ZBNRJ+8UJ0IA+586Q+61Z81",
+      "banner_src": "https://www25.a8.net/svt/bgt?aid=240729103535&wid=005&eno=01&mid=s00000024389001017000&mc=1",
+      "impression_src": "https://www15.a8.net/0.gif?a8mat=3ZBNRJ+8UJ0IA+586Q+61Z81",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "選べる4時間清掃パック（事業者名要確認）",
+      "program_id": "s00000022947002",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=3ZBHH3+7HPGWI+4X26+BY641",
+      "banner_src": "https://www28.a8.net/svt/bgt?aid=240720951453&wid=005&eno=01&mid=s00000022947002007000&mc=1",
+      "impression_src": "https://www16.a8.net/0.gif?a8mat=3ZBHH3+7HPGWI+4X26+BY641",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "AUEN",
+      "program_id": "s00000014443001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=457AKD+F8CC0I+33FY+639IP",
+      "banner_src": "https://www24.a8.net/svt/bgt?aid=250603069921&wid=005&eno=01&mid=s00000014443001023000&mc=1",
+      "impression_src": "https://www14.a8.net/0.gif?a8mat=457AKD+F8CC0I+33FY+639IP",
+      "width": 300,
+      "height": 250
+    },
+    {
+      "name": "cacom",
+      "program_id": "s00000022516001",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=3ZB2HY+81CRV6+4TQG+60H7L",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=240701542486&wid=005&eno=01&mid=s00000022516001010000&mc=1",
+      "impression_src": "https://www18.a8.net/0.gif?a8mat=3ZB2HY+81CRV6+4TQG+60H7L",
+      "width": 300,
+      "height": 250
+    }
+  ]
+}
