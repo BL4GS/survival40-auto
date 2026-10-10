@@ -348,9 +348,15 @@ jobs:
             return $value;
           },10,2);
           $record('before_auto_update');
+          $events[]=['event'=>'hook_inventory','pre'=>has_filter('upgrader_pre_install'),'post'=>has_filter('upgrader_post_install'),'deactivate'=>has_filter('upgrader_pre_install','deactivate_plugin_before_upgrade')];
           $result=$runner->update('plugin',$item);
           $record('after_auto_update');
           echo 'ACTIVE_STATE_TIMELINE '.wp_json_encode($events)."\\n";
+          echo 'UPGRADER_HOOKS '.wp_json_encode([
+            'post_install'=>array_map(static fn($x)=>array_keys($x),$GLOBALS['wp_filter']['upgrader_post_install']->callbacks ?? []),
+            'active_after_update'=>get_option('active_plugins',[]),
+            'upgrader_class'=>get_class($runner)
+          ])."\\n";
           if (is_wp_error($result)) {
             echo 'AUTO_UPDATER_ERROR '.wp_json_encode([
               'code'=>$result->get_error_code(),
