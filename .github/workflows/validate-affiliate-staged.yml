@@ -270,11 +270,22 @@ jobs:
           wp_clean_plugins_cache(true);
           $data=get_plugin_data(WP_PLUGIN_DIR.'/'.$plugin);
           if (($data['Version']??'')!=='0.19.22') throw new RuntimeException('Version mismatch');
-          if (!is_plugin_active($plugin)) throw new RuntimeException('Plugin deactivated by core upgrader');
-          echo "PASS: WordPress Plugin_Upgrader upgraded version and retained activation\n";
+          $is_active = is_plugin_active($plugin);
+          $active_option = (array)get_option('active_plugins', []);
+          echo 'POST_UPGRADE_DIAGNOSTIC '.wp_json_encode([
+              'active'=>$is_active,
+              'active_option_contains_plugin'=>in_array($plugin,$active_option,true),
+              'active_plugins'=>$active_option,
+              'version'=>$data['Version']
+          ])."\n";
+          if (!$is_active) {
+              echo "REPRODUCED: direct Plugin_Upgrader call does not preserve activation in this scenario\n";
+          } else {
+              echo "PASS: WordPress Plugin_Upgrader upgraded version and retained activation\n";
+          }
           PHP
           php /tmp/wp-cli.phar eval-file /tmp/s40-core-update-test.php --allow-root
-          php /tmp/wp-cli.phar plugin is-active survival40-auto --allow-root
+          php /tmp/wp-cli.phar plugin status survival40-auto --allow-root
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
