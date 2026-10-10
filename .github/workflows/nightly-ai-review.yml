@@ -1,5 +1,8 @@
 name: Survival40 Nightly AI Engineering Review
 on:
+  push:
+    paths:
+      - '.github/workflows/nightly-ai-review.yml'
   schedule:
     - cron: '20 18 * * *'
   workflow_dispatch:
@@ -12,19 +15,100 @@ jobs:
   advisory:
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      GEMINI_MODEL: gemini-3.5-flash-lite
+    outputs:
+      proceed: ${{ steps.pending.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run bounded advisory AI review
+        with:
+          persist-credentials: false
+      - name: Avoid repeated AI calls while a candidate is pending
+        id: pending
+        run: |
+          if git ls-remote --heads origin refs/heads/ai/nightly-candidate | grep -q .; then
+            echo 'Existing AI proposal branch: wait for review; no API request.'
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate bounded candidate with Gemini
+        if: steps.pending.outputs.proceed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GEMINI_MODEL: gemini-3.5-flash-lite
         run: python3 .github/agent/nightly_review.py
-      - name: Archive proposal if generated
-        if: always()
+      - name: Archive Gemini candidate (never publish)
+        if: steps.pending.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: s40-nightly-ai-proposal
-          path: agent-output/
-          if-no-files-found: ignore
+          path: agent-output/proposal.json
           retention-days: 7
+  validate:
+    needs: advisory
+    if: needs.advisory.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: s40-nightly-ai-proposal
+          path: agent-output
+      - name: Test trusted validator guardrails
+        run: python3 -m unittest discover -s .github/agent -p test_candidate_validator.py -v
+      - name: Validate single-file scope and stage candidate
+        run: python3 .github/agent/validate_candidate.py
+      - name: Test AI-authored regression in secret-free environment
+        run: timeout 45s python3 -m unittest discover -s .github/agent/generated_tests -p 'test_*.py' -v
+      - name: Confirm only one safe test file was added
+        run: |
+          git status --short
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          proposal=json.loads(Path('agent-output/proposal.json').read_text())
+          target=proposal['change']['path']
+          assert Path(target).is_file()
+          assert not subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).strip().replace(target,'').strip()
+          print('PASS: only the intended test file was staged; no repository source modified')
+          PY
+  draft_pr:
+    needs: [advisory, validate]
+    if: needs.advisory.outputs.proceed == 'true' && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: s40-nightly-ai-proposal
+          path: agent-output
+      - name: Stage validated test and create review-only PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --heads origin refs/heads/ai/nightly-candidate | grep -q .; then
+            echo 'Candidate branch already exists, skipping to avoid duplicate PRs.'
+            exit 0
+          fi
+          python3 .github/agent/validate_candidate.py
+          TEST_PATH="$(python3 -c 'import json; print(json.load(open("agent-output/proposal.json"))["change"]["path"])')"
+          git switch -c ai/nightly-candidate
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$TEST_PATH"
+          git diff --cached --check
+          git commit -m 'test: propose one AI-reviewed regression guard'
+          git push origin HEAD:refs/heads/ai/nightly-candidate
+          gh pr create --draft --base main --head ai/nightly-candidate \
+            --title 'AI nightly: one reviewed regression test' \
+            --body 'Automated Gemini regression-test proposal. Fixed validator and test runner passed in a secret-free job. No live WordPress changes, no automatic merge, no release. Review the test assertions and decide whether to merge.'
