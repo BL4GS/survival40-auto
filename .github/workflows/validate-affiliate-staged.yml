@@ -158,6 +158,42 @@ jobs:
           print('PASS: real WordPress post save created protein ad proposal')
           PY
           php /tmp/wp-cli.phar post get "$POST_ID" --field=post_status --allow-root | grep -qx draft
+      - name: Verify staged ad rendering via real WordPress
+        run: |
+          set -eu
+          cd /tmp/s40-wp
+          cat > /tmp/s40-check-ad.php <<'PHP'
+          <?php
+          $id = (int)trim(file_get_contents('/tmp/s40-post-id'));
+          $post = get_post($id);
+          if (!$post || $post->post_status !== 'draft') throw new RuntimeException('Original draft was changed');
+          global $wp_filter;
+          $obj = null;
+          foreach (($wp_filter['save_post_post']->callbacks ?? []) as $callbacks) {
+            foreach ($callbacks as $entry) {
+              $callback = $entry['function'];
+              if (is_array($callback) && is_object($callback[0]) && method_exists($callback[0], 's40_affiliate_on_post_saved')) $obj = $callback[0];
+            }
+          }
+          if (!$obj) throw new RuntimeException('Survival40 hook object missing');
+          $ref = new ReflectionMethod($obj, 's40_ad_markup_for_post');
+          $ref->setAccessible(true);
+          $before = $ref->invoke($obj, $id);
+          if ($before !== '') throw new RuntimeException('Ad appeared without approval');
+          update_post_meta($id,'_s40_affiliate_topic','protein');
+          update_post_meta($id,'_s40_affiliate_reviewed','yes');
+          update_post_meta($id,'_s40_affiliate_reviewed_program_id','s00000021719001');
+          update_post_meta($id,'_s40_affiliate_conditions_verified','yes');
+          $approved = $ref->invoke($obj, $id);
+          if (!str_contains($approved,'PR・広告') || !str_contains($approved,'rel="nofollow sponsored"') || !str_contains($approved,'width="300"')) {
+            throw new RuntimeException('Reviewed banner markup missing');
+          }
+          update_post_meta($id,'_s40_affiliate_disabled','1');
+          if ($ref->invoke($obj,$id) !== '') throw new RuntimeException('Disabled banner still rendered');
+          if (get_post($id)->post_status !== 'draft') throw new RuntimeException('Draft was published');
+          echo "PASS: no ad before review, banner after review, no ad when disabled; draft retained\n";
+          PHP
+          php /tmp/wp-cli.phar eval-file /tmp/s40-check-ad.php --allow-root
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
