@@ -14,8 +14,7 @@ def run(*args):
 def main():
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
     if not key:
-        print("SAFE SKIP: GEMINI_API_KEY / GOOGLE_API_KEY not configured. No AI call or changes made.")
-        return
+        raise SystemExit("MISSING_KEY: GEMINI_API_KEY or GOOGLE_API_KEY repository secret is required. No AI call made.")
     vision = Path("PROJECT_VISION.md").read_text(encoding="utf-8")[:12000]
     safety = Path("docs/release-01921-production-safety.md").read_text(encoding="utf-8")[:10000]
     inventory = run("git", "ls-files", ".github", "docs", "planning")[:14000]
@@ -45,7 +44,7 @@ Do not assert tests have passed. Do not invent repository facts. Keep the answer
         raise SystemExit("Gemini API request failed (HTTP "+str(error.code)+"); response withheld")
     except (urllib.error.URLError,TimeoutError) as error:
         raise SystemExit("Gemini connection failed: "+type(error).__name__)
-    raw="\\n".join(part.get("text","") for candidate in result.get("candidates",[])
+    raw="\n".join(part.get("text","") for candidate in result.get("candidates",[])
         for part in candidate.get("content",{}).get("parts",[])
         if isinstance(part,dict)).strip()
     try:
