@@ -13,6 +13,7 @@ on:
       - '.github/scripts/test_updater_regression_staged.py'
       - '.github/scripts/patch_update_diagnostics_staged.py'
       - '.github/scripts/test_affiliate_php_behavior.php'
+      - '.github/scripts/test_affiliate_postsave_behavior.php'
       - 'planning/a8-banner-assets-unified-2026-10.json'
   workflow_dispatch:
 permissions:
@@ -91,6 +92,8 @@ jobs:
         run: php -l survival40-auto/survival40-auto.php
       - name: Execute PHP behavior checks for proposed ads
         run: php .github/scripts/test_affiliate_php_behavior.php
+      - name: Execute post-save behavior checks
+        run: php .github/scripts/test_affiliate_postsave_behavior.php
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
