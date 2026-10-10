@@ -102,6 +102,44 @@ jobs:
           tar -xzf /tmp/wordpress.tar.gz -C /tmp/s40-wp --strip-components=1
           php -l /tmp/s40-wp/wp-includes/plugin.php
           php -l /tmp/s40-wp/wp-includes/meta.php
+      - name: Boot isolated WordPress with SQLite and WP-CLI
+        run: |
+          set -eux
+          cd /tmp/s40-wp
+          curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/wp-cli.phar
+          php /tmp/wp-cli.phar --info
+          mkdir -p wp-content
+          curl -fsSL https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip -o /tmp/sqlite.zip
+          unzip -q /tmp/sqlite.zip -d wp-content/plugins
+          cp wp-content/plugins/sqlite-database-integration/db.copy wp-content/db.php
+          cat > wp-config.php <<'PHP'
+          <?php
+          define('DB_NAME','s40_test');
+          define('DB_USER','unused');
+          define('DB_PASSWORD','unused');
+          define('DB_HOST','localhost');
+          define('DB_CHARSET','utf8mb4');
+          define('DB_COLLATE','');
+          define('AUTH_KEY','test');
+          define('SECURE_AUTH_KEY','test');
+          define('LOGGED_IN_KEY','test');
+          define('NONCE_KEY','test');
+          define('AUTH_SALT','test');
+          define('SECURE_AUTH_SALT','test');
+          define('LOGGED_IN_SALT','test');
+          define('NONCE_SALT','test');
+          define('WP_DEBUG',true);
+          define('DISABLE_WP_CRON',true);
+          define('AUTOMATIC_UPDATER_DISABLED',true);
+          define('WP_AUTO_UPDATE_CORE',false);
+          $table_prefix='wp_';
+          if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
+          require_once ABSPATH . 'wp-settings.php';
+          PHP
+          php /tmp/wp-cli.phar core install --url=http://localhost --title="S40 staging" --admin_user=runner --admin_password=runner-only --admin_email=runner@example.test --skip-email --allow-root
+          php /tmp/wp-cli.phar plugin activate sqlite-database-integration --allow-root
+          php /tmp/wp-cli.phar post create --post_type=post --post_status=draft --post_title="プロテインの飲み方" --porcelain --allow-root > /tmp/s40-post-id
+          php /tmp/wp-cli.phar post get "$(cat /tmp/s40-post-id)" --field=post_status --allow-root | grep -qx draft
       - name: Check no unexpected public publishing hook was added
         run: |
           grep -q "テーマ別広告候補" survival40-auto/survival40-auto.php
