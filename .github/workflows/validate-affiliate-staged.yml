@@ -344,7 +344,7 @@ jobs:
           add_action('upgrader_post_install',function($response) use ($record){$record('post_install'); return $response;},10,1);
           add_action('upgrader_process_complete',function() use ($record){$record('process_complete');},999,0);
           add_filter('pre_update_option_active_plugins',function($value,$old) use (&$events,$plugin) {
-            $events[]=['event'=>'active_plugins_option_write','old'=>in_array($plugin,(array)$old,true),'new'=>in_array($plugin,(array)$value,true)];
+            $events[]=['event'=>'active_plugins_option_write','old'=>in_array($plugin,(array)$old,true),'new'=>in_array($plugin,(array)$value,true),'stack'=>array_map(static fn($f)=>($f['class']??'').($f['type']??'').($f['function']??''),array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),0,12))];
             return $value;
           },10,2);
           $record('before_auto_update');
