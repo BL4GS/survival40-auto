@@ -94,7 +94,7 @@ method = """    private function s40_a8_creatives() {
         foreach ($canonical as $id=>$seed) {
             $extra = isset($saved[$id]) && is_array($saved[$id]) ? $saved[$id] : [];
             $creative = $catalog[$id] ?? null;
-            $url = array_key_exists('url',$extra) ? (string)$extra['url'] : ($creative['click_url'] ?? '');
+            $saved_url = isset($extra['url']) ? trim((string)$extra['url']) : '';\n            $url = $saved_url !== '' ? $saved_url : ($creative['click_url'] ?? '');
             $status = in_array($extra['status'] ?? '', ['approved','pending','inactive'],true)
                 ? $extra['status'] : $seed['status'];
             $notes = isset($extra['notes']) ? (string)$extra['notes'] : $seed['notes'];
