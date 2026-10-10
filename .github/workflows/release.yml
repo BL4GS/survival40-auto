@@ -9,6 +9,11 @@ on:
       - 'version.txt'
       - '.github/workflows/release.yml'
   workflow_dispatch:
+    inputs:
+      confirm_release:
+        description: 'Enter RELEASE-0.19.21 after reviewing staging validation and backup plan'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -71,14 +76,42 @@ jobs:
           python .github/scripts/patch_author_display_01919.py
           python .github/scripts/patch_author_update_stability_01920.py
 
+      - name: Stage reviewed affiliate features exactly as validated
+        run: |
+          python .github/scripts/patch_affiliate_integration_staged.py
+          python .github/scripts/patch_affiliate_render_staged.py
+          python .github/scripts/patch_affiliate_pipeline_staged.py
+          python .github/scripts/patch_affiliate_post_save_staged.py
+          python .github/scripts/patch_affiliate_topic_staged.py
+          python .github/scripts/patch_affiliate_review_gate_staged.py
+          python .github/scripts/patch_affiliate_frontend_staged.py
+          python .github/scripts/patch_update_diagnostics_staged.py
+
+      - name: Promote reviewed version markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('survival40-auto/survival40-auto.php')
+          s=p.read_text(encoding='utf-8')
+          keys=[
+            (' * Version: 0.19.20',' * Version: 0.19.21'),
+            ("const VERSION = '0.19.20';","const VERSION = '0.19.21';"),
+            ('Survival40 Auto v0.19.20</h1>','Survival40 Auto v0.19.21</h1>')
+          ]
+          for before,after in keys:
+            assert s.count(before)==1, 'version marker mismatch: '+before
+            s=s.replace(before,after,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+
       - name: Verify built plugin version surfaces
         run: |
           grep -n "Version:" survival40-auto/survival40-auto.php | head -1
           grep -n "const VERSION" survival40-auto/survival40-auto.php | head -1
           grep -n "Survival40 Auto v" survival40-auto/survival40-auto.php | head -1
-          grep -q "Version: 0.19.20" survival40-auto/survival40-auto.php
-          grep -q "const VERSION = '0.19.20';" survival40-auto/survival40-auto.php
-          grep -q "Survival40 Auto v0.19.20" survival40-auto/survival40-auto.php
+          grep -q "Version: 0.19.21" survival40-auto/survival40-auto.php
+          grep -q "const VERSION = '0.19.21';" survival40-auto/survival40-auto.php
+          grep -q "Survival40 Auto v0.19.21" survival40-auto/survival40-auto.php
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
@@ -91,32 +124,45 @@ jobs:
             test -s "survival40-auto/assets/navigator/${name}.webp"
           done
 
-      - name: Build ZIP
+      - name: Build candidate-equivalent ZIP
         run: |
-          rm -rf dist
-          mkdir -p dist
-          zip -r dist/survival40-auto.zip survival40-auto \
-            -x "*.DS_Store" "*/.git/*" "*.gz.b64" "*/source.part*"
+          set -eu
+          rm -rf dist /tmp/s40-release-package
+          mkdir -p dist /tmp/s40-release-package/survival40-auto/assets/navigator
+          cp survival40-auto/survival40-auto.php /tmp/s40-release-package/survival40-auto/survival40-auto.php
+          cp survival40-auto/assets/navigator/*.webp /tmp/s40-release-package/survival40-auto/assets/navigator/
+          (cd /tmp/s40-release-package && zip -qr "$GITHUB_WORKSPACE/dist/survival40-auto.zip" survival40-auto)
+          unzip -t dist/survival40-auto.zip
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          with zipfile.ZipFile('dist/survival40-auto.zip') as z:
+              expected={'survival40-auto/', 'survival40-auto/survival40-auto.php', 'survival40-auto/assets/', 'survival40-auto/assets/navigator/'}
+              expected.update('survival40-auto/assets/navigator/'+name+'.webp' for name in ('normal','explain','caution','summary'))
+              assert set(z.namelist()) == expected, z.namelist()
+              code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
+              assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in code
+              assert ' * Version: 0.19.21' in code
+          PY
+          sha256sum dist/survival40-auto.zip > dist/SHA256SUMS
 
-      - name: Read version
-        id: version
-        run: echo "version=$(tr -d '\r\n' < version.txt)" >> "$GITHUB_OUTPUT"
+      - name: Store release build for review (no public publishing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-0.19.21-release-review
+          path: dist/
+          retention-days: 14
 
-      - name: Create or update fixed release
+      - name: Publish only after explicit manual approval
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' }}
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
+          set -eu
+          test "$(tr -d '\\r\\n' < version.txt)" = '0.19.20'
           if gh release view latest >/dev/null 2>&1; then
-            gh release edit latest \
-              --title "Survival40 Auto v$VERSION" \
-              --notes "Automated build from main. Current plugin version: $VERSION"
+            gh release edit latest --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
           else
-            gh release create latest \
-              --target main \
-              --title "Survival40 Auto v$VERSION" \
-              --notes "Automated build from main. Current plugin version: $VERSION"
+            gh release create latest --target main --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
           fi
           gh release upload latest dist/survival40-auto.zip --clobber
-
-# retry-01910-quality-evidence
