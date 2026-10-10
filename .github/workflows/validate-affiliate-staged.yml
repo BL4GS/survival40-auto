@@ -11,6 +11,7 @@ on:
       - '.github/scripts/patch_affiliate_review_gate_staged.py'
       - '.github/scripts/test_affiliate_integration_staged.py'
       - '.github/scripts/test_updater_regression_staged.py'
+      - '.github/scripts/patch_update_diagnostics_staged.py'
       - 'planning/a8-banner-assets-unified-2026-10.json'
   workflow_dispatch:
 permissions:
@@ -83,6 +84,8 @@ jobs:
         run: python .github/scripts/patch_affiliate_topic_staged.py
       - name: Stage campaign and item review gate
         run: python .github/scripts/patch_affiliate_review_gate_staged.py
+      - name: Stage passive updater diagnostics
+        run: python .github/scripts/patch_update_diagnostics_staged.py
       - name: PHP syntax
         run: php -l survival40-auto/survival40-auto.php
       - name: Check no unexpected public publishing hook was added
@@ -93,5 +96,6 @@ jobs:
           grep -q "save_post_post" survival40-auto/survival40-auto.php
           grep -q "s40_affiliate_infer_topic" survival40-auto/survival40-auto.php
           grep -q "s40_affiliate_eligible_for_post" survival40-auto/survival40-auto.php
+          grep -q "s40_update_audit_after_upgrade" survival40-auto/survival40-auto.php
           grep -q "s40_affiliate_match_preview" survival40-auto/survival40-auto.php
           grep -q "if (\$id === 's00000022947002') continue;" survival40-auto/survival40-auto.php
