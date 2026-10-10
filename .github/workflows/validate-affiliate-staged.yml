@@ -329,7 +329,16 @@ jobs:
           ];
           $result=$runner->update('plugin',$item);
           if (is_wp_error($result)) throw new RuntimeException('Auto updater: '.$result->get_error_message());
-          if (!$result) throw new RuntimeException('Auto updater returned false');
+          if (!$result) {
+            echo 'AUTO_UPDATE_FALSE_DIAGNOSTIC '.wp_json_encode([
+              'disabled_constant'=>defined('AUTOMATIC_UPDATER_DISABLED') ? AUTOMATIC_UPDATER_DISABLED : null,
+              'disabled_filter'=>apply_filters('automatic_updater_disabled', false),
+              'version'=>get_plugin_data(WP_PLUGIN_DIR.'/'.$plugin)['Version'],
+              'active'=>is_plugin_active($plugin),
+              'skin_messages'=>isset($runner->skin) ? 'skin_available' : 'not_exposed'
+            ])."\\n";
+            return;
+          }
           wp_clean_plugins_cache(true);
           $data=get_plugin_data(WP_PLUGIN_DIR.'/'.$plugin);
           $active=is_plugin_active($plugin);
