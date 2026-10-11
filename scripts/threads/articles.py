@@ -14,6 +14,7 @@ import urllib.request
 
 SITE = "https://survival40.com"
 API = SITE + "/wp-json/wp/v2/posts"
+FALLBACK_API = SITE + "/index.php?rest_route=%2Fwp%2Fv2%2Fposts"
 USER_AGENT = "Survival40-Threads-Article-Drafts/0.1"
 MAX_BYTES = 512_000
 
@@ -81,22 +82,31 @@ def fetch_public_posts():
         "status": "publish", "per_page": 30, "orderby": "date", "order": "desc",
         "_fields": "id,date_gmt,link,status,title,excerpt,content",
     })
-    request = urllib.request.Request(API + "?" + query, headers={
-        "Accept": "application/json", "User-Agent": USER_AGENT,
-    })
-    try:
-        with urllib.request.build_opener(StrictHTTPS()).open(request, timeout=25) as response:
-            if response.headers.get("Content-Type", "").split(";")[0] != "application/json":
-                raise ArticleSourceError("WordPress REST API did not return JSON")
-            raw = response.read(MAX_BYTES + 1)
-            if len(raw) > MAX_BYTES:
-                raise ArticleSourceError("WordPress response too large")
-            data = json.loads(raw.decode("utf-8"))
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ArticleSourceError("WordPress REST API unavailable or invalid: " + type(exc).__name__) from None
-    if not isinstance(data, list):
-        raise ArticleSourceError("Unexpected WordPress response")
-    return data
+    endpoints = [API + "?" + query, FALLBACK_API + "&" + query]
+    for index, endpoint in enumerate(endpoints):
+        request = urllib.request.Request(endpoint, headers={
+            "Accept": "application/json", "User-Agent": USER_AGENT,
+        })
+        try:
+            with urllib.request.build_opener(StrictHTTPS()).open(request, timeout=25) as response:
+                if response.headers.get("Content-Type", "").split(";")[0] != "application/json":
+                    raise ArticleSourceError("WordPress REST API did not return JSON")
+                raw = response.read(MAX_BYTES + 1)
+                if len(raw) > MAX_BYTES:
+                    raise ArticleSourceError("WordPress response too large")
+                data = json.loads(raw.decode("utf-8"))
+                if not isinstance(data, list):
+                    raise ArticleSourceError("Unexpected WordPress article listing")
+                return data
+        except urllib.error.HTTPError as exc:
+            if index == 0 and exc.code in (403, 404):
+                # Some WordPress security configurations block pretty REST paths
+                # while allowing the equivalent canonical index.php rest_route.
+                continue
+            raise ArticleSourceError(f"WordPress article source rejected request (HTTP {exc.code})") from None
+        except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ArticleSourceError("WordPress REST API unavailable or invalid: " + type(exc).__name__) from None
+    raise ArticleSourceError("Both approved public WordPress article endpoints unavailable")
 
 
 def select_article(posts, now=None, hours=24):
