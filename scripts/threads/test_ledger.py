@@ -13,6 +13,12 @@ class GithubLedgerTests(unittest.TestCase):
     def test_path(self):
         self.assertEqual(self.ledger.filename("2026-10-11-evening"),
                          "threads-ledger/2026/10/2026-10-11-evening.json")
+        self.assertEqual(self.ledger.filename("article-12345"),
+                         "threads-ledger/articles/article-12345.json")
+        with self.assertRaises(ValueError):
+            self.ledger.filename("article-0")
+        with self.assertRaises(ValueError):
+            self.ledger.filename("article-123/../test")
         for invalid in ("../foo", "2026-10-11-article", "2026-10-11-evening/../oops"):
             with self.assertRaises(ValueError):
                 self.ledger.filename(invalid)
