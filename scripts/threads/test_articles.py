@@ -1,7 +1,10 @@
 import datetime as dt
+import io
+import json
+import urllib.error
 import unittest
 from unittest.mock import patch
-from scripts.threads.articles import ArticleSourceError, plain_text, safe_article_url, select_article
+from scripts.threads.articles import ArticleSourceError, fetch_public_posts, plain_text, safe_article_url, select_article
 from scripts.threads.compose_articles import make_prompt, validate_article_copy
 
 
@@ -68,6 +71,26 @@ class WordPressArticleTests(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 validate_article_copy(text, a)
+
+
+    def test_rest_query_fallback_after_pretty_rest_403(self):
+        class FakeResponse:
+            headers = {"Content-Type": "application/json; charset=UTF-8"}
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self, limit): return json.dumps([post(1, "2026-10-11T12:00:00")]).encode("utf-8")
+        class FakeOpener:
+            urls = []
+            def open(self, request, timeout):
+                self.urls.append(request.full_url)
+                if len(self.urls) == 1:
+                    raise urllib.error.HTTPError(request.full_url, 403, "Forbidden", {}, None)
+                return FakeResponse()
+        opener = FakeOpener()
+        with patch("scripts.threads.articles.urllib.request.build_opener", return_value=opener):
+            self.assertEqual(len(fetch_public_posts()), 1)
+        self.assertIn("/wp-json/wp/v2/posts?", opener.urls[0])
+        self.assertIn("/index.php?rest_route=%2Fwp%2Fv2%2Fposts&", opener.urls[1])
 
 
 if __name__ == "__main__":
