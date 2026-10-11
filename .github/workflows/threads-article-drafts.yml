@@ -43,6 +43,21 @@ jobs:
               except Exception as error:
                   print(f"{label}: {type(error).__name__}")
           PY
+      - name: Verify article REST listing via allowed fallback (no credentials)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          from scripts.threads.articles import fetch_public_posts, select_article, ArticleSourceError
+          from datetime import datetime, timezone
+          try:
+              posts = fetch_public_posts()
+              candidate = select_article(posts, now=datetime.now(timezone.utc))
+              print(f"Public posts retrieved: {len(posts)}")
+              print(f"Eligible last-24h article: {'yes' if candidate else 'no'}")
+          except ArticleSourceError as exc:
+              print(f"Source still unavailable: {exc}")
+              raise
+          PY
   generate-preview:
     if: github.event_name == 'workflow_dispatch'
     needs: article-tests
