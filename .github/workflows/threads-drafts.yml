@@ -1,0 +1,45 @@
+name: Survival40 Threads Drafts (NO POSTING)
+on:
+  schedule:
+    # JST 08:00 = UTC previous day 23:00; JST 20:00 = UTC 11:00
+    - cron: '0 23 * * *'
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Preview only; morning or evening'
+        required: true
+        type: choice
+        options: [morning, evening]
+permissions:
+  contents: read
+concurrency:
+  group: survival40-threads-draft
+  cancel-in-progress: false
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      THREADS_SLOT: ${{ inputs.slot || 'auto' }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Unit tests (no credentials)
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Generate morning or evening draft with Gemini
+        run: python3 -m scripts.threads.compose
+      - name: Save preview to Actions artifacts, no Threads API call
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-threads-draft-${{ github.run_id }}
+          path: threads-output/draft.json
+          if-no-files-found: ignore
+          retention-days: 14
