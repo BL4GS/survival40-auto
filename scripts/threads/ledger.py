@@ -30,9 +30,12 @@ class GithubLedger:
 
     @staticmethod
     def filename(key):
+        article = re.fullmatch(r"article-([1-9][0-9]{0,17})", key)
+        if article:
+            return f"threads-ledger/articles/{key}.json"
         match = re.fullmatch(r"(20[0-9]{2})-([01][0-9])-([0-3][0-9])-(morning|evening)", key)
         if not match:
-            raise ValueError("Invalid local-date slot id")
+            raise ValueError("Invalid date-slot or article id")
         return f"threads-ledger/{match[1]}/{match[2]}/{key}.json"
 
     def _call(self, method, path, payload=None):
