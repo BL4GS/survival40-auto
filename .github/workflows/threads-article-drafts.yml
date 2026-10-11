@@ -1,0 +1,57 @@
+name: Survival40 Threads Article Drafts (NO POSTING)
+on:
+  pull_request:
+    paths:
+      - 'scripts/threads/**'
+      - '.github/workflows/threads-article-drafts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  article-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate article selection and copy rules offline
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          THREADS_ACCESS_TOKEN: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Probe public WordPress REST endpoint (no credentials)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          from scripts.threads.articles import fetch_public_posts, ArticleSourceError
+          try:
+              posts = fetch_public_posts()
+              print(f"Public WordPress REST endpoint reachable; {len(posts)} posts retrieved.")
+          except ArticleSourceError as exc:
+              print(f"Public WordPress REST not verified: {exc}")
+              raise
+          PY
+  generate-preview:
+    if: github.event_name == 'workflow_dispatch'
+    needs: article-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: \${{ secrets.GOOGLE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Draft latest published article for Shiori (no publish)
+        run: python3 -m scripts.threads.compose_articles
+      - name: Store preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-threads-article-\${{ github.run_id }}
+          path: threads-output/article-draft.json
+          if-no-files-found: ignore
+          retention-days: 14
