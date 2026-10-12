@@ -1,0 +1,54 @@
+name: Archive Current v0.19.20 Rollback ZIP (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/archive-01920-rollback.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/archive-01920-rollback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  archive-known-good:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download existing GitHub Release without modifying it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
+          mkdir -p rollback
+          gh release view latest --json name --jq '.name' | grep -Fx 'Survival40 Auto v0.19.20'
+          gh release download latest --pattern 'survival40-auto.zip' --dir rollback
+          test -s rollback/survival40-auto.zip
+          unzip -tq rollback/survival40-auto.zip
+          python3 - <<'PY'
+          import zipfile
+          p='rollback/survival40-auto.zip'
+          with zipfile.ZipFile(p) as z:
+              code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
+              assert ' * Version: 0.19.20' in code
+              assert "const VERSION = '0.19.20';" in code
+              assert 'survival40-auto/assets/navigator/normal.webp' in z.namelist()
+          print('PASS: existing public 0.19.20 ZIP validates as previous release')
+          PY
+          mv rollback/survival40-auto.zip rollback/survival40-auto-0.19.20-rollback.zip
+          (cd rollback && sha256sum survival40-auto-0.19.20-rollback.zip > SHA256SUMS)
+      - name: Archive rollback ZIP and checksum (not a new release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-previous-public-v0.19.20-${{ github.run_id }}
+          path: rollback/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Confirm no published-version edits
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          git diff --exit-code -- version.txt .github/workflows/release.yml
