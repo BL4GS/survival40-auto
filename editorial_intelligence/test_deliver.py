@@ -58,7 +58,7 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(result["accepted"], 1)
         self.assertEqual(fake.calls, 1)
         self.assertEqual(fake.last.get_method(), "POST")
-        self.assertIn("survival40.com/index.php", fake.last.full_url)
+        self.assertTrue(fake.last.full_url.startswith("https://www.survival40.com/index.php?rest_route="))
         self.assertNotIn("secret-not-for-logs", fake.last.full_url)
         self.assertTrue(fake.last.get_header("Authorization").startswith("Basic "))
 
@@ -69,6 +69,17 @@ class DeliveryTests(unittest.TestCase):
         result = deliver.deliver(report(), "admin", "application-password", opener=fake)
         self.assertEqual(result["duplicate"], 1)
         self.assertEqual(fake.calls, 1)
+
+    def test_delivery_host_matches_live_wordpress_canonical_url(self):
+        # WordPress home/siteurl resolve to https://www.survival40.com.
+        # A naked-domain HTTP redirect would be refused to protect App Password.
+        from urllib.parse import urlsplit, parse_qs
+        url = urlsplit(deliver.ENDPOINT)
+        self.assertEqual(url.scheme, "https")
+        self.assertEqual(url.netloc, "www.survival40.com")
+        self.assertEqual(url.path, "/index.php")
+        self.assertEqual(parse_qs(url.query)["rest_route"], ["/survival40/v1/editorial-plans"])
+        self.assertNotIn(url.hostname, ("survival40.com", "evil.test"))
 
     def test_redirect_never_forwards_auth(self):
         handler = deliver.NoRedirects()
