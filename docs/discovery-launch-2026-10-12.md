@@ -54,3 +54,10 @@
 - Homepage `<main>` currently has a direct link to **23 of 23 public articles**, including the nine supplementary reader pathways added to WordPress page ID 471. Original Shiori guide and homepage cards persist.
 - To measure actual Google queries, impressions, clicks and URL indexing, connect the user's existing Search Console property with an authorized analytics connection (GSC Wizard suggested through ChatGPT); do not assume a new property must be created until current Google account ownership is checked.
 - Distinguish **site readiness** from the pending ConoHa restore/release blocker. Do not enable production auto-writing just because the sitemap is complete.
+
+## Live GSC Wizard connection check (2026-10-12)
+- GSC Wizard plugin is connected to a Google account with the **full** `webmasters` scope, but its only registered Search Console property at this time is `https://worker02.livedoor.blog/` (a **different site**).
+- Tried registering all likely representations via GSC Wizard `add_site`: `https://www.survival40.com/`, `sc-domain:survival40.com`, and `https://survival40.com/`. All explicitly returned **not_found** in the Google Search Console account linked to GSC Wizard. No property was created and no site settings were modified.
+- **Blocker:** User must either connect the Google account that already owns the Survival40 Search Console property, or register/verify the canonical `https://www.survival40.com/` URL-prefix property in Google Search Console using that Google account. Once visible there, use GSC Wizard `add_site`, then `get_site_summary`, `list_sitemaps`, `query_top_pages`, `query_top_queries`, and selective `inspect_url` (quota-aware).
+- The existing home page meta `google-site-verification` token belongs to an unknown verification flow. Its presence **does not prove** that the currently connected Google account owns the property.
+- **Do not attribute** the livedoor.blog GSC data to Survival40; do not fabricate traffic or indexation claims. Article sitemap and homepage links are verified independently.
