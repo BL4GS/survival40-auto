@@ -117,6 +117,7 @@ def build_prompt(now, slot, config):
     tone_mode = select_tone_mode(now.date(), slot)
     weekday = ("月", "火", "水", "木", "金", "土", "日")[now.weekday()]
     prompt = json.dumps({
+        "post_kind": "everyday_chat",
         "date_jst": now.date().isoformat(), "weekday": weekday,
         "slot": slot, "theme": theme, "shape": shape, "topic_group": topic_group,
         "voice": config["voice"], "tone_mode": tone_mode,
@@ -140,26 +141,21 @@ def build_prompt(now, slot, config):
             "quiet_remark": "一文〜二文で十分。言いたいことが薄ければ飾らず短く終える。",
             "light_question": "実際に聞いてみたくなる平易な疑問だけを一つ。無理に作らない。"
         }[shape],
-        "approved_clarity_examples": [
-            "詰め替え用のスキンケアをどの段階で買い足すか、案外迷うことがあります。ストックが一つあると安心ですが、収納の場所も少し気になるところです。",
-            "タオルの柔らかさが変わるタイミングって、なんとなく使っていると見逃しやすいものですね。みなさんはどういう基準で新しくしているんでしょう。",
-            "新しいものを探す前に、今引き出しの奥にあるものを使えるかどうか眺めてみるのも悪くないです。案外、必要なものは一通り揃っていたりします。"
-        ],
-        "quality_notes": [
-            "上の3つは読者が分かりやすいと評価した文章。トーンと分かりやすさの参考であり、文章・語尾・構造をコピーしない",
-            "具体的な対象が何か、どう感じたかが読みながらすぐ伝わる文章にする",
-            "普段は身だしなみ・生活習慣・軽い運動を主軸にする。レシートのような雑談は時々だけ",
-            "投稿の主題から別ジャンルへ拡張しない。余計な雑談や情報を足さない",
-            "一投稿一話題。途中で無関係な連絡事項や心理分析に話を飛ばさない",
-            "前後に論理的なつながりのない理由や結論を作らない。意味のない想像を追加しない",
-            "特別な意味がない日用品の話を、深そうに見せる比喩や抽象語で飾らない",
-            "『朝の空気が静かになる』『視界に入る情報量』『小さな余白』のような分かりにくい表現は禁止",
-            "生活の中の感覚を必要以上に文学的・ポエム風・啓蒙系にしない",
-            "朝の投稿が突然夜の話になるなど、時間帯と中心テーマが不自然にずれないようにする",
-            "下書きを書いた後、読んですぐ理解できない箇所は平易な表現に書き換える。言うことが薄ければ短く終える"
+        "editorial_priority": [
+            "これは毎日の雑談下書き。役立つ情報を教える記事紹介とは役割が違う",
+            "ひとりの人物が身近な物事について普通に話している雰囲気を優先する",
+            "読者が最初に見る投稿でも、何の話か一読で分かる",
+            "話題は再登場して構わない。ただし表現や問いかけを毎回同じ型にしない",
+            "話題に意味や価値を持たせる必要はない。どうでもいい小さな話で終えてもよい",
+            "事実を教える、改善策を勧める、自己啓発の結論を出すことを目的にしない",
+            "短く素直に話せるなら一文で止める。説明を足して文字数を稼がない",
+            "質問は本当に話しかけたいときだけ。毎回質問して読者を誘導しない",
+            "個人的な行動や出来事を実際に体験したと装う一人称の作り話は禁止",
+            "抽象的な比喩、読者心理の憶測、意味の通らない因果関係を使わない",
+            "朝夜の枠に話題が合うようにするが、今朝や今夜何かをしたとは捏造しない"
         ],
         "guidelines": [
-            "日本語40〜100字程度を目安。短く自然なら一文でもよい。最大240字",
+            "日本語25〜100字程度。短く自然なら一文でもよい。最大240字",
             "基本は『です・ます』の自然な丁寧語。敬語の堅さは不要だが、最初から友達口調にはしない",
             "tone_mode の指示を守り、毎回ラフな言葉を入れない",
             "『笑』やツッコミ、句点を抜く演出を定型化しない。語尾をわざと砕けさせない",
@@ -168,7 +164,7 @@ def build_prompt(now, slot, config):
             "AIやシステム、投稿テスト、運用中、連携といった舞台裏の話題は出さない",
             "根拠のない季節の状況、今日の天気、祝日、時事・地域イベントには触れない",
             "実際に経験したかのような一人称の仕事・家族・買い物・使用感を創作しない",
-            "健康効果を断定しない。記事や商品の宣伝、ハッシュタグ、リンクは不要",
+            "健康効果を断定しない。これは通常の雑談であり、記事紹介や商品宣伝を混ぜない",
             "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
             "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
         ]
@@ -219,6 +215,11 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             "vague abstractions, decorative emotional interpretations, or awkward "
             "cause-and-effect. One topic per post, no invented logical leaps. "
             "Keep wording simple and relatively short. "
+            "This is a casual everyday post, NOT an article promotion or advice column. "
+            "No requirement for lessons, useful tips, improvement plans, or conclusions. "
+            "An ordinary trivial observation is an acceptable complete post. "
+            "Allow topics to repeat over time, but not canned phrasing. "
+            "Do not imitate previous sample posts or repeat their sentence structures. "
             "Stay tightly within the assigned theme and topic group; avoid "
             "unrelated entertainment, news, politics, or broad lifestyle chatter. "
             "It is fine to stop after a single observation; do not force a moral, "
