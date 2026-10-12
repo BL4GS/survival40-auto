@@ -1,0 +1,29 @@
+name: Survival40 Production Preflight — PUBLIC READ ONLY
+on:
+  pull_request:
+    paths:
+      - 'production_preflight/**'
+      - '.github/workflows/production-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline regression tests (NO SITE ACCESS)
+        run: python3 -m unittest discover -s production_preflight -p 'test_*.py' -v
+      - name: Save public article fingerprint baseline
+        run: python3 -m production_preflight.baseline
+      - name: Upload read-only snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-preflight-${{ github.run_id }}
+          path: preflight-output/
+          if-no-files-found: ignore
+          retention-days: 30
