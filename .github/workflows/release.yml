@@ -161,7 +161,7 @@ jobs:
           set -euo pipefail
           # NEVER advertise 0.19.21 until its downloadable, verified ZIP exists.
           # Missing backup/recovery approval remains a human release prerequisite.
-          test "$(tr -d '\\r\\n' < version.txt)" = '0.19.20'
+          test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
           test -s dist/survival40-auto.zip
           unzip -tq dist/survival40-auto.zip
           if gh release view latest >/dev/null 2>&1; then
@@ -193,7 +193,7 @@ jobs:
           # changes cannot be overwritten.
           METADATA="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main")"
           REMOTE_SHA="$(printf '%s' "$METADATA" | jq -r '.sha')"
-          REMOTE_VERSION="$(printf '%s' "$METADATA" | jq -r '.content' | base64 -d | tr -d '\\r\\n')"
+          REMOTE_VERSION="$(printf '%s' "$METADATA" | jq -r '.content' | base64 -d | tr -d '\r\n')"
           test "$REMOTE_VERSION" = '0.19.20'
           NEW_CONTENT="$(printf '0.19.21\n' | base64 -w 0)"
           gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/version.txt" \
@@ -203,6 +203,6 @@ jobs:
             -f content="$NEW_CONTENT" > /dev/null
 
           FINAL_CONTENT="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main" \
-            --jq '.content' | base64 -d | tr -d '\\r\\n')"
+            --jq '.content' | base64 -d | tr -d '\r\n')"
           test "$FINAL_CONTENT" = '0.19.21'
           echo 'Release ZIP uploaded before advancing public version.txt to 0.19.21.'
