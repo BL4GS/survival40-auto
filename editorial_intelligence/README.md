@@ -46,3 +46,11 @@ The weekly workflow now runs \`python3 -m editorial_intelligence.bridge\` after 
 - The weekly output is an intermediate *planning artifact*. It cannot itself create drafts/posts or bypass WordPress research, medical claim review, source verification or release approval.
 
 The generated \`keyword\` is a wording candidate only; this stage has not measured search volume.
+
+## Optional future delivery (disabled by default)
+- The weekly GitHub Action can POST `wp-plan-handoff.json` to the WordPress editorial inbox only after the repository variable `S40_WP_PLAN_DELIVERY_ENABLED` is explicitly set to `true`. Without that variable it performs **no WordPress POST**.
+- The delivery code is `editorial_intelligence/deliver.py`. It uses the fixed canonical HTTPS host and the legacy WordPress REST query-route. All redirects are rejected to prevent accidental forwarding of a WordPress Application Password.
+- Credentials must be kept in GitHub Actions Secrets `S40_WP_INBOX_USER` and `S40_WP_INBOX_APP_PASSWORD`. Do not paste an Application Password into a PR, chat or WordPress article. GitHub workflows remain read-only to the repository.
+- Activation is blocked until the separately staged WordPress inbox is actually installed and tested on the site, a current offsite backup/rollback is verified, and a narrowly scoped App Password for an authorized account is created.
+- An uncertain network result is **not** retried automatically; inspect the protected WordPress queue before replaying. The intake itself is idempotent for plans already in the queue.
+- The WordPress endpoint only stores research-needed concepts. Neither GitHub nor the endpoint calls post creation or publishing functions.
