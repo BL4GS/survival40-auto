@@ -71,3 +71,10 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - Isolated rollback rehearsal PR #18 (https://github.com/BL4GS/survival40-auto/pull/18) merged after GitHub Actions run https://github.com/BL4GS/survival40-auto/actions/runs/38214978009 succeeded.
 - That test installed v0.19.22 RC in a disposable WordPress/SQLite site, generated a research-only queue brief, rolled back to the actual existing GitHub Release v0.19.20 ZIP via WP-CLI plugin installer, then reinstalled v0.19.22 RC. Article status/title/IDs and editorial plan queue remained byte-equivalent at each stage. This is evidence of **plugin-only rollback on an isolated WordPress test**, NOT ConoHa backup restore and NOT a production update.
 - The backup restore assertion must be based on **real verification**, not simply entering confirmation strings. When the owner is working and unable to monitor production, DO NOT trigger public release.
+
+## Mobile display/SEO baseline (read-only, 2026-10-12)
+- WPVibe PageSpeed/Lighthouse checked the public homepage on mobile: performance **92**, accessibility **95**, best-practices **100**, SEO **92**. Lab LCP **2.9s**, CLS **0**; no CrUX field data, so this is a diagnostic snapshot, not proof of field performance.
+- The bare domain redirects to canonical **https://www.survival40.com/**, matching WordPress home/siteurl and AIOSEO canonical. Lab reported a ~780ms redirect opportunity; no domain change was made.
+- Live HTML contains **no homepage meta description**, although AIOSEO 5.0.3 is active. A separate accessibility issue flags color contrast; no styles changed. Improvement tracked in https://github.com/BL4GS/survival40-auto/issues/19 .
+- Static WordPress homepage is page **471**. The suggested meta description must be reviewed and set through AIOSEO when convenient, not injected during the production upgrade.
+- Inspection used public read-only HTML and PageSpeed API only; no site data changed.
