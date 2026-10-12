@@ -20,7 +20,7 @@ jobs:
       - name: Checkout pinned experimental editorial commit only
         uses: actions/checkout@v4
         with:
-          ref: 2fcf13eed17b18d9f4b22591bbbb172a8ca47b8f
+          ref: 8677809801ce0f42214e86fd0da8c286a3c1d3d5
           persist-credentials: false
       - name: Offline editor/Threads tests (no real credentials)
         env:
