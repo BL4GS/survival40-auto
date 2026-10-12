@@ -56,6 +56,7 @@ def main():
             "day_jst": day.isoformat(),
             "slot": slot,
             "theme": instruction["theme"],
+            "topic_group": instruction["topic_group"],
             "tone_mode": tone_mode,
             "valid": False,
         }
