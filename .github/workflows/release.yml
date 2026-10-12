@@ -158,11 +158,45 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -eu
+          set -euo pipefail
+          # NEVER advertise 0.19.21 until its downloadable, verified ZIP exists.
+          # Missing backup/recovery approval remains a human release prerequisite.
           test "$(tr -d '\\r\\n' < version.txt)" = '0.19.20'
+          test -s dist/survival40-auto.zip
+          unzip -tq dist/survival40-auto.zip
           if gh release view latest >/dev/null 2>&1; then
             gh release edit latest --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
           else
             gh release create latest --target main --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
           fi
+
+          # Upload first; failure must leave version.txt at old 0.19.20.
           gh release upload latest dist/survival40-auto.zip --clobber
+
+          ASSET_ID="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/latest" \
+            --jq '.assets[] | select(.name == "survival40-auto.zip") | .id' | head -1)"
+          ASSET_SIZE="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/latest" \
+            --jq '.assets[] | select(.name == "survival40-auto.zip") | .size' | head -1)"
+          test -n "$ASSET_ID"
+          test "$ASSET_SIZE" -gt 10000
+          echo "Uploaded release asset confirmed: ID=$ASSET_ID size=$ASSET_SIZE"
+
+          # The plugin compares raw.githubusercontent.com/main/version.txt
+          # against its installed version; the previous workflow forgot to
+          # advance this file. Use a contents-API SHA precondition so concurrent
+          # changes cannot be overwritten.
+          METADATA="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main")"
+          REMOTE_SHA="$(printf '%s' "$METADATA" | jq -r '.sha')"
+          REMOTE_VERSION="$(printf '%s' "$METADATA" | jq -r '.content' | base64 -d | tr -d '\\r\\n')"
+          test "$REMOTE_VERSION" = '0.19.20'
+          NEW_CONTENT="$(printf '0.19.21\n' | base64 -w 0)"
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/version.txt" \
+            -f message='release: advertise distributed Survival40 Auto 0.19.21' \
+            -f branch=main \
+            -f sha="$REMOTE_SHA" \
+            -f content="$NEW_CONTENT" > /dev/null
+
+          FINAL_CONTENT="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main" \
+            --jq '.content' | base64 -d | tr -d '\\r\\n')"
+          test "$FINAL_CONTENT" = '0.19.21'
+          echo 'Release ZIP uploaded before advancing public version.txt to 0.19.21.'
