@@ -1,0 +1,61 @@
+name: Survival40 Weekly Editorial Topic Intelligence (NO PUBLISHING)
+on:
+  pull_request:
+    paths:
+      - 'editorial_intelligence/**'
+      - '.github/workflows/editorial-topics.yml'
+  schedule:
+    # Monday 05:10 JST = Sunday 20:10 UTC. Best effort.
+    - cron: '10 20 * * 0'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: s40-editorial-topics
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline topic-planner tests without credentials
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          THREADS_ACCESS_TOKEN: ''
+        run: python3 -m unittest discover -s editorial_intelligence -p 'test_*.py' -v
+      - name: Confirm existing published-article list is accessible
+        run: |
+          python3 - <<'PY'
+          from editorial_intelligence.plan import collect_existing
+          from site_audit.audit import fetch_posts
+          posts, _ = fetch_posts()
+          catalog = collect_existing(posts)
+          print(f"Published article metadata accessible: {len(catalog)} entries.")
+          PY
+  proposals:
+    needs: validate
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      THREADS_ACCESS_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Generate weekly topic candidates with one bounded Gemini request
+        run: python3 -m editorial_intelligence.plan
+      - name: Store editorial proposals as review artifacts only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-editorial-topics-${{ github.run_id }}
+          path: editorial-output/
+          if-no-files-found: ignore
+          retention-days: 21
