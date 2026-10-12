@@ -1,5 +1,8 @@
 name: Archive Current v0.19.20 Rollback ZIP (READ ONLY)
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/archive-01920-rollback.yml'
   push:
     branches: [main]
     paths:
