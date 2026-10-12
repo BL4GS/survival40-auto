@@ -27,15 +27,6 @@ jobs:
           GOOGLE_API_KEY: ''
           THREADS_ACCESS_TOKEN: ''
         run: python3 -m unittest discover -s editorial_intelligence -p 'test_*.py' -v
-      - name: Confirm existing published-article list is accessible
-        run: |
-          python3 - <<'PY'
-          from editorial_intelligence.plan import collect_existing
-          from site_audit.audit import fetch_posts
-          posts, _ = fetch_posts()
-          catalog = collect_existing(posts)
-          print(f"Published article metadata accessible: {len(catalog)} entries.")
-          PY
   proposals:
     needs: validate
     if: github.event_name != 'pull_request'
@@ -51,6 +42,8 @@ jobs:
           persist-credentials: false
       - name: Generate weekly topic candidates with one bounded Gemini request
         run: python3 -m editorial_intelligence.plan
+      - name: Convert candidate topics into WordPress research-only plan handoff
+        run: python3 -m editorial_intelligence.bridge
       - name: Store editorial proposals as review artifacts only
         if: always()
         uses: actions/upload-artifact@v4
