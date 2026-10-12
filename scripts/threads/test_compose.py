@@ -5,7 +5,7 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from scripts.threads.compose import (
-    choose_slot, gemini_generate, select_shape, select_theme, validate_post,
+    CONFIG, choose_slot, gemini_generate, select_shape, select_theme, validate_post,
 )
 
 
@@ -78,6 +78,13 @@ class ThreadsDraftTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_post("服を片づけようと思ったけど、明日の朝に回してもいい気がする。", "unknown", 300)
 
+    def test_voice_policy_is_polite_with_rare_casual_notes(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        self.assertIn("です・ます", config["voice"]["baseline"])
+        self.assertIn("たまに", config["voice"]["occasional_relaxed_note"])
+        self.assertIn("毎回は不要", config["voice"]["occasional_relaxed_note"])
+        self.assertEqual(config["mode"], "draft_only")
+
     def test_no_live_api_in_copy_generation(self):
         with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
             class Response:
@@ -91,6 +98,10 @@ class ThreadsDraftTests(unittest.TestCase):
             self.assertIn("洗面台", result)
             self.assertEqual(urlopen.call_args.args[0].get_method(), "POST")
             self.assertIn("generativelanguage.googleapis.com", urlopen.call_args.args[0].full_url)
+            sent = json.loads(urlopen.call_args.args[0].data.decode("utf-8"))
+            system = sent["systemInstruction"]["parts"][0]["text"]
+            self.assertIn("desu/masu polite style", system)
+            self.assertIn("do not add casual endings", system)
 
 
 if __name__ == "__main__":
