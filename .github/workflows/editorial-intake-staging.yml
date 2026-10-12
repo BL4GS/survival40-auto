@@ -1,0 +1,67 @@
+name: Survival40 WordPress Editorial Inbox (NEXT VERSION STAGING ONLY)
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/patch_editorial_intake_next.py'
+      - '.github/scripts/test_editorial_intake_next.py'
+      - '.github/scripts/test_editorial_intake_next.php'
+      - '.github/workflows/editorial-intake-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-next-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline editorial intake patch regression tests
+        run: python3 -m unittest discover -s .github/scripts -p test_editorial_intake_next.py -v
+      - name: Reconstruct current reviewed 0.19.21 plugin in isolated CI checkout
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          lines=Path('.github/workflows/release.yml').read_text().splitlines()
+          for name in ('Restore plugin source','Patch plugin to current release',
+                       'Stage reviewed affiliate features exactly as validated',
+                       'Promote reviewed version markers'):
+              marker='      - name: '+name
+              assert lines.count(marker)==1, name
+              at=lines.index(marker)+1
+              assert lines[at]=='        run: |'
+              script=[]
+              for line in lines[at+1:]:
+                  if line and not line.startswith('          '): break
+                  script.append(line[10:] if line else '')
+              subprocess.run(['bash','-euo','pipefail','-c','\n'.join(script)+'\n'],
+                             check=True)
+              print('PASS: reconstructed', name)
+          PY
+      - name: Apply future patches ONLY to disposable CI files
+        run: |
+          cp survival40-auto/survival40-auto.php /tmp/s40-reviewed-release.php
+          python3 .github/scripts/patch_planner_failclosed_next.py
+          python3 .github/scripts/patch_editorial_intake_next.py
+          php -l survival40-auto/survival40-auto.php
+          php .github/scripts/test_editorial_intake_next.php
+          python3 - <<'PY'
+          from pathlib import Path
+          original=Path('/tmp/s40-reviewed-release.php').read_text()
+          after=Path('survival40-auto/survival40-auto.php').read_text()
+          assert 's40_register_editorial_plan_routes' not in original
+          assert 's40_register_editorial_plan_routes' in after
+          assert 's40_plan_unavailable' in after
+          assert "const VERSION = '0.19.21'" in after
+          assert ' * Version: 0.19.21' in after
+          assert 'wp_insert_post(' in original # the EXISTING generator remains intact
+          assert 'wp_insert_post(' in after
+          assert after.count('wp_insert_post(')==original.count('wp_insert_post(')
+          print('PASS: no new posting method and no version bump')
+          PY
+      - name: Validate no source or release changes committed
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          git diff --exit-code -- .github/workflows/release.yml version.txt
