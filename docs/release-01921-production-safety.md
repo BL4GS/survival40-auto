@@ -12,6 +12,13 @@ Read [PROJECT_VISION.md](../PROJECT_VISION.md). Reader-first autonomous article 
 - The release workflow now requires an explicit manual confirmation to overwrite the public 'latest' asset. A normal push must never publish it.
 - The staged updater diagnosis is passive; the staging workflow explicitly guards against restoring the old self-update hooks.
 
+## Release-version handshake (fixed in reviewed workflow, not deployed)
+- The WordPress plugin reads `https://raw.githubusercontent.com/BL4GS/survival40-auto/main/version.txt` when deciding whether to offer updates. At the time of this review, that file is **0.19.20**, while the candidate ZIP is **0.19.21**.
+- A ZIP-only release would leave 0.19.20 clients unaware of 0.19.21. The manual release workflow must first upload the v0.19.21 ZIP, confirm the remote asset and compare a fresh download byte-for-byte against the tested ZIP, **then** update `main/version.txt` to **0.19.21** with an optimistic SHA check.
+- **Safety consequence:** after `version.txt` becomes 0.19.21, already-installed v0.19.20 WordPress plugins may attempt an automatic update. Do **not** run the manual release workflow until site backup, rollback, and production authorization are confirmed.
+- Failing any pre-publication check must leave `version.txt` unchanged at 0.19.20. A failed upload can still mutate the draft GitHub release asset/title, so investigate before retrying.
+- Branch changes to release scripts alone do not publish anything; the explicit `workflow_dispatch` confirmation remains required. GitHub CI verifies static release order but cannot prove live WordPress updater compatibility.
+
 ## Not yet demonstrated
 1. ConoHa or other host backup is recent, restorable, and covers both WordPress DB and wp-content (including plugin, uploads, theme and related settings).
 2. A tested rollback plan exists (previous known-good ZIP + DB snapshot), with site access and appropriate credentials held by the owner.

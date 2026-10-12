@@ -1,0 +1,24 @@
+name: Survival40 Release Metadata Contract (NO PUBLISH)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
+      - '.github/workflows/release-contract.yml'
+      - 'release_guard/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test ordering, manual approval, shell syntax and version baseline
+        run: python3 -m unittest discover -s release_guard -p 'test_*.py' -v
+      - name: Confirm no release or version change is performed
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          git diff --exit-code
