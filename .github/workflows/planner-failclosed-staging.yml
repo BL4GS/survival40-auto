@@ -1,0 +1,77 @@
+name: Survival40 Future Planner Fail-Closed Patch (STAGING ONLY)
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/patch_planner_failclosed_next.py'
+      - '.github/scripts/test_planner_failclosed_next.py'
+      - '.github/workflows/planner-failclosed-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  failclosed-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test patch anchors and current release isolation
+        run: python3 -m unittest discover -s .github/scripts -p test_planner_failclosed_next.py -v
+      - name: Restore exact 0.19.21 review candidate locally (NO RELEASE)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          lines = Path('.github/workflows/release.yml').read_text().splitlines()
+          steps = (
+              'Restore plugin source',
+              'Patch plugin to current release',
+              'Stage reviewed affiliate features exactly as validated',
+              'Promote reviewed version markers',
+          )
+          for name in steps:
+              marker = '      - name: ' + name
+              indexes = [i for i, line in enumerate(lines) if line == marker]
+              assert len(indexes) == 1, name
+              i = indexes[0] + 1
+              assert lines[i] == '        run: |', (name, lines[i])
+              i += 1
+              script = []
+              while i < len(lines):
+                  line = lines[i]
+                  if line and not line.startswith('          '):
+                      break
+                  script.append(line[10:] if line else '')
+                  i += 1
+              assert script, name
+              subprocess.run(['bash', '-euo', 'pipefail', '-c',
+                              '\n'.join(script) + '\n'], check=True)
+              print('PASS: reconstructed step:', name)
+          PY
+      - name: Apply staged patch only in ephemeral CI checkout
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          grep -q 'Version: 0.19.21' survival40-auto/survival40-auto.php
+          cp survival40-auto/survival40-auto.php /tmp/s40-current-release.php
+          python3 .github/scripts/patch_planner_failclosed_next.py
+          php -l survival40-auto/survival40-auto.php
+          python3 - <<'PY'
+          from pathlib import Path
+          import difflib
+          before=Path('/tmp/s40-current-release.php').read_text()
+          after=Path('survival40-auto/survival40-auto.php').read_text()
+          assert "s40_plan_unavailable" not in before
+          assert "s40_plan_unavailable" in after
+          assert "実践編" not in after[after.index("s40_plan_unavailable"):after.index("s40_plan_unavailable")+500]
+          assert ' * Version: 0.19.21' in after
+          assert "const VERSION = '0.19.21';" in after
+          delta=''.join(difflib.unified_diff(before.splitlines(keepends=True),after.splitlines(keepends=True)))
+          assert len(delta)<5000, 'Unexpectedly wide patch'
+          assert delta.count('@@')==2, 'Expected exactly one diff hunk'
+          print('PASS: only planner fallback block changed; v0.19.21 version markers preserved')
+          PY
+      - name: Confirm release and WordPress were not modified
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          test -z "$(git status --short --untracked-files=no)"
