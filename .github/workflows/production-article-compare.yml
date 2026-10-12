@@ -1,0 +1,56 @@
+name: Survival40 Pre/Post Upgrade Article Integrity (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'production_preflight/**'
+      - '.github/workflows/production-article-compare.yml'
+  workflow_dispatch:
+    inputs:
+      baseline_run_id:
+        description: 'Previously captured baseline GitHub Actions run ID'
+        required: true
+        default: '38210094227'
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate comparison semantics with fixed mock article records
+        run: python3 -m unittest discover -s production_preflight -p 'test_*.py' -v
+  compare-production-public:
+    if: github.event_name == 'workflow_dispatch'
+    needs: offline-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASELINE_RUN_ID: ${{ inputs.baseline_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Fetch existing public baseline from GitHub Actions artifact
+        run: |
+          set -euo pipefail
+          [[ "$BASELINE_RUN_ID" =~ ^[0-9]{6,20}$ ]] || exit 1
+          mkdir -p /tmp/s40-before
+          gh run download "$BASELINE_RUN_ID" --name "survival40-preflight-$BASELINE_RUN_ID" --dir /tmp/s40-before
+          test -s /tmp/s40-before/baseline.json
+      - name: Compare public articles against baseline (zero WP writes)
+        run: |
+          python3 -m production_preflight.verify --baseline /tmp/s40-before/baseline.json
+      - name: Store comparison evidence even when differences are detected
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-public-post-integrity-${{ github.run_id }}
+          path: postcheck-output/
+          if-no-files-found: ignore
+          retention-days: 30
