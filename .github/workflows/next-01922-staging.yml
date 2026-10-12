@@ -1,0 +1,153 @@
+name: Survival40 0.19.22 RC — Isolated WordPress (NO RELEASE)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/next-01922-staging.yml'
+      - '.github/scripts/test_next_wp_rest_smoke.php'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/next-01922-staging.yml'
+      - '.github/scripts/test_next_wp_rest_smoke.php'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reconstruct reviewed 0.19.21 plugin
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          lines=Path('.github/workflows/release.yml').read_text().splitlines()
+          steps=('Restore plugin source','Patch plugin to current release',
+                 'Stage reviewed affiliate features exactly as validated',
+                 'Promote reviewed version markers')
+          for name in steps:
+              marker='      - name: '+name
+              assert lines.count(marker)==1, name
+              pos=lines.index(marker)+1
+              assert lines[pos]=='        run: |'
+              script=[]
+              for line in lines[pos+1:]:
+                  if line and not line.startswith('          '): break
+                  script.append(line[10:] if line else '')
+              subprocess.run(['bash','-euo','pipefail','-c','\n'.join(script)+'\n'],
+                             check=True)
+              print('PASS: reconstructed',name)
+          PY
+      - name: Apply future patches and isolated version markers
+        run: |
+          python3 .github/scripts/patch_planner_failclosed_next.py
+          python3 .github/scripts/patch_editorial_intake_next.py
+          python3 .github/scripts/patch_editorial_consumer_next.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('survival40-auto/survival40-auto.php')
+          code=p.read_text(encoding='utf-8')
+          replacements=[
+              (' * Version: 0.19.21',' * Version: 0.19.22'),
+              ("const VERSION = '0.19.21';","const VERSION = '0.19.22';"),
+              ('Survival40 Auto v0.19.21</h1>','Survival40 Auto v0.19.22</h1>'),
+          ]
+          for old,new in replacements:
+              assert code.count(old)==1, old
+              code=code.replace(old,new,1)
+          assert 's40_plan_unavailable' in code
+          assert 's40_editorial_queue_claim' in code
+          assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in code
+          p.write_text(code,encoding='utf-8')
+          PY
+          php -l survival40-auto/survival40-auto.php
+          php .github/scripts/test_editorial_consumer_next.php
+      - name: Assemble Shiori assets and exact candidate ZIP
+        run: |
+          set -euo pipefail
+          mkdir -p survival40-auto/assets/navigator
+          for name in normal explain caution summary; do
+            base64 -d ".github/assets/navigator/$name.webp.b64" > "survival40-auto/assets/navigator/$name.webp"
+            test -s "survival40-auto/assets/navigator/$name.webp"
+          done
+          mkdir -p dist /tmp/s40-next-package/survival40-auto/assets/navigator
+          cp survival40-auto/survival40-auto.php /tmp/s40-next-package/survival40-auto/
+          cp survival40-auto/assets/navigator/*.webp /tmp/s40-next-package/survival40-auto/assets/navigator/
+          (cd /tmp/s40-next-package && zip -qr "$GITHUB_WORKSPACE/dist/survival40-auto-0.19.22-rc.zip" survival40-auto)
+          unzip -tq dist/survival40-auto-0.19.22-rc.zip
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('dist/survival40-auto-0.19.22-rc.zip') as z:
+              expected={'survival40-auto/','survival40-auto/assets/',
+                        'survival40-auto/assets/navigator/',
+                        'survival40-auto/survival40-auto.php'}
+              expected.update('survival40-auto/assets/navigator/'+n+'.webp'
+                              for n in ('normal','explain','caution','summary'))
+              assert set(z.namelist())==expected, z.namelist()
+              php=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
+              assert ' * Version: 0.19.22' in php
+              assert "const VERSION = '0.19.22';" in php
+          print('PASS: exact candidate files and version')
+          PY
+          sha256sum dist/survival40-auto-0.19.22-rc.zip > dist/SHA256SUMS
+      - name: Install isolated WP-CLI / SQLite WordPress, never live site
+        run: |
+          set -euo pipefail
+          curl -fsSL https://wordpress.org/latest.tar.gz -o /tmp/s40-wp.tar.gz
+          mkdir -p /tmp/s40-wp
+          tar -xzf /tmp/s40-wp.tar.gz -C /tmp/s40-wp --strip-components=1
+          curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/s40-wp-cli.phar
+          mkdir -p /tmp/s40-wp/wp-content/plugins
+          curl -fsSL https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip -o /tmp/s40-sqlite.zip
+          unzip -q /tmp/s40-sqlite.zip -d /tmp/s40-wp/wp-content/plugins
+          cp /tmp/s40-wp/wp-content/plugins/sqlite-database-integration/db.copy /tmp/s40-wp/wp-content/db.php
+          cat > /tmp/s40-wp/wp-config.php <<'PHP'
+          <?php
+          define('DB_NAME','s40_isolated_test');
+          define('DB_USER','unused');
+          define('DB_PASSWORD','unused');
+          define('DB_HOST','localhost');
+          define('DB_CHARSET','utf8mb4');
+          define('DB_COLLATE','');
+          define('AUTH_KEY','test');
+          define('SECURE_AUTH_KEY','test');
+          define('LOGGED_IN_KEY','test');
+          define('NONCE_KEY','test');
+          define('AUTH_SALT','test');
+          define('SECURE_AUTH_SALT','test');
+          define('LOGGED_IN_SALT','test');
+          define('NONCE_SALT','test');
+          define('WP_DEBUG',true);
+          define('DISABLE_WP_CRON',true);
+          define('AUTOMATIC_UPDATER_DISABLED',true);
+          define('WP_AUTO_UPDATE_CORE',false);
+          $table_prefix='wp_';
+          if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
+          require_once ABSPATH . 'wp-settings.php';
+          PHP
+          mkdir -p /tmp/s40-wp/wp-content/plugins/survival40-auto/assets/navigator
+          cp survival40-auto/survival40-auto.php /tmp/s40-wp/wp-content/plugins/survival40-auto/
+          cp survival40-auto/assets/navigator/*.webp /tmp/s40-wp/wp-content/plugins/survival40-auto/assets/navigator/
+          cd /tmp/s40-wp
+          php /tmp/s40-wp-cli.phar core install --url=http://localhost --title="S40 isolated" --admin_user=runner --admin_password=local-test-only --admin_email=runner@example.test --skip-email --allow-root
+          php /tmp/s40-wp-cli.phar plugin activate sqlite-database-integration --allow-root
+          php /tmp/s40-wp-cli.phar plugin activate survival40-auto --allow-root
+          php /tmp/s40-wp-cli.phar plugin is-active survival40-auto --allow-root
+      - name: Exercise real isolated WordPress REST permission and queue
+        run: |
+          cd /tmp/s40-wp
+          php /tmp/s40-wp-cli.phar eval-file "$GITHUB_WORKSPACE/.github/scripts/test_next_wp_rest_smoke.php" --allow-root
+      - name: Confirm no published release or main version pointer changed
+        run: |
+          test "$(cat version.txt)" = '0.19.20'
+          test -z "$(git diff -- .github/workflows/release.yml version.txt)"
+      - name: Upload staging-only ZIP and SHA256 for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-0.19.22-isolated-RC
+          path: dist/
+          retention-days: 14
