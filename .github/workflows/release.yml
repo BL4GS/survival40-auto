@@ -181,6 +181,12 @@ jobs:
           test "$ASSET_SIZE" -gt 10000
           echo "Uploaded release asset confirmed: ID=$ASSET_ID size=$ASSET_SIZE"
 
+          # Verify the downloadable asset is byte-for-byte the tested build.
+          mkdir -p "$RUNNER_TEMP/s40-uploaded-release"
+          gh release download latest --pattern 'survival40-auto.zip' \
+            --dir "$RUNNER_TEMP/s40-uploaded-release" --clobber
+          cmp dist/survival40-auto.zip "$RUNNER_TEMP/s40-uploaded-release/survival40-auto.zip"
+
           # The plugin compares raw.githubusercontent.com/main/version.txt
           # against its installed version; the previous workflow forgot to
           # advance this file. Use a contents-API SHA precondition so concurrent
