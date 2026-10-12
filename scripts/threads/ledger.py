@@ -33,6 +33,9 @@ class GithubLedger:
         article = re.fullmatch(r"article-([1-9][0-9]{0,17})", key)
         if article:
             return f"threads-ledger/articles/{key}.json"
+        if key == "test-20261013-v1":
+            # Reserved once, forever, for the single explicitly approved test.
+            return "threads-ledger/tests/test-20261013-v1.json"
         match = re.fullmatch(r"(20[0-9]{2})-([01][0-9])-([0-3][0-9])-(morning|evening)", key)
         if not match:
             raise ValueError("Invalid date-slot or article id")
