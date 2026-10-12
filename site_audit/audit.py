@@ -42,7 +42,7 @@ class StrictRedirects(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def public_get(url, max_bytes=MAX_RESPONSE_BYTES):
+def public_get(url, max_bytes=MAX_RESPONSE_BYTES, head_only=False):
     target = urllib.parse.urlsplit(url)
     if target.scheme != "https" or target.netloc not in (
         "survival40.com", "www.survival40.com"
@@ -53,8 +53,9 @@ def public_get(url, max_bytes=MAX_RESPONSE_BYTES):
     })
     try:
         with urllib.request.build_opener(StrictRedirects()).open(request, timeout=18) as response:
-            data = response.read(max_bytes + 1)
-            if len(data) > max_bytes:
+            # Page probes only need the HTTP status, not an entire large HTML page.
+            data = response.read(1024 if head_only else max_bytes + 1)
+            if not head_only and len(data) > max_bytes:
                 raise AuditSourceError("Site response exceeds size limit")
             return response.status, dict(response.headers.items()), data
     except urllib.error.HTTPError as exc:
@@ -243,7 +244,7 @@ def probe_public_pages(posts):
     results = []
     for url in urls:
         try:
-            status, _, _ = public_get(url, max_bytes=120_000)
+            status, _, _ = public_get(url, head_only=True)
             outcome = "ok" if status == 200 else ("blocked" if status in (401, 403, 429) else "error")
             results.append({"url": url, "status": status, "outcome": outcome})
         except AuditSourceError as error:
