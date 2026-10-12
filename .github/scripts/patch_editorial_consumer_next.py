@@ -14,7 +14,7 @@ PLAN_LINE = "            $plan = $this->plan_next_article();"
 RESULT_LINE = "            $result = $this->generate_planned_article($plan);"
 DONE_LINE = "            $done[] = $result;"
 STATUS_LINE = "if (empty($p['ymyl']) && empty($warnings) && $research_ok && $review_ok && !empty($s['auto_publish_general'])) $status = 'publish';"
-CATEGORY_LINE = "        $cat = $this->category_id($p['category']);"
+CATEGORY_LINE = "        $cat = $this->category_id($p['category']);\n        $source_meta = [];"
 
 METHODS = r'''    // Future inbox consumer: claim at most one unresearched plan per cycle.
     // Existing WordPress planning remains the fallback when inbox is empty.
