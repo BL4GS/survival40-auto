@@ -104,7 +104,7 @@ def select_persona_angle(today, slot, angles):
 
 def select_shape(today, slot):
     """Rotate conversational formats; small fictional daily incidents are allowed."""
-    options = ("short_observation", "small_detail", "quiet_remark", "light_question")
+    options = ("short_observation", "small_detail", "quiet_remark", "conversation_opening")
     digest = hashlib.sha256(f"style:{today.isoformat()}:{slot}".encode()).digest()
     return options[int.from_bytes(digest[:4], "big") % len(options)]
 
@@ -144,6 +144,7 @@ def build_prompt(now, slot, config):
         "persona_angle": persona_angle,
         "character": config["character"],
         "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな人柄や一面が見えるかを最優先する",
+        "conversation_policy": config["editorial_modes"]["everyday_chat"]["conversation_policy"],
         "voice": config["voice"], "tone_mode": tone_mode,
         "topic_guardrail": (
             "これは少数枠だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
@@ -163,7 +164,7 @@ def build_prompt(now, slot, config):
             "short_observation": "身近なものを一つ取り上げ、そのことだけを素直に述べる。教訓なし。",
             "small_detail": "栞さん自身のちょっとした行動や失敗を一つ描いてよい。説明しすぎず、話題を逸らさない。",
             "quiet_remark": "一文〜二文で十分。言いたいことが薄ければ飾らず短く終える。",
-            "light_question": "実際に聞いてみたくなる平易な疑問だけを一つ。無理に作らない。"
+            "conversation_opening": "相手の経験を自然に聞きたくなるなら、その話題について短く問いかけてよい。質問は必須ではなく、独り言で終えてもよい。"
         }[shape],
         "editorial_priority": [
             "これは毎日の雑談下書き。役立つ情報を教える記事紹介とは役割が違う",
@@ -176,7 +177,9 @@ def build_prompt(now, slot, config):
             "話題に意味や価値を持たせる必要はない。どうでもいい小さな話で終えてもよい",
             "事実を教える、改善策を勧める、自己啓発の結論を出すことを目的にしない",
             "短く素直に話せるなら一文で止める。説明を足して文字数を稼がない",
-            "質問は本当に話しかけたいときだけ。毎回質問して読者を誘導しない",
+            "話題について本当に他の人にも聞きたいときは質問で終えてよい。読者が自分の経験を気軽に返信できる問いは歓迎",
+            "質問は毎回不要。独り言や小さな失敗談はそのまま終えてよい。会話を無理やり取りにいかない",
+            "質問するなら直前の出来事と自然につながること。無関係な質問や反応稼ぎの二択、連続した問いかけを付け足さない",
             "栞さんは物語上の人物。ありそうな日常の小さな体験は一人称で創作してよい。出来事を語ることで人柄を感じさせる",
             "毎回体験談にする必要はない。感想だけ、疑問だけ、ちょっと情けない失敗だけでもよい",
             "人物の継続設定になる仕事・家族・住居・年齢・交友関係を勝手に作らない",
@@ -195,7 +198,7 @@ def build_prompt(now, slot, config):
             "身近な家事・持ち物・動作の小さな一人称エピソードは創作してよい。ただし本人の職歴、家族構成、実在の商品購入歴は勝手に設定しない",
             "ブランド商品の使用レビュー・アフィリエイト上の体験談・美容や健康の効果など、事実に基づくべき証言は捏造しない",
             "健康効果を断定しない。これは通常の雑談であり、記事紹介や商品宣伝を混ぜない",
-            "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
+            "努力・癒し・自分磨きなどの説教、無理な励まし、義務的な問いかけやまとめを避ける",
             "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章",
             "出来事と感想が一読で分かり、栞さんの性格が少し伝わるかを優先。短ければ短いままでよい"
         ]
@@ -259,8 +262,12 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             "Do not imitate previous sample posts or repeat their sentence structures. "
             "Stay tightly within the assigned theme and topic group; avoid "
             "unrelated entertainment, news, politics, or broad lifestyle chatter. "
-            "It is fine to stop after a single observation; do not force a moral, "
-            "summary, instruction, question, or call to action. Avoid corporate or "
+            "A genuine short question about the just-described experience can "
+            "invite friendly replies; allow that when it flows naturally, but "
+            "do not end every post with a question or tack on generic engagement bait. "
+            "Many posts should simply stop with an observation, feeling, or mishap. "
+            "Do not force a moral, summary, instruction, or call to action. "
+            "Avoid corporate or "
             "AI-assistant expressions and inspirational clichés. "
             "Shiori is a fictional persona written as an ordinary person. "
             "Allow modest fictional first-person everyday anecdotes, funny failed "
