@@ -29,6 +29,7 @@ on:
 
 permissions:
   contents: write
+  actions: read  # fetch protected pre-upgrade public article baseline
 
 concurrency:
   group: survival40-release
@@ -197,6 +198,33 @@ jobs:
           path: rollback/
           retention-days: 90
           if-no-files-found: error
+
+      - name: Refuse release if existing public articles changed (NO WordPress writes)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Archived baseline intentionally predates this plugin release;
+          # later legitimate article edits must be reviewed and re-baselined.
+          BEFORE_RUN=38210094227
+          mkdir -p "$RUNNER_TEMP/s40-before"
+          gh run download "$BEFORE_RUN" \
+            --name "survival40-preflight-$BEFORE_RUN" \
+            --dir "$RUNNER_TEMP/s40-before"
+          test -s "$RUNNER_TEMP/s40-before/baseline.json"
+          python3 -m production_preflight.verify \
+            --baseline "$RUNNER_TEMP/s40-before/baseline.json" \
+            --output "$RUNNER_TEMP/s40-public-article-release-gate.json"
+          python3 - "$RUNNER_TEMP/s40-public-article-release-gate.json" <<'PY'
+          import json,sys
+          f=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert f['unchanged'], 'Public article fingerprints changed'
+          assert f['before_count']==23 and f['after_count']==23, 'Unexpected public count'
+          print('PASS: 23 public articles unchanged before any release publication')
+          PY
+          # This does not attest to admin-only drafts, real Web/DB restoration,
+          # ad switches, private settings or an operator's live monitoring.
 
       - name: Publish only after explicit manual approval
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
