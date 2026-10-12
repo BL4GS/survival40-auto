@@ -78,3 +78,10 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - Live HTML contains **no homepage meta description**, although AIOSEO 5.0.3 is active. A separate accessibility issue flags color contrast; no styles changed. Improvement tracked in https://github.com/BL4GS/survival40-auto/issues/19 .
 - Static WordPress homepage is page **471**. The suggested meta description must be reviewed and set through AIOSEO when convenient, not injected during the production upgrade.
 - Inspection used public read-only HTML and PageSpeed API only; no site data changed.
+
+## Exact 0.19.21 isolated upgrade/revert passed (2026-10-12)
+- GitHub Actions https://github.com/BL4GS/survival40-auto/actions/runs/38216906095 succeeded. PR #20 https://github.com/BL4GS/survival40-auto/pull/20 was merged into main.
+- Reconstructed the exact staged 0.19.21 candidate, installed the published 0.19.20 ZIP into disposable WordPress+SQLite, and generated **synthetic** article inventory matching live counts (23 published / 16 draft) with automation/publication OFF.
+- Installed v0.19.21 using WP-CLI, verified plugin version/active state and article ID, title, status, body hashes and selected safety settings unchanged; reinstalled public v0.19.20 ZIP and independently verified the same counts/options again.
+- This is **NOT a verified ConoHa Web/DB restore**, nor a live WordPress automatic-updater test. No production Release or version.txt was changed.
+- New operational recovery playbook, grounded in ConoHa support docs: [docs/conoha-production-recovery-playbook.md](conoha-production-recovery-playbook.md). Prioritize plugin-only recovery; do not casually restore DB for a plugin-only error.
