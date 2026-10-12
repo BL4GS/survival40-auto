@@ -143,7 +143,7 @@ def build_prompt(now, slot, config):
         "slot": slot, "theme": theme, "shape": shape, "topic_group": topic_group,
         "persona_angle": persona_angle,
         "character": config["character"],
-        "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな一面が見えるかを最優先する",
+        "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな人柄や一面が見えるかを最優先する",
         "voice": config["voice"], "tone_mode": tone_mode,
         "topic_guardrail": (
             "これは少数枠だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
