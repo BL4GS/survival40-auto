@@ -45,6 +45,7 @@ def main():
         "mode": "draft_preview_only",
         "posting_enabled": False,
         "selection": "stratified: 6 polite and 2 relaxed-allowed slots for comparison; not actual scheduling frequency",
+        "review_criteria": config["editorial_review"]["questions"],
         "examples": [],
     }
     for day, slot, tone_mode in examples:
