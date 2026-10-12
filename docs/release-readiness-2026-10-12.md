@@ -13,7 +13,7 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 
 ## Still required before a GitHub Release update
 1. **Partially completed:** WordPress confirms plugin v0.19.20, active and plugin auto-update enabled. Recheck pending-update status immediately before any actual release.
-2. WP Admin → Posts: record published/draft/pending/scheduled article counts. Public REST cannot read nonpublic posts.
+2. **Confirmed 2026-10-12 WordPress post list:** All (excluding trash) **39**, Published **23**, Draft **16**, Trash **56**. The status links displayed no separate Scheduled/Pending categories; this does not independently prove that no such statuses exist. Capture the totals again immediately after the first plugin update.
 3. **Partially completed:** article automation is OFF. Record all affiliate/ad controls from the rest of the Survival40 Auto settings screen without changing them.
 4. Confirm the ConoHa backup covers **survival40.com**, both site files and DB; preserve an independent backup/rollback copy. Confirm the concrete restoration procedure with ConoHa or in a staging clone; don't restore production just to test.
 5. Confirm the previous known-good `survival40-auto.zip` and rollback method are accessible.
@@ -40,6 +40,6 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - No restoration was executed by ChatGPT. The safest default on a plugin-only failure is to restore the **prior plugin folder** from the archived v0.19.20 ZIP, rather than overwrite the whole WordPress database and lose newer articles or configuration.
 
 ## Still open
-- Record WordPress Posts counts for Published/Draft/Scheduled/Pending, and current advertising switches in plugin settings.
+- **Observed posts: 39 current (23 published, 16 draft), 56 trashed.** Confirm pending/scheduled status in full Admin if applicable. Still need current advertising switches in plugin settings.
 - Capture a reversible site-level rollback approach suitable for the actual ConoHa account; an **off-host** DB and wp-content backup or isolated restore rehearsal is not yet verified.
 - Do not publish v0.19.21 or update version.txt until final production readiness has been validated and monitoring/recovery access is available.
