@@ -37,3 +37,11 @@
 - 過去記事・栞さんの表示や広告のOFF設定の維持を確認できない。
 
 **重要:** 本資料は最短化の実装・判断順序。自動的な本番更新・広告ON・本番復元の許可書ではない。
+
+
+## Unattended engineering continuity (2026-10-12 night)
+- **GitHub Actions nightly AI review** remains scheduled at 03:20 JST (`.github/workflows/nightly-ai-review.yml`). Verified that Oct 11/Oct 12 scheduled actions had reported "success" while the validate/draft-PR stages were actually **skipped** because legacy `ai/nightly-candidate` branch existed.
+- PR #28 https://github.com/BL4GS/survival40-auto/pull/28 removes the indefinite stale-branch deadlock: Gemini can create an **advisory artifact every night** even while a proposal is pending; new draft PRs are limited to one actually open nightly PR, with unique per-run branches. Offline no-deadlock regression CI passed. **No auto-merge or release.**
+- Legacy low-value, AI-generated draft PR #1 was reviewed and closed **without merging**. It was only a shallow source-string test; no runtime behavior was changed by closing it.
+- A **separate scheduled ChatGPT automation** was enabled to attempt one GitHub-only development step daily at about **04:30 JST**, starting 2026-10-13. It can review outstanding PRs, examine CI and create/merge appropriate isolated tests/docs if integrations remain available. This has **not executed yet**; do not treat its intended future work as a completed change. It is subject to scheduling and tool permissions.
+- Existing WordPress self-update mechanism and scheduled editorial proposals are distinct from these background engineering tasks. **Production plugin release 0.19.21 remains blocked** pending independent restored-DB contents verification and staffed live monitoring. The assistant automation and Gemini nightly workflow are explicitly forbidden from publishing a new ZIP/version, enabling ads or article autopublish, changing WordPress or ConoHa DB, or bypassing safety release attestations.
