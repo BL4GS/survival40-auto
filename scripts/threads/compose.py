@@ -36,14 +36,24 @@ def select_theme(today, slot, themes):
     index = int(hashlib.sha256(seed).hexdigest()[:8], 16) % len(themes)
     return themes[index]
 
-def select_editorial_topic(today, slot, groups):
-    """Keep Survival40 focused: 13 core/adjacent posts and <=1 small aside per week.
+def select_editorial_topic(today, slot, groups, weekly_limits):
+    """Allocate exactly one bounded small-talk slot per 14 morning/evening drafts.
 
-    Weekly slots are deterministically shuffled so the aside has no fixed
-    weekday or time. Never expand beyond the explicit category allowlists.
+    The weekly category sequence is shuffled deterministically, so small talk
+    never becomes a fixed weekday gimmick. Topics come only from explicit
+    editorial allowlists, not open-ended subject discovery.
     """
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
+    categories = ("grooming", "movement", "daily_routine", "small_talk")
+    if (not isinstance(weekly_limits, dict)
+            or set(weekly_limits) != set(categories)
+            or set(groups) != set(categories)
+            or any(type(weekly_limits.get(k)) is not int or weekly_limits[k] < 0
+                   for k in categories)
+            or sum(weekly_limits.values()) != 14
+            or weekly_limits["small_talk"] > 1):
+        raise ValueError("Invalid or overbroad editorial topic quota")
     week = today.isocalendar()
     weekly_order = sorted(
         range(14),
@@ -53,17 +63,22 @@ def select_editorial_topic(today, slot, groups):
     )
     slot_number = today.weekday() * 2 + (0 if slot == "morning" else 1)
     rank = weekly_order.index(slot_number)
-    quotas = (("grooming", 8), ("movement", 3), ("daily_routine", 2), ("small_talk", 1))
-    for group, count in quotas:
+    for group in categories:
+        count = weekly_limits[group]
         if rank < count:
             break
         rank -= count
-    allowed = groups.get(group)
-    if not isinstance(allowed, list) or not allowed or not all(isinstance(x, str) for x in allowed):
+    allowed = groups[group]
+    if not isinstance(allowed, list) or not allowed or not all(
+            isinstance(x, str) and x.strip() for x in allowed):
         raise ValueError("Invalid editorial topic group")
-    # Avoid starting morning drafts on a night-specific subject and vice versa.
-    eligible = [x for x in allowed if (slot == "morning" or "朝" not in x)
-                and (slot == "evening" or "夜" not in x)]
+    morning_only = ("朝", "外出前")
+    evening_only = ("夜", "帰宅後", "寝る前")
+    eligible = [
+        x for x in allowed
+        if slot != "evening" or not any(k in x for k in morning_only)
+        if slot != "morning" or not any(k in x for k in evening_only)
+    ]
     if not eligible:
         raise ValueError("No topics eligible for selected slot")
     return {"topic_group": group, "theme": select_theme(today, slot, eligible)}
@@ -93,7 +108,10 @@ def build_prompt(now, slot, config):
     """One canonical prompt for daily drafts and evaluation previews."""
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
-    editorial = select_editorial_topic(now.date(), slot, config["topic_groups"])
+    editorial = select_editorial_topic(
+        now.date(), slot, config["topic_groups"],
+        config["editorial_limits"]["per_14_weekly_slots"]
+    )
     theme, topic_group = editorial["theme"], editorial["topic_group"]
     shape = select_shape(now.date(), slot)
     tone_mode = select_tone_mode(now.date(), slot)
