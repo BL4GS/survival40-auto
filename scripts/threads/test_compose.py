@@ -114,6 +114,25 @@ class ThreadsDraftTests(unittest.TestCase):
                 else:
                     self.assertIn("必要はない", prompt["tone_mode_instructions"])
 
+    def test_clarity_examples_are_embedded_in_daily_prompt(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        data = json.loads(build_prompt(self.at(8), "morning", config)["prompt"])
+        self.assertEqual(len(data["approved_clarity_examples"]), 3)
+        self.assertIn("一投稿一話題", " ".join(data["quality_notes"]))
+        self.assertIn("論理的なつながり", " ".join(data["quality_notes"]))
+        self.assertIn("比喩や抽象語", " ".join(data["quality_notes"]))
+        self.assertIn("40〜100字", " ".join(data["guidelines"]))
+
+    def test_known_unintelligible_stock_phrases_rejected(self):
+        for sample in (
+            "毎朝の献立を決めておくと朝の空気は少しだけ静かになります。",
+            "視界に入る情報量が変わって、少し落ち着いた気持ちになります。",
+            "机の上の小さな余白を見つけるのも大事かもしれませんね。",
+        ):
+            with self.subTest(sample=sample):
+                with self.assertRaises(ValueError):
+                    validate_post(sample, "morning", 300)
+
     def test_no_live_api_in_copy_generation(self):
         with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
             class Response:
