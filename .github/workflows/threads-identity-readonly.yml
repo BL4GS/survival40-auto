@@ -1,0 +1,65 @@
+name: Threads identity check (read-only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-account:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Resolve authorized Threads user ID (GET only)
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("THREADS_ACCESS_TOKEN", "")
+          if len(token.strip()) < 12:
+              sys.exit("THREADS_ACCESS_TOKEN is missing; nothing was sent.")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  raise RuntimeError("Unexpected Threads API redirect; stopped.")
+
+          request = urllib.request.Request(
+              "https://graph.threads.net/me?fields=id%2Cusername",
+              headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+              method="GET",
+          )
+          try:
+              with urllib.request.build_opener(NoRedirect()).open(request, timeout=20) as res:
+                  if res.status != 200:
+                      sys.exit("Threads profile verification did not return HTTP 200.")
+                  profile = json.loads(res.read(8192).decode("utf-8"))
+          except urllib.error.HTTPError as err:
+              sys.exit("Threads API refused identity request (HTTP %s). Check token and permissions." % err.code)
+          except (urllib.error.URLError, TimeoutError, ValueError, UnicodeError, RuntimeError):
+              sys.exit("Threads identity lookup failed. No post was created.")
+
+          if not isinstance(profile, dict):
+              sys.exit("Unexpected Threads identity response.")
+          user_id = str(profile.get("id", ""))
+          username = str(profile.get("username", "")).lstrip("@").casefold()
+          if not re.fullmatch(r"[0-9]{1,30}", user_id):
+              sys.exit("Threads user ID not returned; check threads_basic scope.")
+          if username != "survival40_jp":
+              sys.exit("ACCOUNT MISMATCH: Token is not for @survival40_jp. Nothing was posted.")
+
+          print("Verified Threads account: @survival40_jp")
+          print("THREADS_USER_ID: " + user_id)
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as fh:
+                  fh.write("### Threads identity check (GET only)\n\n")
+                  fh.write("Verified account: **@survival40_jp**\n\n")
+                  fh.write("Copy this number to GitHub Actions secret `THREADS_USER_ID`: **" + user_id + "**\n\n")
+                  fh.write("No Threads post was created. Access token was not printed.\n")
+          PY
