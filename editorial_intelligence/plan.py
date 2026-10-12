@@ -39,7 +39,7 @@ def normalize_title(text):
     if not isinstance(text, str):
         return ""
     text = unicodedata.normalize("NFKC", text).casefold()
-    text = re.sub(r"(40代男性|40代から|40代|男性向け|メンズ)", "", text)
+    text = re.sub(r"(40代男性の?|40代からの?|40代の?|40代|男性向け|メンズ)", "", text)
     return re.sub(r"[^a-z0-9\u3040-\u30ff\u3400-\u9fff]", "", text)
 
 
