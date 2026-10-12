@@ -11,7 +11,6 @@ import re
 import sys
 import unicodedata
 from editorial_intelligence.plan import is_similar
-from site_audit.audit import fetch_posts, plain
 
 BASE = pathlib.Path(__file__).resolve().parents[1]
 SOURCE = BASE / "editorial-output" / "topics.json"
@@ -173,11 +172,14 @@ def build_handoff(report, published_titles):
 
 def main():
     report = json.loads(SOURCE.read_text(encoding="utf-8"))
-    posts, _ = fetch_posts()
-    titles = [plain(p.get("title", {}).get("rendered", ""))
-              for p in posts if isinstance(p, dict) and p.get("status") == "publish"]
-    if not titles:
-        raise HandoffError("No current published titles; fail closed")
+    # The earlier Gemini topic step already fetched these PUBLIC titles.
+    # Avoid another REST hit: unnecessary repeated requests can trigger host
+    # capacity/rate limits (HTTP 507 observed in PR CI on 2026-10-12).
+    titles = report.get("published_titles_snapshot")
+    if (not isinstance(titles, list) or not titles or
+        not all(isinstance(t, str) and 4 <= len(t) <= 115 for t in titles) or
+        report.get("existing_articles_count") != len(titles)):
+        raise HandoffError("Missing or inconsistent published article snapshot; no handoff")
     handoff = build_handoff(report, titles)
     DEST.parent.mkdir(parents=True, exist_ok=True)
     DEST.write_text(json.dumps(handoff, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
