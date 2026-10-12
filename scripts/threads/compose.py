@@ -36,6 +36,39 @@ def select_theme(today, slot, themes):
     index = int(hashlib.sha256(seed).hexdigest()[:8], 16) % len(themes)
     return themes[index]
 
+def select_editorial_topic(today, slot, groups):
+    """Keep Survival40 focused: 13 core/adjacent posts and <=1 small aside per week.
+
+    Weekly slots are deterministically shuffled so the aside has no fixed
+    weekday or time. Never expand beyond the explicit category allowlists.
+    """
+    if slot not in ("morning", "evening"):
+        raise ValueError("Unknown posting slot")
+    week = today.isocalendar()
+    weekly_order = sorted(
+        range(14),
+        key=lambda i: hashlib.sha256(
+            f"editorial-v1:{week.year}:{week.week}:{i}".encode()
+        ).digest()
+    )
+    slot_number = today.weekday() * 2 + (0 if slot == "morning" else 1)
+    rank = weekly_order.index(slot_number)
+    quotas = (("grooming", 8), ("movement", 3), ("daily_routine", 2), ("small_talk", 1))
+    for group, count in quotas:
+        if rank < count:
+            break
+        rank -= count
+    allowed = groups.get(group)
+    if not isinstance(allowed, list) or not allowed or not all(isinstance(x, str) for x in allowed):
+        raise ValueError("Invalid editorial topic group")
+    # Avoid starting morning drafts on a night-specific subject and vice versa.
+    eligible = [x for x in allowed if (slot == "morning" or "朝" not in x)
+                and (slot == "evening" or "夜" not in x)]
+    if not eligible:
+        raise ValueError("No topics eligible for selected slot")
+    return {"topic_group": group, "theme": select_theme(today, slot, eligible)}
+
+
 def select_shape(today, slot):
     """Rotate editorial formats without adding fake personal anecdotes."""
     options = ("short_observation", "small_detail", "quiet_remark", "light_question")
@@ -60,14 +93,23 @@ def build_prompt(now, slot, config):
     """One canonical prompt for daily drafts and evaluation previews."""
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
-    theme = select_theme(now.date(), slot, config["themes"])
+    editorial = select_editorial_topic(now.date(), slot, config["topic_groups"])
+    theme, topic_group = editorial["theme"], editorial["topic_group"]
     shape = select_shape(now.date(), slot)
     tone_mode = select_tone_mode(now.date(), slot)
     weekday = ("月", "火", "水", "木", "金", "土", "日")[now.weekday()]
     prompt = json.dumps({
         "date_jst": now.date().isoformat(), "weekday": weekday,
-        "slot": slot, "theme": theme, "shape": shape,
+        "slot": slot, "theme": theme, "shape": shape, "topic_group": topic_group,
         "voice": config["voice"], "tone_mode": tone_mode,
+        "topic_guardrail": (
+            "これは週に最大1回だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
+            "主題を変えて政治、芸能、ニュース、ゲーム、恋愛、ビジネス、買い物レビューなどへ広げない。"
+            "教訓や役立つ話に変換せず、軽い一言で終わって構いません。"
+            if topic_group == "small_talk" else
+            "Survival40の中心領域である身だしなみ、スキンケア、軽い運動、毎日の基本習慣から逸れない。"
+            "雑談に脱線せず、設定された具体的なテーマに留まる。"
+        ),
         "tone_mode_instructions": (
             "自然な『です・ます』口調を維持する。砕けた語尾、笑、くだけたツッコミを意図的に挿入しない。"
             if tone_mode == "polite" else
@@ -88,6 +130,8 @@ def build_prompt(now, slot, config):
         "quality_notes": [
             "上の3つは読者が分かりやすいと評価した文章。トーンと分かりやすさの参考であり、文章・語尾・構造をコピーしない",
             "具体的な対象が何か、どう感じたかが読みながらすぐ伝わる文章にする",
+            "普段は身だしなみ・生活習慣・軽い運動を主軸にする。レシートのような雑談は時々だけ",
+            "投稿の主題から別ジャンルへ拡張しない。余計な雑談や情報を足さない",
             "一投稿一話題。途中で無関係な連絡事項や心理分析に話を飛ばさない",
             "前後に論理的なつながりのない理由や結論を作らない。意味のない想像を追加しない",
             "特別な意味がない日用品の話を、深そうに見せる比喩や抽象語で飾らない",
@@ -111,7 +155,8 @@ def build_prompt(now, slot, config):
             "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
         ]
     }, ensure_ascii=False)
-    return {"prompt": prompt, "theme": theme, "shape": shape, "tone_mode": tone_mode}
+    return {"prompt": prompt, "theme": theme, "topic_group": topic_group,
+            "shape": shape, "tone_mode": tone_mode}
 
 
 def validate_post(text, slot, max_chars):
@@ -156,6 +201,8 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             "vague abstractions, decorative emotional interpretations, or awkward "
             "cause-and-effect. One topic per post, no invented logical leaps. "
             "Keep wording simple and relatively short. "
+            "Stay tightly within the assigned theme and topic group; avoid "
+            "unrelated entertainment, news, politics, or broad lifestyle chatter. "
             "It is fine to stop after a single observation; do not force a moral, "
             "summary, instruction, question, or call to action. Avoid corporate or "
             "AI-assistant expressions and inspirational clichés. "
@@ -202,12 +249,14 @@ def main():
     if not key:
         raise SystemExit("SKIP: Gemini secret unavailable; no generated post")
     instruction = build_prompt(now, slot, config)
-    theme, shape, tone_mode = instruction["theme"], instruction["shape"], instruction["tone_mode"]
+    theme, topic_group = instruction["theme"], instruction["topic_group"]
+    shape, tone_mode = instruction["shape"], instruction["tone_mode"]
     prompt = instruction["prompt"]
     post = validate_post(gemini_generate(prompt, key), slot, config["max_characters"])
     draft = {
         "id": f"{now.date().isoformat()}-{slot}", "date_jst": now.date().isoformat(),
-        "slot": slot, "account": config["account"], "theme": theme, "shape": shape,
+        "slot": slot, "account": config["account"], "theme": theme,
+        "topic_group": topic_group, "shape": shape,
         "tone_mode": tone_mode, "text": post, "publish": False, "status": "review_draft_only",
         "generated_at_jst": now.isoformat(timespec="seconds")
     }
