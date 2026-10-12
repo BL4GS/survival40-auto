@@ -141,6 +141,51 @@ jobs:
         run: |
           cd /tmp/s40-wp
           php /tmp/s40-wp-cli.phar eval-file "$GITHUB_WORKSPACE/.github/scripts/test_next_wp_rest_smoke.php" --allow-root
+      - name: Rehearse old-plugin rollback and reactivation in ISOLATED WordPress
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # This WordPress site is the temporary /tmp/s40-wp test instance.
+          # Do not connect to, copy from, or write to survival40.com.
+          cd /tmp/s40-wp
+          php /tmp/s40-wp-cli.phar post list --post_type=post --fields=ID,post_status,post_title --format=json --allow-root > /tmp/s40-posts-before.json
+          php /tmp/s40-wp-cli.phar option get s40_editorial_plan_queue_v1 --format=json --allow-root > /tmp/s40-plans-before.json
+          php /tmp/s40-wp-cli.phar plugin is-active survival40-auto --allow-root
+          test "$(php /tmp/s40-wp-cli.phar plugin get survival40-auto --field=version --allow-root)" = '0.19.22'
+
+          mkdir -p /tmp/s40-known-good
+          gh release view latest --json name --jq '.name' | grep -Fx 'Survival40 Auto v0.19.20'
+          gh release download latest --pattern survival40-auto.zip --dir /tmp/s40-known-good
+          unzip -tq /tmp/s40-known-good/survival40-auto.zip
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('/tmp/s40-known-good/survival40-auto.zip') as z:
+              code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
+              assert ' * Version: 0.19.20' in code
+              assert 'survival40-auto/assets/navigator/normal.webp' in z.namelist()
+          PY
+
+          # Validate a plugin-only rollback, not a global WordPress DB restore.
+          php /tmp/s40-wp-cli.phar plugin install /tmp/s40-known-good/survival40-auto.zip --force --activate --allow-root
+          php /tmp/s40-wp-cli.phar plugin is-active survival40-auto --allow-root
+          test "$(php /tmp/s40-wp-cli.phar plugin get survival40-auto --field=version --allow-root)" = '0.19.20'
+          php /tmp/s40-wp-cli.phar post list --post_type=post --fields=ID,post_status,post_title --format=json --allow-root > /tmp/s40-posts-after-rollback.json
+          php /tmp/s40-wp-cli.phar option get s40_editorial_plan_queue_v1 --format=json --allow-root > /tmp/s40-plans-after-rollback.json
+          cmp /tmp/s40-posts-before.json /tmp/s40-posts-after-rollback.json
+          cmp /tmp/s40-plans-before.json /tmp/s40-plans-after-rollback.json
+          echo 'PASS: isolated 0.19.22 -> 0.19.20 rollback, posts and editorial queue unchanged'
+
+          # Reapply the separate staging ZIP and prove the queue survives.
+          php /tmp/s40-wp-cli.phar plugin install "$GITHUB_WORKSPACE/dist/survival40-auto-0.19.22-rc.zip" --force --activate --allow-root
+          php /tmp/s40-wp-cli.phar plugin is-active survival40-auto --allow-root
+          test "$(php /tmp/s40-wp-cli.phar plugin get survival40-auto --field=version --allow-root)" = '0.19.22'
+          php /tmp/s40-wp-cli.phar post list --post_type=post --fields=ID,post_status,post_title --format=json --allow-root > /tmp/s40-posts-after-reapply.json
+          php /tmp/s40-wp-cli.phar option get s40_editorial_plan_queue_v1 --format=json --allow-root > /tmp/s40-plans-after-reapply.json
+          cmp /tmp/s40-posts-before.json /tmp/s40-posts-after-reapply.json
+          cmp /tmp/s40-plans-before.json /tmp/s40-plans-after-reapply.json
+          echo 'PASS: isolated reactivation preserved article records and plan inbox'
+
       - name: Confirm no published release or main version pointer changed
         run: |
           test "$(cat version.txt)" = '0.19.20'
