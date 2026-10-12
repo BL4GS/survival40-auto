@@ -5,8 +5,8 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from scripts.threads.compose import (
-    CONFIG, build_prompt, choose_slot, gemini_generate, select_shape,
-    select_theme, select_tone_mode, validate_post,
+    CONFIG, build_prompt, choose_slot, gemini_generate, select_editorial_topic,
+    select_shape, select_theme, select_tone_mode, validate_post,
 )
 
 
@@ -35,6 +35,64 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertTrue(shapes.issubset({
             "short_observation", "small_detail", "quiet_remark", "light_question"
         }))
+
+    def test_editorial_topic_mix_is_bounded_each_iso_week(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        limits = config["editorial_limits"]["per_14_weekly_slots"]
+        self.assertEqual(limits, {
+            "grooming": 8, "movement": 3,
+            "daily_routine": 2, "small_talk": 1,
+        })
+        monday = dt.date(2026, 10, 12)
+        for w in range(12):
+            week_start = monday + dt.timedelta(weeks=w)
+            counts = {key: 0 for key in limits}
+            for d in range(7):
+                day = week_start + dt.timedelta(days=d)
+                for slot in ("morning", "evening"):
+                    topic = select_editorial_topic(
+                        day, slot, config["topic_groups"], limits
+                    )
+                    counts[topic["topic_group"]] += 1
+                    self.assertIn(topic["theme"], config["topic_groups"][topic["topic_group"]])
+                    if slot == "morning":
+                        self.assertNotIn("寝る前", topic["theme"])
+                        self.assertNotIn("帰宅後", topic["theme"])
+                    else:
+                        self.assertNotIn("朝", topic["theme"])
+            self.assertEqual(counts, limits)
+        self.assertEqual(config["mode"], "draft_only")
+
+    def test_no_category_broadening_or_increased_chatter_quota(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        groups = config["topic_groups"]
+        limits = config["editorial_limits"]["per_14_weekly_slots"]
+        for changes in (
+            {"small_talk": 2, "grooming": 7},
+            {"small_talk": 10, "grooming": -1, "movement": 3, "daily_routine": 2},
+        ):
+            wrong = dict(limits, **changes)
+            with self.assertRaises(ValueError):
+                select_editorial_topic(dt.date(2026, 10, 12), "morning", groups, wrong)
+        with self.assertRaises(ValueError):
+            select_editorial_topic(
+                dt.date(2026, 10, 12), "morning",
+                dict(groups, unrelated_celebrity=["芸能ニュース"]), limits
+            )
+
+    def test_prompt_keeps_unrelated_small_talk_closed(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        for d in range(14):
+            date = self.at(8) + dt.timedelta(days=d)
+            for slot in ("morning", "evening"):
+                prompt = json.loads(build_prompt(date, slot, config)["prompt"])
+                group = prompt["topic_group"]
+                self.assertIn(group, config["topic_groups"])
+                if group == "small_talk":
+                    self.assertIn("政治", prompt["topic_guardrail"])
+                    self.assertIn("最大1回", prompt["topic_guardrail"])
+                else:
+                    self.assertIn("Survival40", prompt["topic_guardrail"])
 
     def test_natural_post_without_mandatory_greeting(self):
         self.assertEqual(validate_post(
