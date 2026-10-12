@@ -1,0 +1,50 @@
+name: Survival40 Threads SINGLE LIVE TEST (disabled)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'To publish, type I_APPROVE_ONE_TEST_POST; otherwise preview only'
+        type: string
+        required: false
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: survival40-threads-single-test
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check staged publisher offline (no secrets)
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GITHUB_TOKEN: ''
+        run: python3 -m unittest scripts.threads.test_one_shot_test -v
+      - name: Show exact proposed test text (no API call)
+        run: python3 -m scripts.threads.one_shot_test preview
+
+  publish:
+    if: ${{ vars.THREADS_TEST_PUBLISH_ENABLED == 'true' && inputs.confirm == 'I_APPROVE_ONE_TEST_POST' && github.actor == 'BL4GS' && github.ref == 'refs/heads/main' }}
+    needs: preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    env:
+      THREADS_TEST_PUBLISH_ENABLED: ${{ vars.THREADS_TEST_PUBLISH_ENABLED }}
+      THREADS_TEST_ACK: ${{ inputs.confirm }}
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: ONE live text post; durable ledger before Meta POST; no retry
+        run: python3 -m scripts.threads.one_shot_test live
