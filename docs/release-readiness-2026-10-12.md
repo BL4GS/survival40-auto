@@ -43,3 +43,9 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - **Observed posts: 39 current (23 published, 16 draft), 56 trashed.** Confirm pending/scheduled status in full Admin if applicable. Still need current advertising switches in plugin settings.
 - Capture a reversible site-level rollback approach suitable for the actual ConoHa account; an **off-host** DB and wp-content backup or isolated restore rehearsal is not yet verified.
 - Do not publish v0.19.21 or update version.txt until final production readiness has been validated and monitoring/recovery access is available.
+## Read-only after-update public article integrity comparator
+- PR #16 https://github.com/BL4GS/survival40-auto/pull/16 merged 2026-10-12, offline regression tests passed.
+- Manual GitHub Action **Survival40 Pre/Post Upgrade Article Integrity (READ ONLY)** downloads the pre-upgrade snapshot artifact from run **38210094227**, rescans public WordPress articles, and checks article ID, title, URL and content hash changes.
+- A difference causes the verification workflow to fail, while preserving a comparison artifact for troubleshooting. No WordPress writes or release actions occur.
+- PR regression tests do not perform public API requests, reducing the chance of repeat HTTP 507 host limits.
+- This comparison does not verify private/draft posts (16 observed), WP plugin activation, advertising state or actual backup restore; confirm each separately before release.
