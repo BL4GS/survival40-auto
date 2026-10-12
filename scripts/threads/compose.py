@@ -36,52 +36,70 @@ def select_theme(today, slot, themes):
     index = int(hashlib.sha256(seed).hexdigest()[:8], 16) % len(themes)
     return themes[index]
 
-def select_editorial_topic(today, slot, groups, weekly_limits):
-    """Allocate exactly one bounded small-talk slot per 14 morning/evening drafts.
+def select_editorial_topic(today, slot, groups, policy):
+    """Flexible persona-first topic selection; only minor small-talk has a hard cap.
 
-    The weekly category sequence is shuffled deterministically, so small talk
-    never becomes a fixed weekday gimmick. Topics come only from explicit
-    editorial allowlists, not open-ended subject discovery.
+    Topics stay within a closed allowlist, while the balance between grooming,
+    exercise and daily life is deliberately *not* a weekly quota. A deterministic
+    hash gives stable preview output and weekly limits without persisted state.
     """
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
     categories = ("grooming", "movement", "daily_routine", "small_talk")
-    if (not isinstance(weekly_limits, dict)
-            or set(weekly_limits) != set(categories)
-            or set(groups) != set(categories)
-            or any(type(weekly_limits.get(k)) is not int or weekly_limits[k] < 0
-                   for k in categories)
-            or sum(weekly_limits.values()) != 14
-            or weekly_limits["small_talk"] > 1):
-        raise ValueError("Invalid or overbroad editorial topic quota")
-    week = today.isocalendar()
-    weekly_order = sorted(
-        range(14),
-        key=lambda i: hashlib.sha256(
-            f"editorial-v1:{week.year}:{week.week}:{i}".encode()
-        ).digest()
+    if set(groups) != set(categories) or not isinstance(policy, dict):
+        raise ValueError("Unknown topic group")
+    weights = policy.get("soft_weights")
+    max_asides = policy.get("max_small_talk_per_14_slots")
+    if (not isinstance(weights, dict) or set(weights) != set(categories)
+            or any(type(weights[k]) is not int or weights[k] <= 0 for k in categories)
+            or type(max_asides) is not int or not 0 <= max_asides <= 2):
+        raise ValueError("Invalid persona-first topic policy")
+    for items in groups.values():
+        if not isinstance(items, list) or not items or not all(
+                isinstance(x, str) and x.strip() for x in items):
+            raise ValueError("Invalid topic allowlist")
+
+    def weighted_pick(slot_index, salt, candidate_groups):
+        total = sum(weights[k] for k in candidate_groups)
+        week = today.isocalendar()
+        seed = f"persona-first-v1:{week.year}:{week.week}:{slot_index}:{salt}"
+        ticket = int(hashlib.sha256(seed.encode()).hexdigest()[:12], 16) % total
+        for k in candidate_groups:
+            if ticket < weights[k]:
+                return k
+            ticket -= weights[k]
+        raise AssertionError("Topic selection exhausted")
+
+    slot_index = today.weekday() * 2 + (0 if slot == "morning" else 1)
+    topic_group = weighted_pick(slot_index, "usual", categories)
+    earlier_asides = sum(
+        weighted_pick(i, "usual", categories) == "small_talk"
+        for i in range(slot_index)
     )
-    slot_number = today.weekday() * 2 + (0 if slot == "morning" else 1)
-    rank = weekly_order.index(slot_number)
-    for group in categories:
-        count = weekly_limits[group]
-        if rank < count:
-            break
-        rank -= count
-    allowed = groups[group]
-    if not isinstance(allowed, list) or not allowed or not all(
-            isinstance(x, str) and x.strip() for x in allowed):
-        raise ValueError("Invalid editorial topic group")
+    if topic_group == "small_talk" and earlier_asides >= max_asides:
+        topic_group = weighted_pick(slot_index, "non-small", categories[:-1])
+
     morning_only = ("朝", "外出前")
     evening_only = ("夜", "帰宅後", "寝る前")
     eligible = [
-        x for x in allowed
+        x for x in groups[topic_group]
         if slot != "evening" or not any(k in x for k in morning_only)
         if slot != "morning" or not any(k in x for k in evening_only)
     ]
     if not eligible:
-        raise ValueError("No topics eligible for selected slot")
-    return {"topic_group": group, "theme": select_theme(today, slot, eligible)}
+        raise ValueError("No eligible topics for selected time")
+    return {"topic_group": topic_group,
+            "theme": select_theme(today, slot, eligible)}
+
+
+def select_persona_angle(today, slot, angles):
+    """Optional emotional lens, not a writing template or a biographical fact."""
+    if not isinstance(angles, list) or not angles or not all(
+            isinstance(x, str) and x.strip() for x in angles):
+        raise ValueError("Missing persona-angle options")
+    seed = f"shiori-character-v1:{today.isoformat()}:{slot}".encode()
+    index = int(hashlib.sha256(seed).hexdigest()[:12], 16) % len(angles)
+    return angles[index]
 
 
 def select_shape(today, slot):
@@ -110,7 +128,10 @@ def build_prompt(now, slot, config):
         raise ValueError("Unknown posting slot")
     editorial = select_editorial_topic(
         now.date(), slot, config["topic_groups"],
-        config["editorial_limits"]["per_14_weekly_slots"]
+        config["editorial_limits"]
+    )
+    persona_angle = select_persona_angle(
+        now.date(), slot, config["character"]["everyday_angles"]
     )
     theme, topic_group = editorial["theme"], editorial["topic_group"]
     shape = select_shape(now.date(), slot)
@@ -120,9 +141,12 @@ def build_prompt(now, slot, config):
         "post_kind": "everyday_chat",
         "date_jst": now.date().isoformat(), "weekday": weekday,
         "slot": slot, "theme": theme, "shape": shape, "topic_group": topic_group,
+        "persona_angle": persona_angle,
+        "character": config["character"],
+        "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな一面が見えるかを最優先する",
         "voice": config["voice"], "tone_mode": tone_mode,
         "topic_guardrail": (
-            "これは週に最大1回だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
+            "これは少数枠だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
             "主題を変えて政治、芸能、ニュース、ゲーム、恋愛、ビジネス、買い物レビューなどへ広げない。"
             "教訓や役立つ話に変換せず、軽い一言で終わって構いません。"
             if topic_group == "small_talk" else
@@ -143,6 +167,9 @@ def build_prompt(now, slot, config):
         }[shape],
         "editorial_priority": [
             "これは毎日の雑談下書き。役立つ情報を教える記事紹介とは役割が違う",
+            "投稿ごとに人柄が少し見えることを目的にする。言葉の主語は栞さんであり、運営者やブログではない",
+            "指定されたpersona_angleは感情や人柄のヒント。演じる義務ではなく自然に合うときだけ使う",
+            "商品名・誘導文・有益な結論を入れるために日常の話を歪めない",
             "ひとりの人物が身近な物事について普通に話している雰囲気を優先する",
             "読者が最初に見る投稿でも、何の話か一読で分かる",
             "話題は再登場して構わない。ただし表現や問いかけを毎回同じ型にしない",
@@ -169,11 +196,12 @@ def build_prompt(now, slot, config):
             "ブランド商品の使用レビュー・アフィリエイト上の体験談・美容や健康の効果など、事実に基づくべき証言は捏造しない",
             "健康効果を断定しない。これは通常の雑談であり、記事紹介や商品宣伝を混ぜない",
             "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
-            "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
+            "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章",
+            "出来事と感想が一読で分かり、栞さんの性格が少し伝わるかを優先。短ければ短いままでよい"
         ]
     }, ensure_ascii=False)
     return {"prompt": prompt, "theme": theme, "topic_group": topic_group,
-            "shape": shape, "tone_mode": tone_mode}
+            "persona_angle": persona_angle, "shape": shape, "tone_mode": tone_mode}
 
 
 def validate_post(text, slot, max_chars):
@@ -218,6 +246,11 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             "vague abstractions, decorative emotional interpretations, or awkward "
             "cause-and-effect. One topic per post, no invented logical leaps. "
             "Keep wording simple and relatively short. "
+            "Write from the perspective of Shiori as a consistent character "
+            "the reader can get to know and like over many posts. "
+            "Prioritize genuine personality, reactions, quirks, and relatable "
+            "small moments over content marketing, informational value, or SEO. "
+            "A character-angle hint is optional, never a formula. "
             "This is a casual everyday post, NOT an article promotion or advice column. "
             "No requirement for lessons, useful tips, improvement plans, or conclusions. "
             "An ordinary trivial observation or a mildly embarrassing, "
@@ -284,8 +317,8 @@ def main():
     draft = {
         "id": f"{now.date().isoformat()}-{slot}", "date_jst": now.date().isoformat(),
         "slot": slot, "account": config["account"], "theme": theme,
-        "topic_group": topic_group, "shape": shape,
-        "tone_mode": tone_mode, "text": post, "publish": False, "status": "review_draft_only",
+        "topic_group": topic_group, "persona_angle": instruction["persona_angle"],
+        "shape": shape, "tone_mode": tone_mode, "text": post, "publish": False, "status": "review_draft_only",
         "generated_at_jst": now.isoformat(timespec="seconds")
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
