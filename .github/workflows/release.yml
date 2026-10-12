@@ -14,13 +14,25 @@ on:
         description: 'Enter RELEASE-0.19.21 after reviewing staging validation and backup plan'
         required: true
         type: string
+      confirm_backup:
+        description: 'Enter WEB-DB-RESTORE-VERIFIED only after recovery of Web and DB was independently tested'
+        required: true
+        type: string
+      confirm_live:
+        description: 'Enter WP-BASELINE-VERIFIED after confirming live plugin, drafts and ad/automation state'
+        required: true
+        type: string
+      confirm_monitor:
+        description: 'Enter LIVE-MONITORING-READY when someone can monitor and roll back the live site'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
   group: survival40-release
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-release:
@@ -153,14 +165,47 @@ jobs:
           path: dist/
           retention-days: 14
 
+      - name: Verify previously published ZIP can be recovered
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
+          test "$(gh release view latest --json name --jq '.name')" = 'Survival40 Auto v0.19.20'
+          mkdir -p rollback
+          gh release download latest --pattern 'survival40-auto.zip' --dir rollback
+          test -s rollback/survival40-auto.zip
+          unzip -tq rollback/survival40-auto.zip
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('rollback/survival40-auto.zip') as archive:
+              main = archive.read('survival40-auto/survival40-auto.php').decode('utf-8')
+              assert ' * Version: 0.19.20' in main
+              assert "const VERSION = '0.19.20';" in main
+              assert 'survival40-auto/assets/navigator/normal.webp' in archive.namelist()
+          PY
+          mv rollback/survival40-auto.zip rollback/survival40-auto-0.19.20-rollback.zip
+          (cd rollback && sha256sum survival40-auto-0.19.20-rollback.zip > SHA256SUMS)
+          echo 'Rollback ZIP checked; live restoration must also have been independently verified.'
+
+      - name: Save verified rollback artifact before touching public release
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-01920-before-release-${{ github.run_id }}
+          path: rollback/
+          retention-days: 90
+          if-no-files-found: error
+
       - name: Publish only after explicit manual approval
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # NEVER advertise 0.19.21 until its downloadable, verified ZIP exists.
-          # Missing backup/recovery approval remains a human release prerequisite.
+          # Typed gates attest to independent recovery checks; CI cannot prove real restore.
           test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
           test -s dist/survival40-auto.zip
           unzip -tq dist/survival40-auto.zip
