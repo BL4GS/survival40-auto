@@ -5,7 +5,8 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from scripts.threads.compose import (
-    CONFIG, choose_slot, gemini_generate, select_shape, select_theme, validate_post,
+    CONFIG, build_prompt, choose_slot, gemini_generate, select_shape,
+    select_theme, select_tone_mode, validate_post,
 )
 
 
@@ -84,6 +85,34 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertIn("たまに", config["voice"]["occasional_relaxed_note"])
         self.assertIn("毎回は不要", config["voice"]["occasional_relaxed_note"])
         self.assertEqual(config["mode"], "draft_only")
+
+    def test_tone_is_rare_and_no_two_consecutive_allowances(self):
+        day = self.at(8).date()
+        slots = []
+        for offset in range(80):
+            date = day + dt.timedelta(days=offset)
+            for slot in ("morning", "evening"):
+                slots.append(select_tone_mode(date, slot))
+        casual = sum(value == "relaxed_allowed" for value in slots)
+        self.assertGreater(casual, 0)
+        self.assertLess(casual, len(slots) // 4)
+        self.assertFalse(any(
+            slots[i] == "relaxed_allowed" and slots[i + 1] == "relaxed_allowed"
+            for i in range(len(slots) - 1)
+        ))
+
+    def test_prompt_guides_polite_voice_even_for_casual_allowed(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        for offset in range(50):
+            day = self.at(8) + dt.timedelta(days=offset)
+            for slot in ("morning", "evening"):
+                prompt = json.loads(build_prompt(day, slot, config)["prompt"])
+                self.assertIn("です・ます", prompt["voice"]["baseline"])
+                self.assertIn(prompt["tone_mode"], ("polite", "relaxed_allowed"))
+                if prompt["tone_mode"] == "polite":
+                    self.assertIn("意図的に挿入しない", prompt["tone_mode_instructions"])
+                else:
+                    self.assertIn("必要はない", prompt["tone_mode_instructions"])
 
     def test_no_live_api_in_copy_generation(self):
         with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
