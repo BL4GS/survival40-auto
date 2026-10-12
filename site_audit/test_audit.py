@@ -65,6 +65,17 @@ class PublicSiteAuditTests(unittest.TestCase):
         self.assertEqual(req.call_count, MAX_CHECKED_PERMALINKS + 1)
         self.assertEqual(pages[0]["url"], "https://survival40.com/")
 
+    def test_distinguishes_frontend_navigation_links_from_rest_article_text(self):
+        posts = [article(1), article(2)]
+        def simulated_get(url, **kwargs):
+            if url.endswith("/example-1/"):
+                return (200, {}, b'<html><nav><a href="/example-2/">Related</a></nav></html>')
+            return (200, {}, b'<html><p>ok</p></html>')
+        with patch("site_audit.audit.public_get", side_effect=simulated_get):
+            probes = probe_public_pages(posts)
+        self.assertEqual(probes[1]["rendered_other_post_links"], 1)
+        self.assertEqual(probes[2]["rendered_other_post_links"], 0)
+
     def test_public_api_read_with_no_mutation(self):
         posts = [article(i) for i in (1, 2)]
         raw = json.dumps(posts).encode("utf-8")
