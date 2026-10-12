@@ -1,0 +1,69 @@
+name: Survival40 First Release Read-Only Watch (NEVER DEPLOYS)
+on:
+  pull_request:
+    paths:
+      - 'production_preflight/**'
+      - '.github/workflows/production-postrelease-watch.yml'
+  workflow_dispatch:
+    inputs:
+      baseline_run_id:
+        description: 'Read-only baseline run ID from before the plugin upgrade'
+        default: '38210094227'
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate read-only watch against representative mock data
+        run: python3 -m unittest discover -s production_preflight -p 'test_*.py' -v
+  post-release-watch:
+    if: github.event_name == 'workflow_dispatch'
+    needs: offline-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASELINE_RUN_ID: ${{ inputs.baseline_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Retrieve known-good pre-upgrade 23-article baseline
+        run: |
+          set -euo pipefail
+          [[ "$BASELINE_RUN_ID" =~ ^[0-9]{6,20}$ ]] || exit 1
+          mkdir -p "$RUNNER_TEMP/s40-known"
+          gh run download "$BASELINE_RUN_ID" \
+            --name "survival40-preflight-$BASELINE_RUN_ID" \
+            --dir "$RUNNER_TEMP/s40-known"
+          test -s "$RUNNER_TEMP/s40-known/baseline.json"
+      - name: Monitor public pages, published article hashes and Shiori images (three rounds)
+        run: |
+          set -euo pipefail
+          for n in 1 2 3; do
+            echo "Read-only probe $n of 3"
+            python3 -m production_preflight.monitor \
+              --baseline "$RUNNER_TEMP/s40-known/baseline.json" \
+              --report "postrelease-watch-output/round-$n.json"
+            # Does not imply the background plugin auto-update has completed.
+            if [ "$n" -lt 3 ]; then sleep 120; fi
+          done
+          echo 'PASS: three bounded website probes over ~4 minutes'
+          echo 'REQUIRED: WP admin plugin version + 16 drafts + ad/automation switches'
+          echo 'REQUIRED: Verify ConoHa restored DB independently and maintain rollback operator'
+      - name: Preserve read-only report, including evidence on probe failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-postrelease-watch-${{ github.run_id }}
+          path: postrelease-watch-output/
+          if-no-files-found: ignore
+          retention-days: 30
