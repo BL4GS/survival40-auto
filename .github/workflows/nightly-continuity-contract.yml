@@ -1,0 +1,22 @@
+name: Survival40 Nightly Agent Continuity Contract (OFFLINE)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/nightly-ai-review.yml'
+      - '.github/workflows/nightly-continuity-contract.yml'
+      - '.github/agent/test_nightly_continuity.py'
+permissions:
+  contents: read
+jobs:
+  no-deadlock-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prove scheduled advisory continues and tests never publish
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+        run: python3 -m unittest discover -s .github/agent -p test_nightly_continuity.py -v
