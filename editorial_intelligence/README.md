@@ -31,3 +31,18 @@ Normalization + character-sequence similarity identifies clear paraphrases of ex
 `Public article inventory → gap candidates → source discovery and direct claim support → quality checks → existing WordPress automatic planner/publisher`.
 
 Production rollout remains blocked until the project release safety requirements in `docs/release-01921-production-safety.md` are met.
+
+## WordPress planner handoff — additional safe artifact
+
+The weekly workflow now runs \`python3 -m editorial_intelligence.bridge\` after producing \`topics.json\`.
+
+- The live v0.19.21 release-review package uses **eight Japanese category names**, not the three broad suggestion buckets \`skin/body/daily\`: \`肌・老け見え\`, \`髪・頭皮\`, \`ニオイ・清潔感\`, \`口・歯\`, \`疲労・睡眠\`, \`体型・筋力\`, \`食事・栄養\`, \`40代の不調\`.
+- A deterministic subject router maps concrete topics to one of those names. Unrecognized, multi-topic, unsafe medication/treatment and contradictory buckets are **held** rather than guessed.
+- Refreshes the public article title inventory before generating the handoff, to catch topics published after the original AI suggestion.
+- \`editorial-output/wp-plan-handoff.json\` contains a structured \`plugin_planner_input\` for future research, including \`title, keyword, category, excerpt, seo_title, amazon_query, reason\`, plus independent \`editorial\` and \`safety\` fields.
+- Every plan is \`needs_independent_source_research\`, with \`publish_authorized=false\`, \`no_affiliate_assigned=true\`, \`ready_to_publish=false\`. \`amazon_query\` is always empty. It is not an API request and is **never imported automatically into the site** at this stage.
+- Broad \`requires_health_evidence_review\` is preserved even when the matched WP category is technically non-YMYL.
+- Exact WordPress drafts/private/future posts cannot be read via the public REST endpoint. The eventual authenticated plugin consumer **must** recheck those too and enforce its own safety and quality gates.
+- The weekly output is an intermediate *planning artifact*. It cannot itself create drafts/posts or bypass WordPress research, medical claim review, source verification or release approval.
+
+The generated \`keyword\` is a wording candidate only; this stage has not measured search volume.
