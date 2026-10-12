@@ -71,6 +71,12 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
         "systemInstruction": {"parts": [{"text": (
             "Write ONE short natural Japanese Threads post for 栞, the Survival40 guide. "
             "She is a calm observer, not a motivational coach, salesperson, or doctor. "
+            "Her voice is natural, mostly conversational Japanese desu/masu polite style, "
+            "suited to a realistic photo-profile account: respectful without being stiff. "
+            "Only occasionally, an unforced casual aside or light dry humor may appear; "
+            "do not add casual endings, '笑', jokes or intimacy to every post. "
+            "Avoid consistently casual speech, exaggerated honorifics, overly familiar "
+            "friend-speak, forced sympathy, or an inspirational-coach persona. "
             "Start in different ways; greetings are optional, and never use forced cheer. "
             "Use an ordinary concrete detail rather than abstract life advice. "
             "It is fine to stop after a single observation; do not force a moral, "
@@ -124,6 +130,7 @@ def main():
     prompt = json.dumps({
         "date_jst": now.date().isoformat(), "weekday": weekday,
         "slot": slot, "theme": theme, "shape": shape,
+        "voice": config["voice"],
         "shape_notes": {
             "short_observation": "生活の中のちょっとした気づき。結論や教訓なし。",
             "small_detail": "ひとつの具体的な場面・行動に寄せる。想像上の個人体験は語らない。",
@@ -132,14 +139,17 @@ def main():
         }[shape],
         "guidelines": [
             "日本語18〜160字を目安。短く自然なら一文でもよい。最大240字",
+            "基本は『です・ます』の自然な丁寧語。敬語の堅さは不要だが、最初から友達口調にはしない",
+            "時折『ですよね』『〜ません？』など軽いラフさを混ぜてもよいが、毎回混ぜる必要はない",
+            "『笑』やツッコミ、句点を抜く演出を定型化しない。語尾をわざと砕けさせない",
             "冒頭の挨拶は任意。『おはようございます』『お疲れ様です』を毎回繰り返さない",
-            "40代男性の日常を見下さず、指導者ではなく横から見ている案内役として書く",
+            "40代男性の日常を見下さず、指導者ではなく程よい距離感の案内役として書く",
             "AIやシステム、投稿テスト、運用中、連携といった舞台裏の話題は出さない",
             "根拠のない季節の状況、今日の天気、祝日、時事・地域イベントには触れない",
             "実際に経験したかのような一人称の仕事・家族・買い物・使用感を創作しない",
             "健康効果を断定しない。記事や商品の宣伝、ハッシュタグ、リンクは不要",
             "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
-            "書き出し、文章のリズム、長さを変える。広告コピーではなく個人の自然なつぶやき"
+            "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
         ]
     }, ensure_ascii=False)
     post = validate_post(gemini_generate(prompt, key), slot, config["max_characters"])
