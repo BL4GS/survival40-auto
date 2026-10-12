@@ -1,0 +1,39 @@
+name: Survival40 Public Site Audit (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'site_audit/**'
+      - '.github/workflows/public-site-audit.yml'
+  schedule:
+    # Daily 04:10 JST; GitHub cron is best effort.
+    - cron: '10 19 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: s40-public-site-audit
+  cancel-in-progress: false
+jobs:
+  public-site-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      THREADS_ACCESS_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run public-site audit regression tests (no network)
+        run: python3 -m unittest discover -s site_audit -p 'test_*.py' -v
+      - name: Audit only public WordPress content and limited public pages
+        run: python3 -m site_audit.audit
+      - name: Upload read-only report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-public-site-audit-\${{ github.run_id }}
+          path: site-audit-output/
+          if-no-files-found: ignore
+          retention-days: 14
