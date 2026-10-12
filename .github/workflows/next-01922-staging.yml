@@ -144,6 +144,7 @@ jobs:
       - name: Rehearse old-plugin rollback and reactivation in ISOLATED WordPress
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: BL4GS/survival40-auto
         run: |
           set -euo pipefail
           # This WordPress site is the temporary /tmp/s40-wp test instance.
