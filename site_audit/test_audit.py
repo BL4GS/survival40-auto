@@ -26,6 +26,8 @@ class PublicSiteAuditTests(unittest.TestCase):
         result = evaluate([article(11)])
         self.assertEqual(result["post_count"], 1)
         self.assertIn("No-ad articles are valid", result["advertising_policy"])
+        self.assertEqual(result["rest_articles_without_inline_links"]["count"], 1)
+        self.assertFalse(any("no_internal_links" == f["code"] for f in result["findings"]))
         self.assertFalse(any("affiliate" in f["code"] for f in result["findings"]))
 
     def test_duplication_and_short_body_are_advisory(self):
