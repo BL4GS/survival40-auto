@@ -46,3 +46,11 @@
 - The shortcode renderer currently emits an extra closing `</p>` before the new section. The HTML is rendered and links are present, but the markup warrants separate housekeeping. A follow-up safe block-formatter edit failed 422 without applying; **no attempt to bypass the validation was made**.
 - The exact rollout and caveats are logged on https://github.com/BL4GS/survival40-auto/issues/24 .
 - No published article bodies were edited, and no plugin auto-publisher/GitHub Release updates were triggered.
+
+## Sitemap and Search Console readiness verification (2026-10-12)
+- Authenticated WordPress GET via WPVibe confirms WordPress `blog_public=1`. AIOSEO `aioseo-audit/site-get` reports `sitemap_enabled=true` and index `https://www.survival40.com/sitemap.xml`; its `search_console_connected=false` means **AIOSEO is not linked to Search Console**, not necessarily that Google Search Console has no independently verified site property.
+- Confirmed `sitemap.xml` lists `post-sitemap.xml`, `page-sitemap.xml`, `category-sitemap.xml`; its `post-sitemap.xml` holds **23** article URLs, `page-sitemap.xml` contains the canonical home page, and categories are included.
+- Compared all **23 published canonical WordPress REST permalinks** to all **23 post-sitemap URLs**: exact one-to-one match; **no missing post and no duplicate URL** in the sitemap. This proves publishing/sitemap consistency, **not** Google indexation or impressions.
+- Homepage `<main>` currently has a direct link to **23 of 23 public articles**, including the nine supplementary reader pathways added to WordPress page ID 471. Original Shiori guide and homepage cards persist.
+- To measure actual Google queries, impressions, clicks and URL indexing, connect the user's existing Search Console property with an authorized analytics connection (GSC Wizard suggested through ChatGPT); do not assume a new property must be created until current Google account ownership is checked.
+- Distinguish **site readiness** from the pending ConoHa restore/release blocker. Do not enable production auto-writing just because the sitemap is complete.
