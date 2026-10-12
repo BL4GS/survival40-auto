@@ -68,6 +68,37 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "0.19.20")
 
+    def test_recovery_live_state_and_monitoring_are_required(self):
+        header, _, text = approval_shell()
+        for expected in (
+            "inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED'",
+            "inputs.confirm_live == 'WP-BASELINE-VERIFIED'",
+            "inputs.confirm_monitor == 'LIVE-MONITORING-READY'",
+        ):
+            self.assertIn(expected, header)
+        self.assertIn("cancel-in-progress: false", text)
+        self.assertIn("required: true", text)
+
+    def test_rollback_archive_is_persisted_before_public_release(self):
+        header, _, text = approval_shell()
+        download = text.index("gh release download latest --pattern 'survival40-auto.zip' --dir rollback")
+        zipcheck = text.index("unzip -tq rollback/survival40-auto.zip")
+        persist = text.index("- name: Save verified rollback artifact before touching public release")
+        publish = text.index("- name: Publish only after explicit manual approval")
+        mutation = text.index("gh release edit latest")
+        self.assertLess(download, zipcheck)
+        self.assertLess(zipcheck, persist)
+        self.assertLess(persist, publish)
+        self.assertLess(publish, mutation)
+        guard = header.split("if: ${{ ", 1)[1].split(" }}", 1)[0]
+        for name in (
+            "Verify previously published ZIP can be recovered",
+            "Save verified rollback artifact before touching public release",
+        ):
+            fragment = text.split("- name: " + name, 1)[1].split("\n      - name:", 1)[0]
+            self.assertIn("if: ${{ " + guard + " }}", fragment)
+        self.assertIn("retention-days: 90", text)
+
     def test_artifact_is_exact_zip_and_no_auto_publication(self):
         _, _, text = approval_shell()
         self.assertIn("unzip -t dist/survival40-auto.zip", text)
