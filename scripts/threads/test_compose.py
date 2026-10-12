@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
+from scripts.threads.article_copy import build_article_prompt
 from scripts.threads.compose import (
     CONFIG, build_prompt, choose_slot, gemini_generate, select_editorial_topic,
     select_shape, select_theme, select_tone_mode, validate_post,
@@ -172,14 +173,53 @@ class ThreadsDraftTests(unittest.TestCase):
                 else:
                     self.assertIn("必要はない", prompt["tone_mode_instructions"])
 
-    def test_clarity_examples_are_embedded_in_daily_prompt(self):
+    def test_daily_chat_stays_distinct_from_article_promotion(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
         data = json.loads(build_prompt(self.at(8), "morning", config)["prompt"])
-        self.assertEqual(len(data["approved_clarity_examples"]), 3)
-        self.assertIn("一投稿一話題", " ".join(data["quality_notes"]))
-        self.assertIn("論理的なつながり", " ".join(data["quality_notes"]))
-        self.assertIn("比喩や抽象語", " ".join(data["quality_notes"]))
-        self.assertIn("40〜100字", " ".join(data["guidelines"]))
+        self.assertEqual(data["post_kind"], "everyday_chat")
+        self.assertNotIn("approved_clarity_examples", data)
+        priorities = " ".join(data["editorial_priority"])
+        self.assertIn("どうでもいい小さな話", priorities)
+        self.assertIn("役立つ情報を教える記事紹介とは役割が違う", priorities)
+        self.assertIn("短く素直に話せるなら一文", priorities)
+        self.assertIn("話題は再登場して構わない", priorities)
+        self.assertIn("25〜100字", " ".join(data["guidelines"]))
+        self.assertEqual(config["editorial_modes"]["article_introduction"]["activation"].startswith("このモードは構想"), True)
+        self.assertEqual(config["mode"], "draft_only")
+
+    def test_article_intro_uses_only_supplied_article_text(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        article = {
+            "title": "40代男性のスキンケアの話",
+            "url": "https://survival40.com/skin-care-guide/",
+            "text": "これは記事本文の抜粋です。" * 12,
+        }
+        data = json.loads(build_article_prompt(article, config))
+        self.assertEqual(data["post_kind"], "article_introduction")
+        self.assertFalse(data["publication"])
+        self.assertEqual(data["article"]["excerpt"], article["text"])
+        self.assertIn("抜粋から分からない効果", " ".join(data["guidelines"]))
+
+    def test_article_introduction_refuses_unknown_or_external_sources(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        valid = {
+            "title": "40代男性のスキンケアの話",
+            "url": "https://survival40.com/skin-care-guide/",
+            "text": "これは記事本文の抜粋です。" * 12
+        }
+        for bad in (
+            dict(valid, text="要点なし"),
+            dict(valid, title=""),
+            dict(valid, url="https://unrelated.com/skin-care-guide/"),
+            dict(valid, url="http://survival40.com/skin-care-guide/"),
+            dict(valid, url="https://survival40.com.evil.net/skin-care-guide/"),
+            dict(valid, url="https://survival40.com/"),
+        ):
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    build_article_prompt(bad, config)
+        with self.assertRaises(ValueError):
+            build_article_prompt(valid, dict(config, mode="auto_publish"))
 
     def test_known_unintelligible_stock_phrases_rejected(self):
         for sample in (
