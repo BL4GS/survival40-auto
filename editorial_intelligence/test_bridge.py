@@ -1,8 +1,12 @@
 import copy
+import json
+import pathlib
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from editorial_intelligence.bridge import (
-    CATEGORY, HandoffError, build_handoff, classify, inspect_idea
+    CATEGORY, HandoffError, build_handoff, classify, inspect_idea, main
 )
 
 def idea(title, broad="daily", ads="none", health=False):
@@ -111,6 +115,38 @@ class WordPressPlanHandoffTests(unittest.TestCase):
         self.assertEqual(handoff["wp_posts_written"], 0)
         self.assertFalse(handoff["ready_to_publish"])
         self.assertTrue(handoff["plans"][0]["safety"]["must_recheck_all_wordpress_posts_including_drafts"])
+
+    def test_bridge_reuses_snapshot_with_no_network_calls(self):
+        sample = report([idea("40代の白髪染めシャンプーの仕組みと注意点")])
+        sample["published_titles_snapshot"] = ["40代男性の肌の乾燥を防ぐ生活習慣"]
+        sample["existing_articles_count"] = 1
+        with tempfile.TemporaryDirectory() as directory:
+            src = pathlib.Path(directory) / "topics.json"
+            dst = pathlib.Path(directory) / "wp-plan-handoff.json"
+            src.write_text(json.dumps(sample, ensure_ascii=False), encoding="utf-8")
+            with patch("editorial_intelligence.bridge.SOURCE", src), patch(
+                "editorial_intelligence.bridge.DEST", dst
+            ):
+                main()
+            payload = json.loads(dst.read_text(encoding="utf-8"))
+            self.assertEqual(len(payload["plans"]), 1)
+            self.assertEqual(payload["wp_posts_written"], 0)
+
+    def test_bridge_refuses_missing_or_mismatched_snapshot(self):
+        sample = report([idea("40代の白髪染めシャンプーの仕組みと注意点")])
+        with tempfile.TemporaryDirectory() as directory:
+            src = pathlib.Path(directory) / "topics.json"
+            dst = pathlib.Path(directory) / "wp-plan-handoff.json"
+            for inventory, count in [(None, 1), ([], 0), (["一つの公開済み記事タイトル"], 2)]:
+                sample["published_titles_snapshot"] = inventory
+                sample["existing_articles_count"] = count
+                src.write_text(json.dumps(sample, ensure_ascii=False), encoding="utf-8")
+                with patch("editorial_intelligence.bridge.SOURCE", src), patch(
+                    "editorial_intelligence.bridge.DEST", dst
+                ):
+                    with self.assertRaises(HandoffError):
+                        main()
+                self.assertFalse(dst.exists())
 
     def test_bucket_conflict_held(self):
         item, reason = inspect_idea(
