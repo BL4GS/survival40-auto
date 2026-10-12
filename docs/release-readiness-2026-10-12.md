@@ -56,3 +56,11 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - Core WordPress REST settings request returned only the site title, not plugin-specific affiliate/ad or automation switches.
 - Site-side WPVibe (Vibe AI) plugin is **not installed**. The current WPVibe connection supports authenticated WordPress core REST and abilities read; native WP-CLI/options and file inspection are unavailable until that plugin is separately installed and authorized.
 - **No writes** to the live site, plugin updates, ads, posts or theme were made through this integration. Do not mistake account-side WPVibe authorization for approval to install a new plugin.
+## WPVibe plugin installed and read-only admin settings verified (2026-10-12)
+- Owner explicitly authorized adding the **Vibe AI / WPVibe plugin**. WordPress REST installation returned plugin `vibe-ai/vibe-ai` **active, v1.20.3**; WPVibe `site_info` after installation confirms WordPress authenticated administrator access and WP-CLI availability.
+- Native WP-CLI list confirms Survival40 Auto **active 0.19.20** and WPVibe **active 1.20.3**. No other plugin update was executed.
+- Read-only `option pluck survival40_auto_settings` checks (individual non-secret keys only): `auto_enabled=0`, `auto_publish_general=0`, `auto_interval=daily`, `affiliate_notice=1`, `show_sources=1`, `model=gemini-3.5-flash-lite`. No Gemini API key, tokens, or private identifiers were read out or stored.
+- `s40_affiliate_frontend_enabled` option was **not present** (WP-CLI exit code 1); staged 0.19.21 code defaults this gate to `no`. Its absence cannot by itself prove every individual legacy article has no embedded affiliate links. The `affiliate_notice=1` setting controls disclosure, not whether an advertisement is inserted.
+- `auto_max_per_run` key was not present in the stored array; the v0.19.20 PHP defaults to 1. No WordPress options were modified.
+- Authenticated WordPress REST inventory confirms 23 published / 16 drafts / 0 scheduled, as previously observed.
+- These findings improve the upgrade baseline but **do not attest to a successful ConoHa database restore or independent off-host backup**. Actual public release still needs recovery verification.
