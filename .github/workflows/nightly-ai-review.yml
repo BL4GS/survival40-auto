@@ -22,20 +22,21 @@ jobs:
         id: pending
         run: |
           if git ls-remote --heads origin refs/heads/ai/nightly-candidate | grep -q .; then
-            echo 'Existing AI proposal branch: wait for review; no API request.'
+            echo 'Existing AI PR: advisory still runs; only validation/PR publishing pauses.'
             echo 'proceed=false' >> "$GITHUB_OUTPUT"
           else
             echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
-      - name: Generate bounded candidate with Gemini
-        if: steps.pending.outputs.proceed == 'true'
+      - name: Generate bounded nightly advisory with Gemini
+        # Always produce the analysis artifact, even if an older test PR is open.
+        # Only PR creation is skipped when ai/nightly-candidate already exists.
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GEMINI_MODEL: gemini-3.5-flash-lite
         run: python3 .github/agent/nightly_review.py
       - name: Archive Gemini candidate (never publish)
-        if: steps.pending.outputs.proceed == 'true'
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: s40-nightly-ai-proposal
