@@ -23,3 +23,11 @@ The weekly GitHub planner produces unresearched article briefs in the survival40
 6. Independently verify sources, reviewer score, all existing post statuses and ad policy before any future queue consumer creates an article.
 
 This implementation is a safe receiving endpoint, not an enabled autonomous article publishing feature.
+## Staged queue research consumer (future version only)
+- Next patch: .github/scripts/patch_editorial_consumer_next.py, applied after the intake and fail-closed planner patches, never by current 0.19.21 release.
+- When the existing WordPress auto-cycle is enabled, claim at most one plan with awaiting_independent_research. Recheck current WordPress public and private titles before generating.
+- Map the plan into the existing `generate_planned_article` pipeline: the normal Gemini source discovery, claim review, rewrite and deterministic quality checks remain in force. Queue plans must have no affiliate candidate and cannot turn on A8/Amazon output.
+- If independently matched sources, review score or safety scan fail, **do not even create a draft** for that queued idea; mark held_after_research_failure. A processing plan is not blindly retried after an uncertain interruption.
+- On passing all gates, create **draft only** and record post_id, regardless of the site's global `auto_publish_general` flag. Additional, separately reviewed safeguards are required before queue proposals may be auto-published.
+- Normal existing planner remains available when the intake queue is empty. This staged consumer makes no production changes until a later controlled plugin release.
+- Static/php-stub tests and isolated reconstructed PHP syntax checks have passed; a real isolated WordPress integration and ConoHa backup restore test are still required.

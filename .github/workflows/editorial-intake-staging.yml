@@ -5,6 +5,9 @@ on:
       - '.github/scripts/patch_editorial_intake_next.py'
       - '.github/scripts/test_editorial_intake_next.py'
       - '.github/scripts/test_editorial_intake_next.php'
+      - '.github/scripts/patch_editorial_consumer_next.py'
+      - '.github/scripts/test_editorial_consumer_next.py'
+      - '.github/scripts/test_editorial_consumer_next.php'
       - '.github/workflows/editorial-intake-staging.yml'
   workflow_dispatch:
 permissions:
@@ -18,7 +21,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Offline editorial intake patch regression tests
-        run: python3 -m unittest discover -s .github/scripts -p test_editorial_intake_next.py -v
+        run: |
+          python3 -m unittest discover -s .github/scripts -p test_editorial_intake_next.py -v
+          python3 -m unittest discover -s .github/scripts -p test_editorial_consumer_next.py -v
       - name: Reconstruct current reviewed 0.19.21 plugin in isolated CI checkout
         run: |
           python3 - <<'PY'
@@ -45,8 +50,9 @@ jobs:
           cp survival40-auto/survival40-auto.php /tmp/s40-reviewed-release.php
           python3 .github/scripts/patch_planner_failclosed_next.py
           python3 .github/scripts/patch_editorial_intake_next.py
+          python3 .github/scripts/patch_editorial_consumer_next.py
           php -l survival40-auto/survival40-auto.php
-          php .github/scripts/test_editorial_intake_next.php
+          php .github/scripts/test_editorial_consumer_next.php
           python3 - <<'PY'
           from pathlib import Path
           original=Path('/tmp/s40-reviewed-release.php').read_text()
@@ -54,6 +60,7 @@ jobs:
           assert 's40_register_editorial_plan_routes' not in original
           assert 's40_register_editorial_plan_routes' in after
           assert 's40_plan_unavailable' in after
+          assert 's40_editorial_queue_claim' in after
           assert "const VERSION = '0.19.21'" in after
           assert ' * Version: 0.19.21' in after
           assert 'wp_insert_post(' in original # the EXISTING generator remains intact
