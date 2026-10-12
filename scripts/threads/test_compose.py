@@ -1,5 +1,7 @@
 import datetime as dt
 import json
+import io
+import urllib.error
 import unittest
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -330,6 +332,37 @@ class ThreadsDraftTests(unittest.TestCase):
             system = sent["systemInstruction"]["parts"][0]["text"]
             self.assertIn("desu/masu polite style", system)
             self.assertIn("do not add casual endings", system)
+
+    def test_malformed_gemini_json_gets_one_format_only_retry(self):
+        def envelope(raw):
+            data = {"candidates": [{"content": {"parts": [{"text": raw}]}}]}
+            return io.BytesIO(json.dumps(data).encode("utf-8"))
+        valid = "ヨガマットを広げようと思って、結局眺めただけで終わってしまいました。"
+        malformed_json = '{"text":"今日はだめでした"'
+        with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
+            urlopen.side_effect = [envelope(malformed_json),
+                                  envelope(json.dumps({"text": valid}, ensure_ascii=False))]
+            self.assertEqual(gemini_generate("{}", "FAKE_GEMINI_SECRET"), valid)
+            self.assertEqual(urlopen.call_count, 2)
+            sent = json.loads(urlopen.call_args.args[0].data)
+            self.assertEqual(sent["generationConfig"]["responseMimeType"], "application/json")
+            self.assertEqual(sent["generationConfig"]["responseSchema"]["required"], ["text"])
+
+        with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
+            urlopen.side_effect = [envelope(malformed_json), envelope(malformed_json)]
+            with self.assertRaisesRegex(RuntimeError, "malformed post JSON twice"):
+                gemini_generate("{}", "FAKE_GEMINI_SECRET")
+            self.assertEqual(urlopen.call_count, 2)
+
+    def test_rate_limit_never_retried_or_fallen_back(self):
+        with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
+            urlopen.side_effect = urllib.error.HTTPError(
+                url="https://generativelanguage.googleapis.com", code=429,
+                msg="Too Many Requests", hdrs=None, fp=None
+            )
+            with self.assertRaisesRegex(RuntimeError, "HTTP 429"):
+                gemini_generate("{}", "FAKE_GEMINI_SECRET")
+            self.assertEqual(urlopen.call_count, 1)
 
 
 if __name__ == "__main__":
