@@ -103,7 +103,7 @@ class ThreadsDraftTests(unittest.TestCase):
             self.assertIn(data["persona_angle"], angles)
             self.assertIn("人柄", data["editorial_goal"])
             self.assertIn("自然", data["character"]["autonomy"])
-            self.assertIn("ブログ", data["character"]["identity"])
+            self.assertIn("Survival40", data["character"]["identity"])
             seen.add(data["persona_angle"])
             self.assertEqual(data["persona_angle"], select_persona_angle(
                 now.date(), "morning", angles))
