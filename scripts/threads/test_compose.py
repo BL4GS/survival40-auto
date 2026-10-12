@@ -187,6 +187,25 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertEqual(config["editorial_modes"]["article_introduction"]["activation"].startswith("このモードは構想"), True)
         self.assertEqual(config["mode"], "draft_only")
 
+    def test_small_fictional_everyday_anecdotes_are_allowed_in_persona(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        for slot, hour in (("morning", 8), ("evening", 20)):
+            payload = json.loads(build_prompt(self.at(hour), slot, config)["prompt"])
+            priorities = " ".join(payload["editorial_priority"])
+            guidelines = " ".join(payload["guidelines"])
+            self.assertIn("一人称で創作してよい", priorities)
+            self.assertIn("ちょっと情けない失敗", priorities)
+            self.assertIn("小さな一人称エピソードは創作してよい", guidelines)
+            self.assertIn("使用レビュー", guidelines)
+            self.assertIn("効果", guidelines)
+            self.assertIn("家族", priorities)
+            self.assertNotIn("一人称の作り話は禁止", priorities)
+            self.assertNotIn("個人の実体験を創作しない", payload["shape_notes"])
+        self.assertIn("fictional_micro_anecdotes",
+                      config["editorial_modes"]["everyday_chat"])
+        self.assertIn("使用実績", config["voice"]["persona_policy"])
+        self.assertEqual(config["mode"], "draft_only")
+
     def test_article_intro_uses_only_supplied_article_text(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
         article = {
