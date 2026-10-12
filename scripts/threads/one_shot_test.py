@@ -60,14 +60,14 @@ def live_publish(env):
     debug = safe_get("/debug_token", token, {"input_token": token})
     validate_debug_response(debug, account, int(time.time()))
 
+    client = MetaThreadsClient(token)
+    client.verify_account(account)
     digest = hashlib.sha256(TEST_TEXT.encode("utf-8")).hexdigest()
     ledger = GithubLedger(REPOSITORY, LEDGER_BRANCH, github_token)
     if not ledger.reserve(TEST_KEY, account, digest):
         raise LedgerError("Test already reserved; manual reconciliation required, no retry")
 
     # There is NO automatic retry after reservation, container creation or publish.
-    client = MetaThreadsClient(token)
-    client.verify_account(account)
     container = client.create_text_container(TEST_TEXT)
     post_id = client.publish_container(container)
     ledger.mark_published(TEST_KEY, post_id)
