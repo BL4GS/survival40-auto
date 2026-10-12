@@ -59,6 +59,15 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertIn("-f sha=\"$REMOTE_SHA\"", script)
         self.assertIn("test \"$FINAL_CONTENT\" = '0.19.21'", script)
 
+    def test_version_strip_handles_actual_newlines(self):
+        _, script, _ = approval_shell()
+        strip = "tr -d '" + chr(92) + "r" + chr(92) + "n'"
+        self.assertEqual(script.count(strip), 3)
+        result = subprocess.run(["bash", "-c", "printf '0.19.20\\n' | " + strip],
+                                text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "0.19.20")
+
     def test_artifact_is_exact_zip_and_no_auto_publication(self):
         _, _, text = approval_shell()
         self.assertIn("unzip -t dist/survival40-auto.zip", text)
