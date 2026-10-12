@@ -281,7 +281,15 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             'Respond ONLY JSON with one property "text".'
         )}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 800}
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": {
+                "type": "OBJECT",
+                "properties": {"text": {"type": "STRING"}},
+                "required": ["text"]
+            },
+            "maxOutputTokens": 800
+        }
     }
     request = urllib.request.Request(
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
@@ -289,21 +297,38 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
         headers={"x-goog-api-key": key, "Content-Type": "application/json"},
         method="POST",
     )
-    try:
-        with urllib.request.urlopen(request, timeout=60) as response:
-            data = json.load(response)
-    except urllib.error.HTTPError as error:
-        # 429 = quota exhausted. Fail safe: no retry, no paid model fallback.
-        raise RuntimeError(f"Gemini unavailable (HTTP {error.code}); draft skipped") from None
-    except (urllib.error.URLError, TimeoutError) as error:
-        raise RuntimeError(f"Gemini connection error: {type(error).__name__}") from None
-    output = "".join(
-        part.get("text", "")
-        for candidate in data.get("candidates", [])
-        for part in candidate.get("content", {}).get("parts", [])
-        if isinstance(part, dict)
-    )
-    return json.loads(output)["text"]
+    # A malformed structured-model response should not waste the entire preview.
+    # Retry only that *formatting* failure once. Never retry 429, auth/network
+    # problems, or use a paid-model fallback; never publish malformed text.
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                data = json.load(response)
+        except urllib.error.HTTPError as error:
+            raise RuntimeError(f"Gemini unavailable (HTTP {error.code}); draft skipped") from None
+        except (urllib.error.URLError, TimeoutError) as error:
+            raise RuntimeError(f"Gemini connection error: {type(error).__name__}") from None
+        except json.JSONDecodeError:
+            if attempt == 0:
+                continue
+            raise RuntimeError("Gemini response envelope was malformed twice; draft skipped") from None
+
+        output = "".join(
+            part.get("text", "")
+            for candidate in data.get("candidates", [])
+            for part in candidate.get("content", {}).get("parts", [])
+            if isinstance(part, dict)
+        )
+        try:
+            post = json.loads(output)["text"]
+            if isinstance(post, str) and post.strip():
+                return post
+        except (json.JSONDecodeError, KeyError, TypeError):
+            pass
+        if attempt == 0:
+            continue
+    raise RuntimeError("Gemini returned malformed post JSON twice; draft skipped")
+
 
 def main():
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
