@@ -1,0 +1,39 @@
+name: Shiori voice: eight Gemini sample drafts (NO THREADS)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: survival40-shiori-voice-preview
+  cancel-in-progress: false
+jobs:
+  generate:
+    if: github.actor == 'BL4GS' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+    steps:
+      - name: Checkout pinned experimental editorial commit only
+        uses: actions/checkout@v4
+        with:
+          ref: 96ccff2bb40f853537dd1bc31a6b765dbb028229
+          persist-credentials: false
+      - name: Offline editor/Threads tests (no real credentials)
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Generate 8 sampled Shiori drafts for review ONLY
+        run: python3 -m scripts.threads.preview_samples
+      - name: Save previews, including partial results if Gemini quota is reached
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiori-voice-preview-${{ github.run_id }}
+          path: threads-output/shiori-samples.json
+          if-no-files-found: warn
+          retention-days: 14
