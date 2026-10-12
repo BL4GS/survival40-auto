@@ -44,6 +44,13 @@ jobs:
         run: python3 -m editorial_intelligence.plan
       - name: Convert candidate topics into WordPress research-only plan handoff
         run: python3 -m editorial_intelligence.bridge
+      - name: Deliver research-only concepts to authorized WordPress inbox (EXPLICIT OPT-IN)
+        if: vars.S40_WP_PLAN_DELIVERY_ENABLED == 'true'
+        env:
+          S40_WP_PLAN_DELIVERY_ENABLED: 'true'
+          S40_WP_INBOX_USER: ${{ secrets.S40_WP_INBOX_USER }}
+          S40_WP_INBOX_APP_PASSWORD: ${{ secrets.S40_WP_INBOX_APP_PASSWORD }}
+        run: python3 -m editorial_intelligence.deliver
       - name: Store editorial proposals as review artifacts only
         if: always()
         uses: actions/upload-artifact@v4
