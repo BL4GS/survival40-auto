@@ -47,3 +47,12 @@
 ## 状態
 - **現時点ではWeb/DBの実復元未検証 → 本番0.19.21配布は保留**。
 - 本番サイトが稼働中で持ち主が本業中のため、ConoHaの「リストア」ボタン、WordPressプラグイン更新、GitHubの公衆向けrelease/`version.txt` 更新は押さない。
+
+## 2026-10-12 actual restore exercise — current evidence
+- The owner ran the provider's Web backup extraction into `backup_data_web` and visually verified the Survival40 WordPress folder, plugin PHP and a navigator asset directory. Public website files were not overwritten.
+- The owner separately restored the prior day's Survival40 database to a **new date-suffixed database** in ConoHa. The restored database's panel capacity eventually displayed **35.44 MB**, while the live database displayed **49.05 MB**. Capacity is not proof of intact posts, expected table names, consistency or a bootable cloned WordPress site.
+- ConoHa's user-permission UI lists **two entries with the same short name tag**. Do not create/attach a user by guessing which dropdown option refers to the restored DB. Existing live MySQL users/passwords were not changed.
+- Current production remained accessible: 23 published posts, 16 drafts, plugin active at v0.19.20, automation and auto-publication last confirmed disabled. No rollback was actually performed against production.
+- **Next mandatory proof before signing the Web+DB recovery attestation:** use a ConoHa-confirmed method to identify the restored database **by full database name**, safely inspect its WordPress table inventory and post status counts using a dedicated read-only/nonproduction connection, and document the outcome. Database access credentials must never be shared in ChatGPT or committed to GitHub.
+- Owner assistance is not needed merely to maintain the GitHub staged release and tests; do not switch the production site's `wp-config.php` DB settings just to complete the test.
+- For the first real release, the updated `release.yml` also fails closed if the existing 23 public article title/URL/body-hash baseline drifts. That safeguard does not validate private drafts or a full backup restore.
