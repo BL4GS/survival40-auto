@@ -49,3 +49,10 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - A difference causes the verification workflow to fail, while preserving a comparison artifact for troubleshooting. No WordPress writes or release actions occur.
 - PR regression tests do not perform public API requests, reducing the chance of repeat HTTP 507 host limits.
 - This comparison does not verify private/draft posts (16 observed), WP plugin activation, advertising state or actual backup restore; confirm each separately before release.
+## Connected WPVibe authenticated read (2026-10-12)
+- WordPress site connected at https://www.survival40.com using user-approved one-click authorization. WPVibe `site_info` authenticated read succeeded.
+- Current installed and active Survival40 Auto is **0.19.20**; active site theme Twenty Twenty-Five **1.4**.
+- Authenticated WordPress REST GET `/wp/v2/posts?per_page=100&status=publish,draft,pending,future,private&context=edit` returned exactly **39** posts: 23 published, 16 drafts. Separate future query returned **0**.
+- Core WordPress REST settings request returned only the site title, not plugin-specific affiliate/ad or automation switches.
+- Site-side WPVibe (Vibe AI) plugin is **not installed**. The current WPVibe connection supports authenticated WordPress core REST and abilities read; native WP-CLI/options and file inspection are unavailable until that plugin is separately installed and authorized.
+- **No writes** to the live site, plugin updates, ads, posts or theme were made through this integration. Do not mistake account-side WPVibe authorization for approval to install a new plugin.
