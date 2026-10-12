@@ -1,0 +1,28 @@
+name: Survival40 Threads Editorial Draft Tests (NO POSTING)
+on:
+  pull_request:
+    paths:
+      - "scripts/threads/compose.py"
+      - "scripts/threads/test_compose.py"
+      - "threads/editorial.json"
+      - ".github/workflows/threads-editorial-tests.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate editorial themes JSON
+        run: python3 -m json.tool threads/editorial.json > /dev/null
+      - name: Offline tests only; no API tokens
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
