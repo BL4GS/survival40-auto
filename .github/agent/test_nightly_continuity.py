@@ -2,7 +2,7 @@
 from pathlib import Path
 import unittest
 
-WORKFLOW = Path(__file__).resolve().parents[1] / ".github/workflows/nightly-ai-review.yml"
+WORKFLOW = Path(__file__).resolve().parents[2] / ".github/workflows/nightly-ai-review.yml"
 
 class NightlyContinuityContractTests(unittest.TestCase):
     def test_advisory_always_runs_even_with_pending_pr(self):
