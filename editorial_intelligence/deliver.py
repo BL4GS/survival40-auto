@@ -13,7 +13,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 INPUT = ROOT / "editorial-output" / "wp-plan-handoff.json"
-ENDPOINT = "https://survival40.com/index.php?rest_route=%2Fsurvival40%2Fv1%2Feditorial-plans"
+ENDPOINT = "https://www.survival40.com/index.php?rest_route=%2Fsurvival40%2Fv1%2Feditorial-plans"
 MAX_DOCUMENT_BYTES = 50_000
 
 
