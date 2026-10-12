@@ -34,7 +34,7 @@ class ThreadsDraftTests(unittest.TestCase):
         )
         shapes = {select_shape(self.at(8).date(), slot) for slot in ("morning", "evening")}
         self.assertTrue(shapes.issubset({
-            "short_observation", "small_detail", "quiet_remark", "light_question"
+            "short_observation", "small_detail", "quiet_remark", "conversation_opening"
         }))
 
     def test_flexible_topic_selection_stays_within_allowed_scope(self):
@@ -129,6 +129,40 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertEqual(validate_post(
             "服を片づけようと思ったけど、明日の朝に回してもいい気がする。", "evening", 300
         ), "服を片づけようと思ったけど、明日の朝に回してもいい気がする。")
+
+    def test_questions_are_optional_and_naturally_allowed(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        policy = config["editorial_modes"]["everyday_chat"]["conversation_policy"]
+        self.assertIn("必須ではない", policy["question_endings"])
+        self.assertIn("割合", policy["fixed_ratio"])
+        self.assertIn("そのまま終えてよい", policy["non_question_endings"])
+        self.assertIn("毎回", policy["avoid"])
+        self.assertEqual(config["mode"], "draft_only")
+        for offset in range(30):
+            when = self.at(8) + dt.timedelta(days=offset)
+            prompt = json.loads(build_prompt(when, "morning", config)["prompt"])
+            self.assertEqual(prompt["conversation_policy"], policy)
+        # A friendly single question and a plain observation are both valid.
+        question = "コートのポケットから丸まったレシートが出てきました。こういうの、みなさんもありますか？"
+        observation = "予備の石けんが三つ出てきたので、あとで整理しようと思って引き出しを閉めました。"
+        self.assertEqual(validate_post(question, "morning", 300), question)
+        self.assertEqual(validate_post(observation, "evening", 300), observation)
+
+    def test_conversation_opening_does_not_force_a_question(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        found = False
+        for days in range(100):
+            when = self.at(8) + dt.timedelta(days=days)
+            for slot in ("morning", "evening"):
+                prompt = json.loads(build_prompt(when, slot, config)["prompt"])
+                if prompt["shape"] == "conversation_opening":
+                    self.assertIn("質問は必須ではなく", prompt["shape_notes"])
+                    self.assertIn("返信", " ".join(config["editorial_review"]["questions"]))
+                    found = True
+                    break
+            if found:
+                break
+        self.assertTrue(found)
 
     def test_greetings_still_allowed_sometimes(self):
         self.assertIn("おはようございます", validate_post(
