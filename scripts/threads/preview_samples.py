@@ -57,6 +57,7 @@ def main():
             "slot": slot,
             "theme": instruction["theme"],
             "topic_group": instruction["topic_group"],
+            "persona_angle": instruction["persona_angle"],
             "tone_mode": tone_mode,
             "valid": False,
         }
