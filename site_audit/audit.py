@@ -159,6 +159,7 @@ def evaluate(posts, total_reported=None):
     seen_titles = {}
     checked = 0
     total_images_missing_alt = 0
+    articles_without_inline_links = []
     for post in posts:
         if not isinstance(post, dict):
             findings.append({"severity": "warning", "code": "invalid_post", "post_id": None,
@@ -210,8 +211,9 @@ def evaluate(posts, total_reported=None):
                 if dest.path not in ("/", "") and not dest.path.startswith(("/wp-content/", "/wp-json/", "/wp-admin/")):
                     internal_links += 1
         if length >= 500 and internal_links == 0:
-            findings.append({**prefix, "severity": "info", "code": "no_internal_links",
-                             "detail": "Long article with no visible same-site content link; editorial choice may be intentional"})
+            # REST content may differ from front-end rendered navigation / related
+            # articles. Record as one aggregate observation, not 23 separate alerts.
+            articles_without_inline_links.append(post_id)
         # Signals to inspect, not accusations of unsound health advice.
         if re.search(r"絶対に治る|必ず治る|100%治る|一発で治る|確実に治る", reader.words):
             findings.append({**prefix, "severity": "review", "code": "strong_health_claim",
@@ -223,6 +225,11 @@ def evaluate(posts, total_reported=None):
         "post_count": checked, "posts_sampled": len(posts),
         "total_api_reported": total_reported,
         "image_alt_gaps": total_images_missing_alt,
+        "rest_articles_without_inline_links": {
+            "count": len(articles_without_inline_links),
+            "post_ids": articles_without_inline_links,
+            "note": "REST body observation only. Front-end related-post links may still render."
+        },
         "findings": findings,
         "finding_counts": dict(Counter(f["severity"] for f in findings)),
         "advertising_policy": "No-ad articles are valid. Missing ads are never a health-audit defect.",
@@ -280,6 +287,7 @@ def write_reports(report, destination=REPORT_DIR):
         f"Generated UTC: {report['generated_at_utc']}",
         f"Published posts inspected: **{report['post_count']}**",
         f"Public API total reported: {report['total_api_reported'] or 'not provided'}",
+        f"REST long-form article bodies without inline internal links: {report['rest_articles_without_inline_links']['count']} (separate from front-end links; not a broken-link claim).",
         "No WordPress updates, releases, affiliate changes, or Threads posts were made.",
         "",
         "## Advisory findings",
