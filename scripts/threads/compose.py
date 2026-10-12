@@ -43,6 +43,61 @@ def select_shape(today, slot):
     return options[int.from_bytes(digest[:4], "big") % len(options)]
 
 
+def select_tone_mode(today, slot):
+    """Permit a rare casual aside without mandating one or creating a calendar pattern."""
+    if slot not in ("morning", "evening"):
+        raise ValueError("Unknown posting slot")
+    index = today.toordinal() * 2 + (0 if slot == "morning" else 1)
+    def candidate(n):
+        digest = hashlib.sha256(f"shiori-voice-v1:{n}".encode()).digest()
+        return int.from_bytes(digest[:4], "big") % 100 < 22
+    if candidate(index) and not any(candidate(index - i) for i in (1, 2)):
+        return "relaxed_allowed"
+    return "polite"
+
+
+def build_prompt(now, slot, config):
+    """One canonical prompt for daily drafts and evaluation previews."""
+    if slot not in ("morning", "evening"):
+        raise ValueError("Unknown posting slot")
+    theme = select_theme(now.date(), slot, config["themes"])
+    shape = select_shape(now.date(), slot)
+    tone_mode = select_tone_mode(now.date(), slot)
+    weekday = ("月", "火", "水", "木", "金", "土", "日")[now.weekday()]
+    prompt = json.dumps({
+        "date_jst": now.date().isoformat(), "weekday": weekday,
+        "slot": slot, "theme": theme, "shape": shape,
+        "voice": config["voice"], "tone_mode": tone_mode,
+        "tone_mode_instructions": (
+            "自然な『です・ます』口調を維持する。砕けた語尾、笑、くだけたツッコミを意図的に挿入しない。"
+            if tone_mode == "polite" else
+            "基本は丁寧語。場面に自然に合う場合のみ、ごく短いラフな一言や控えめなユーモアを許可する。"
+            "自然でなければ丁寧語のままでよい。『笑』や砕けた語尾を入れる必要はない。"
+        ),
+        "shape_notes": {
+            "short_observation": "生活の中のちょっとした気づき。結論や教訓なし。",
+            "small_detail": "ひとつの具体的な場面・行動に寄せる。想像上の個人体験は語らない。",
+            "quiet_remark": "短い独り言に近い一文〜二文。挨拶や締めの定型文は不要。",
+            "light_question": "答えを強要しない軽い疑問。質問を作るためだけの文章にしない。"
+        }[shape],
+        "guidelines": [
+            "日本語18〜160字を目安。短く自然なら一文でもよい。最大240字",
+            "基本は『です・ます』の自然な丁寧語。敬語の堅さは不要だが、最初から友達口調にはしない",
+            "tone_mode の指示を守り、毎回ラフな言葉を入れない",
+            "『笑』やツッコミ、句点を抜く演出を定型化しない。語尾をわざと砕けさせない",
+            "冒頭の挨拶は任意。『おはようございます』『お疲れ様です』を毎回繰り返さない",
+            "40代男性の日常を見下さず、指導者ではなく程よい距離感の案内役として書く",
+            "AIやシステム、投稿テスト、運用中、連携といった舞台裏の話題は出さない",
+            "根拠のない季節の状況、今日の天気、祝日、時事・地域イベントには触れない",
+            "実際に経験したかのような一人称の仕事・家族・買い物・使用感を創作しない",
+            "健康効果を断定しない。記事や商品の宣伝、ハッシュタグ、リンクは不要",
+            "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
+            "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
+        ]
+    }, ensure_ascii=False)
+    return {"prompt": prompt, "theme": theme, "shape": shape, "tone_mode": tone_mode}
+
+
 def validate_post(text, slot, max_chars):
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
@@ -124,39 +179,14 @@ def main():
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not key:
         raise SystemExit("SKIP: Gemini secret unavailable; no generated post")
-    theme = select_theme(now.date(), slot, config["themes"])
-    weekday = ("月", "火", "水", "木", "金", "土", "日")[now.weekday()]
-    shape = select_shape(now.date(), slot)
-    prompt = json.dumps({
-        "date_jst": now.date().isoformat(), "weekday": weekday,
-        "slot": slot, "theme": theme, "shape": shape,
-        "voice": config["voice"],
-        "shape_notes": {
-            "short_observation": "生活の中のちょっとした気づき。結論や教訓なし。",
-            "small_detail": "ひとつの具体的な場面・行動に寄せる。想像上の個人体験は語らない。",
-            "quiet_remark": "短い独り言に近い一文〜二文。挨拶や締めの定型文は不要。",
-            "light_question": "答えを強要しない軽い疑問。質問を作るためだけの文章にしない。"
-        }[shape],
-        "guidelines": [
-            "日本語18〜160字を目安。短く自然なら一文でもよい。最大240字",
-            "基本は『です・ます』の自然な丁寧語。敬語の堅さは不要だが、最初から友達口調にはしない",
-            "時折『ですよね』『〜ません？』など軽いラフさを混ぜてもよいが、毎回混ぜる必要はない",
-            "『笑』やツッコミ、句点を抜く演出を定型化しない。語尾をわざと砕けさせない",
-            "冒頭の挨拶は任意。『おはようございます』『お疲れ様です』を毎回繰り返さない",
-            "40代男性の日常を見下さず、指導者ではなく程よい距離感の案内役として書く",
-            "AIやシステム、投稿テスト、運用中、連携といった舞台裏の話題は出さない",
-            "根拠のない季節の状況、今日の天気、祝日、時事・地域イベントには触れない",
-            "実際に経験したかのような一人称の仕事・家族・買い物・使用感を創作しない",
-            "健康効果を断定しない。記事や商品の宣伝、ハッシュタグ、リンクは不要",
-            "努力・癒し・自分磨きなどの説教、無理な励まし、毎回の問いかけやまとめを避ける",
-            "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章"
-        ]
-    }, ensure_ascii=False)
+    instruction = build_prompt(now, slot, config)
+    theme, shape, tone_mode = instruction["theme"], instruction["shape"], instruction["tone_mode"]
+    prompt = instruction["prompt"]
     post = validate_post(gemini_generate(prompt, key), slot, config["max_characters"])
     draft = {
         "id": f"{now.date().isoformat()}-{slot}", "date_jst": now.date().isoformat(),
         "slot": slot, "account": config["account"], "theme": theme, "shape": shape,
-        "text": post, "publish": False, "status": "review_draft_only",
+        "tone_mode": tone_mode, "text": post, "publish": False, "status": "review_draft_only",
         "generated_at_jst": now.isoformat(timespec="seconds")
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
