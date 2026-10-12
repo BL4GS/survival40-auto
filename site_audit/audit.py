@@ -17,6 +17,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from site_audit.discovery import analyze_discovery
+
 ORIGIN = "https://survival40.com"
 REST_URL = ORIGIN + "/index.php?rest_route=%2Fwp%2Fv2%2Fposts"
 MAX_POSTS = 90
@@ -252,10 +254,14 @@ def probe_public_pages(posts):
     results = []
     for url in urls:
         try:
-            status, _, html = public_get(url, head_only=(url == ORIGIN + "/"),
-                                         preview=(url != ORIGIN + "/"))
+            status, _, html = public_get(url, preview=True)
             outcome = "ok" if status == 200 else ("blocked" if status in (401, 403, 429) else "error")
             result = {"url": url, "status": status, "outcome": outcome}
+            if status == 200 and url == ORIGIN + "/":
+                # Reuse the homepage GET already made for health audit: no new requests.
+                result["discovery"] = analyze_discovery(
+                    posts, html.decode("utf-8", errors="replace")
+                )
             if status == 200 and url != ORIGIN + "/":
                 reader = ContentReader()
                 reader.feed(html.decode("utf-8", errors="replace"))
@@ -296,6 +302,15 @@ def write_reports(report, destination=REPORT_DIR):
         rows.append(f"- [{finding['severity']}] post #{finding['post_id'] or 'N/A'}: {finding['code']} — {finding['detail']}")
     if not report["findings"]:
         rows.append("- No automatic content findings in inspected posts. This does not certify factual accuracy.")
+    discovery = report.get("discovery")
+    if isinstance(discovery, dict):
+        rows += ["", "## Reader discovery: homepage and editorial crosslinks",
+                 f"Homepage accessible: {discovery['homepage_inspected']}",
+                 f"Published posts linked on homepage: {discovery['homepage_links_to_published_posts']}",
+                 f"Published post IDs not linked on homepage: {discovery['not_linked_on_homepage_ids']}",
+                 f"Post IDs with no inbound link in another article's REST body: {discovery['no_other_post_body_inbound_ids']}",
+                 f"Priority for link review (not found on homepage OR other article body): {discovery['not_linked_from_home_or_post_body_ids']}",
+                 discovery['scope_note']]
     rows += ["", "## Public page GET checks"]
     for result in report["page_checks"]:
         rows.append(f"- {result['status'] or 'N/A'} {result['outcome']}: {result['url']}" + (f" — links to other published posts in rendered page: {result['rendered_other_post_links']}" if "rendered_other_post_links" in result else ""))
@@ -316,6 +331,8 @@ def main():
     report = evaluate(posts, total_reported)
     report["generated_at_utc"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     report["page_checks"] = probe_public_pages(posts)
+    first = report["page_checks"][0] if report["page_checks"] else {}
+    report["discovery"] = first.pop("discovery", analyze_discovery(posts))
     write_reports(report)
     print(f"PASS: Read-only audit of {report['post_count']} public posts")
     print(f"FINDINGS: {report['finding_counts']}")
