@@ -51,6 +51,8 @@ jobs:
           persist-credentials: false
       - name: Generate weekly topic candidates with one bounded Gemini request
         run: python3 -m editorial_intelligence.plan
+      - name: Convert candidate topics into WordPress research-only plan handoff
+        run: python3 -m editorial_intelligence.bridge
       - name: Store editorial proposals as review artifacts only
         if: always()
         uses: actions/upload-artifact@v4
