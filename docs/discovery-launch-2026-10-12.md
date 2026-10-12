@@ -38,3 +38,11 @@
 3. 公開記事の実際の内部リンクを調べて上記7クラスタの欠けを明確化。ページ本文や栞の表示を守る。
 4. まず1記事の安全な配信・検索評価を測り、量産しない。
 5. SEOやSNSの進捗と、記事の安全な公開自動化の進捗は別軸で管理する。
+
+## Homepage links updated on live WordPress (2026-10-12)
+- Safely edited only WordPress static front page **post ID 471** via WPVibe exact server-side content replacement. Preserved the leading `[survival40_home]` shortcode and generated Shiori guide/theme. Appended a simple reader-facing heading **「気になるテーマをもう少し読む」** and nine previously unfeatured published article permalink links.
+- Rechecked WordPress site response after the edit: published **23** / draft **16**, unchanged.
+- Verified homepage rendered `<main>` contains **all 23 of 23** canonical published post URLs, plus existing Shiori guide (`s40-home-guide`) and category cards (`s40-home-card`). This is a URL coverage result, **not** a guarantee of mobile visual design, usability, Google indexing or article-body contextual crosslinks.
+- The shortcode renderer currently emits an extra closing `</p>` before the new section. The HTML is rendered and links are present, but the markup warrants separate housekeeping. A follow-up safe block-formatter edit failed 422 without applying; **no attempt to bypass the validation was made**.
+- The exact rollout and caveats are logged on https://github.com/BL4GS/survival40-auto/issues/24 .
+- No published article bodies were edited, and no plugin auto-publisher/GitHub Release updates were triggered.
