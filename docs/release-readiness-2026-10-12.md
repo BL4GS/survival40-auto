@@ -25,3 +25,21 @@ The new script `production_preflight/baseline.py` reads only public WordPress ar
 - Do not equate 'リストア可' with proven restorability.
 - Never turn on advertisements to satisfy an update test; zero-ad articles are correct.
 - Protect existing posts, drafts, Shiori assets and layout. Stop/revert the rollout on unexpected changes.
+
+## Confirmed known-good plugin rollback (2026-10-12)
+- The public GitHub release v0.19.20 ZIP was fetched without any release modifications; its archive CRC, plugin PHP 0.19.20 version markers, and navigator image were checked.
+- Read-only GitHub Actions run: https://github.com/BL4GS/survival40-auto/actions/runs/38210856074 ; rollback artifact: https://github.com/BL4GS/survival40-auto/actions/runs/38210856074/artifacts/11728854452 (90-day retention).
+- The old ZIP is available independently of the mutable public GitHub Release `latest`; a copy and SHA-256 checksum were also verified. This is **plugin file recovery only**, not a full WordPress database recovery.
+- Installed plugin remains 0.19.20, active; WordPress plugin auto-update is enabled; article automation is OFF as observed in owner screenshots dated 2026-10-12.
+
+## Official ConoHa recovery procedure — verified from support documents
+- ConoHa's 'リストア可' refers to the ability to **restore backup data** from its snapshots. For Web data, ConoHa places recovered data under `/home/cXXXXXXXX/backup_data_web`, which must then be moved to the live Web document root using its file manager or FTP; choosing a restore date alone does not automatically roll back all live WordPress files.
+- For database restore, ConoHa creates a recovered database named with the restore date. Its official procedure involves carefully changing the database used by the site in `wp-config.php`; this should be a controlled recovery operation, NOT undertaken as a routine plugin update step.
+- ConoHa says Web/mail restored files may be deleted after **24 hours**, and restoring 5+ times within a week may cause restrictions.
+- Sources: https://support.conoha.jp/w/restorebackup/ ; https://support.conoha.jp/w/recovery-web/ ; https://support.conoha.jp/w/recovery-db/.
+- No restoration was executed by ChatGPT. The safest default on a plugin-only failure is to restore the **prior plugin folder** from the archived v0.19.20 ZIP, rather than overwrite the whole WordPress database and lose newer articles or configuration.
+
+## Still open
+- Record WordPress Posts counts for Published/Draft/Scheduled/Pending, and current advertising switches in plugin settings.
+- Capture a reversible site-level rollback approach suitable for the actual ConoHa account; an **off-host** DB and wp-content backup or isolated restore rehearsal is not yet verified.
+- Do not publish v0.19.21 or update version.txt until final production readiness has been validated and monitoring/recovery access is available.
