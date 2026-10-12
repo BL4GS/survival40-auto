@@ -1,1 +1,1 @@
-{"account_id": "27017491211282340", "id": "test-20261013-v1", "manual_reconciliation_required_if_interrupted": true, "status": "reserved", "text_sha256": "db30e535efd442789c8be96a021933b0d9a2ba7e7a447fcabd44e32b097e16d3"}
+{"account_id": "27017491211282340", "id": "test-20261013-v1", "manual_reconciliation_required_if_interrupted": true, "status": "published", "text_sha256": "db30e535efd442789c8be96a021933b0d9a2ba7e7a447fcabd44e32b097e16d3", "threads_post_id": "17971034388165938"}
