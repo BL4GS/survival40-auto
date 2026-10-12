@@ -42,7 +42,7 @@ class StrictRedirects(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def public_get(url, max_bytes=MAX_RESPONSE_BYTES, head_only=False):
+def public_get(url, max_bytes=MAX_RESPONSE_BYTES, head_only=False, preview=False):
     target = urllib.parse.urlsplit(url)
     if target.scheme != "https" or target.netloc not in (
         "survival40.com", "www.survival40.com"
@@ -53,9 +53,9 @@ def public_get(url, max_bytes=MAX_RESPONSE_BYTES, head_only=False):
     })
     try:
         with urllib.request.build_opener(StrictRedirects()).open(request, timeout=18) as response:
-            # Page probes only need the HTTP status, not an entire large HTML page.
-            data = response.read(1024 if head_only else max_bytes + 1)
-            if not head_only and len(data) > max_bytes:
+            # Page previews are capped independently of total HTML size.
+            data = response.read(1024 if head_only else (500_000 if preview else max_bytes + 1))
+            if not head_only and not preview and len(data) > max_bytes:
                 raise AuditSourceError("Site response exceeds size limit")
             return response.status, dict(response.headers.items()), data
     except urllib.error.HTTPError as exc:
@@ -230,23 +230,41 @@ def evaluate(posts, total_reported=None):
 
 
 def probe_public_pages(posts):
-    # Explicit bounded GETs, same-origin only; report blocked 403 separately.
+    # Bound checks to homepage + 6 article pages. Compare HTML anchors with
+    # known publicly published post permalinks, without executing JavaScript.
     urls = [ORIGIN + "/"]
+    post_paths = set()
     for post in posts:
         try:
             url = safe_post_url(post.get("link") if isinstance(post, dict) else None)
-            if url not in urls:
+            post_paths.add(urllib.parse.urlsplit(url).path.rstrip("/"))
+            if url not in urls and len(urls) < MAX_CHECKED_PERMALINKS + 1:
                 urls.append(url)
         except ValueError:
             pass
-        if len(urls) >= MAX_CHECKED_PERMALINKS + 1:
-            break
     results = []
     for url in urls:
         try:
-            status, _, _ = public_get(url, head_only=True)
+            status, _, html = public_get(url, head_only=(url == ORIGIN + "/"),
+                                         preview=(url != ORIGIN + "/"))
             outcome = "ok" if status == 200 else ("blocked" if status in (401, 403, 429) else "error")
-            results.append({"url": url, "status": status, "outcome": outcome})
+            result = {"url": url, "status": status, "outcome": outcome}
+            if status == 200 and url != ORIGIN + "/":
+                reader = ContentReader()
+                reader.feed(html.decode("utf-8", errors="replace"))
+                own_path = urllib.parse.urlsplit(url).path.rstrip("/")
+                linked_post_paths = set()
+                for href in reader.links:
+                    parsed = urllib.parse.urlsplit(urllib.parse.urljoin(url, href))
+                    path = parsed.path.rstrip("/")
+                    if (parsed.scheme == "https" and parsed.netloc in
+                            ("survival40.com", "www.survival40.com") and
+                            path != own_path and path in post_paths):
+                        linked_post_paths.add(path)
+                # Whole page includes navigation/footer. This is NOT
+                # proof of editorial links inside the article text.
+                result["rendered_other_post_links"] = len(linked_post_paths)
+            results.append(result)
         except AuditSourceError as error:
             results.append({"url": url, "status": None, "outcome": "network_error",
                             "detail": str(error)})
@@ -272,12 +290,13 @@ def write_reports(report, destination=REPORT_DIR):
         rows.append("- No automatic content findings in inspected posts. This does not certify factual accuracy.")
     rows += ["", "## Public page GET checks"]
     for result in report["page_checks"]:
-        rows.append(f"- {result['status'] or 'N/A'} {result['outcome']}: {result['url']}")
+        rows.append(f"- {result['status'] or 'N/A'} {result['outcome']}: {result['url']}" + (f" — links to other published posts in rendered page: {result['rendered_other_post_links']}" if "rendered_other_post_links" in result else ""))
     rows += ["", "## Important scope notes",
              "- The audit uses public WordPress REST responses and limited same-origin HTTP GETs only.",
              "- Missing affiliate links are not errors. Zero-ad articles remain valid.",
              "- Content flags are advisory and cannot prove incorrect health claims, poor SEO or broken rendering.",
              "- HTTP 403/429 may be site bot protection, not broken pages.",
+             "- Rendered-page crosslinks include header/footer/sidebar; they do not prove article-body links.",
              "- Never auto-edit/publish or remove an article from audit findings.", ""]
     (destination / "audit.md").write_text("\n".join(rows), encoding="utf-8")
 
