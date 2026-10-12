@@ -127,7 +127,7 @@ def inspect_idea(idea, published, seen_ids):
             "mapped_category_reason": rationale,
             "research_questions": research,
             "source_group_hint": CATEGORY[category]["group"],
-            "requires_ymyl_gate": CATEGORY[category]["ymyl"],
+            "requires_ymyl_gate": CATEGORY[category]["ymyl"] or idea.get("requires_health_evidence_review") is True,
             "advertising_policy": idea["advertising_policy"],
             "verified_search_demand": False,
             "verified_sources": 0,
