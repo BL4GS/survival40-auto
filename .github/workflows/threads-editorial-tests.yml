@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "scripts/threads/compose.py"
+      - "scripts/threads/article_copy.py"
+      - "scripts/threads/preview_samples.py"
       - "scripts/threads/test_compose.py"
       - "threads/editorial.json"
       - ".github/workflows/threads-editorial-tests.yml"
