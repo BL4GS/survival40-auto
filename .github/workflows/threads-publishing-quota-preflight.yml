@@ -1,0 +1,77 @@
+name: Threads publishing quota preflight (read-only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check identity and publishing API access without posting
+        shell: bash
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("THREADS_ACCESS_TOKEN", "").strip()
+          expected = os.environ.get("THREADS_USER_ID", "").strip()
+          if len(token) < 12 or not re.fullmatch(r"[0-9]{1,30}", expected):
+              sys.exit("FAIL: Required GitHub Secrets missing or invalid. No post created.")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, msg, headers, newurl):
+                  raise ValueError("redirect blocked")
+
+          opener = urllib.request.build_opener(NoRedirect())
+          def get_json(path):
+              req = urllib.request.Request(
+                  "https://graph.threads.net" + path,
+                  method="GET",
+                  headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+              )
+              try:
+                  with opener.open(req, timeout=20) as res:
+                      if res.status != 200:
+                          raise ValueError("non-200 response")
+                      raw = res.read(32769)
+                      if len(raw) > 32768:
+                          raise ValueError("response too large")
+                      data = json.loads(raw.decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  sys.exit("FAIL: Threads API HTTP " + str(exc.code) + "; no post created.")
+              except (urllib.error.URLError, TimeoutError, ValueError, UnicodeError):
+                  sys.exit("FAIL: Could not verify Threads API; no post created.")
+              if not isinstance(data, dict):
+                  sys.exit("FAIL: Unexpected Threads API response.")
+              return data
+
+          profile = get_json("/me?fields=id%2Cusername")
+          if (str(profile.get("id", "")) != expected
+              or str(profile.get("username", "")).lstrip("@").casefold() != "survival40_jp"):
+              sys.exit("FAIL: Account mismatch; no post created.")
+
+          quota = get_json("/me/threads_publishing_limit?fields=quota_usage%2Cconfig")
+          if "quota_usage" not in quota or "config" not in quota:
+              sys.exit("FAIL: Publishing quota endpoint returned incomplete data; no post created.")
+          print("PASS: @survival40_jp identity matches GitHub Secrets.")
+          print("PASS: Authenticated Threads publishing-limit endpoint is accessible.")
+          print("No post or media container created; no credentials printed.")
+          print("NOTE: This is an API-access check, not proof of all posting permissions or token expiry.")
+          summary = os.getenv("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as out:
+                  out.write("## Threads publishing preflight\n\n")
+                  out.write("- Account: **@survival40_jp** (verified)\n")
+                  out.write("- Read-only publishing quota endpoint: **reachable**\n")
+                  out.write("- **No post created**\n")
+                  out.write("- Still required: token debugger scope/expiry check and one approved live test\n")
+          PY
