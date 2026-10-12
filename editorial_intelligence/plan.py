@@ -265,6 +265,8 @@ def main():
     report = {
         "date_jst": today.isoformat(),
         "existing_articles_count": len(catalog),
+        "published_titles_snapshot": [item["title"] for item in catalog],
+        "inventory_captured_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "ideas": ideas, "rejected": rejected,
         "automatically_published": False,
         "source_validation": "not_done_yet",
