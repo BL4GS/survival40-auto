@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 from scripts.threads.article_copy import build_article_prompt
 from scripts.threads.compose import (
     CONFIG, build_prompt, choose_slot, gemini_generate, select_editorial_topic,
-    select_shape, select_theme, select_tone_mode, validate_post,
+    select_persona_angle, select_shape, select_theme, select_tone_mode, validate_post,
 )
 
 
@@ -37,63 +37,90 @@ class ThreadsDraftTests(unittest.TestCase):
             "short_observation", "small_detail", "quiet_remark", "light_question"
         }))
 
-    def test_editorial_topic_mix_is_bounded_each_iso_week(self):
+    def test_flexible_topic_selection_stays_within_allowed_scope(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
-        limits = config["editorial_limits"]["per_14_weekly_slots"]
-        self.assertEqual(limits, {
-            "grooming": 8, "movement": 3,
-            "daily_routine": 2, "small_talk": 1,
-        })
+        policy = config["editorial_limits"]
+        self.assertEqual(policy["max_small_talk_per_14_slots"], 2)
+        self.assertEqual(sum(policy["soft_weights"].values()), 11)
         monday = dt.date(2026, 10, 12)
-        for w in range(12):
-            week_start = monday + dt.timedelta(weeks=w)
-            counts = {key: 0 for key in limits}
-            for d in range(7):
-                day = week_start + dt.timedelta(days=d)
+        distributions = []
+        for week in range(16):
+            week_start = monday + dt.timedelta(weeks=week)
+            counts = {key: 0 for key in config["topic_groups"]}
+            for day in range(7):
+                when = week_start + dt.timedelta(days=day)
                 for slot in ("morning", "evening"):
-                    topic = select_editorial_topic(
-                        day, slot, config["topic_groups"], limits
+                    result = select_editorial_topic(
+                        when, slot, config["topic_groups"], policy
                     )
-                    counts[topic["topic_group"]] += 1
-                    self.assertIn(topic["theme"], config["topic_groups"][topic["topic_group"]])
+                    group = result["topic_group"]
+                    counts[group] += 1
+                    self.assertIn(result["theme"], config["topic_groups"][group])
+                    self.assertEqual(result, select_editorial_topic(
+                        when, slot, config["topic_groups"], policy
+                    ))
                     if slot == "morning":
-                        self.assertNotIn("寝る前", topic["theme"])
-                        self.assertNotIn("帰宅後", topic["theme"])
+                        self.assertNotIn("寝る前", result["theme"])
+                        self.assertNotIn("帰宅後", result["theme"])
                     else:
-                        self.assertNotIn("朝", topic["theme"])
-            self.assertEqual(counts, limits)
+                        self.assertNotIn("朝", result["theme"])
+            self.assertEqual(sum(counts.values()), 14)
+            self.assertLessEqual(counts["small_talk"], 2)
+            distributions.append(tuple(counts.values()))
+        # The distribution is deliberately not fixed to 8/3/2/1 weekly.
+        self.assertGreater(len(set(distributions)), 1)
         self.assertEqual(config["mode"], "draft_only")
 
-    def test_no_category_broadening_or_increased_chatter_quota(self):
+    def test_persona_scope_and_small_talk_caps_fail_closed(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
         groups = config["topic_groups"]
-        limits = config["editorial_limits"]["per_14_weekly_slots"]
-        for changes in (
-            {"small_talk": 2, "grooming": 7},
-            {"small_talk": 10, "grooming": -1, "movement": 3, "daily_routine": 2},
-        ):
-            wrong = dict(limits, **changes)
-            with self.assertRaises(ValueError):
-                select_editorial_topic(dt.date(2026, 10, 12), "morning", groups, wrong)
+        policy = config["editorial_limits"]
+        cases = [
+            dict(policy, max_small_talk_per_14_slots=3),
+            dict(policy, max_small_talk_per_14_slots=-1),
+            dict(policy, soft_weights=dict(policy["soft_weights"], small_talk=0)),
+            dict(policy, soft_weights=dict(policy["soft_weights"], celebrities=10)),
+        ]
+        for bad in cases:
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    select_editorial_topic(
+                        dt.date(2026, 10, 12), "morning", groups, bad
+                    )
         with self.assertRaises(ValueError):
             select_editorial_topic(
                 dt.date(2026, 10, 12), "morning",
-                dict(groups, unrelated_celebrity=["芸能ニュース"]), limits
+                dict(groups, celebrities=["最新芸能ニュース"]), policy
             )
+
+    def test_character_angle_is_optional_and_stable(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        angles = config["character"]["everyday_angles"]
+        seen = set()
+        for days in range(25):
+            now = self.at(8) + dt.timedelta(days=days)
+            data = json.loads(build_prompt(now, "morning", config)["prompt"])
+            self.assertIn(data["persona_angle"], angles)
+            self.assertIn("人柄", data["editorial_goal"])
+            self.assertIn("自然", data["character"]["autonomy"])
+            self.assertIn("ブログ", data["character"]["identity"])
+            seen.add(data["persona_angle"])
+            self.assertEqual(data["persona_angle"], select_persona_angle(
+                now.date(), "morning", angles))
+        self.assertGreater(len(seen), 3)
 
     def test_prompt_keeps_unrelated_small_talk_closed(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
-        for d in range(14):
-            date = self.at(8) + dt.timedelta(days=d)
+        for d in range(21):
+            now = self.at(8) + dt.timedelta(days=d)
             for slot in ("morning", "evening"):
-                prompt = json.loads(build_prompt(date, slot, config)["prompt"])
-                group = prompt["topic_group"]
-                self.assertIn(group, config["topic_groups"])
-                if group == "small_talk":
-                    self.assertIn("政治", prompt["topic_guardrail"])
-                    self.assertIn("最大1回", prompt["topic_guardrail"])
+                data = json.loads(build_prompt(now, slot, config)["prompt"])
+                self.assertIn(data["topic_group"], config["topic_groups"])
+                if data["topic_group"] == "small_talk":
+                    self.assertIn("政治", data["topic_guardrail"])
+                    self.assertIn("少数枠", data["topic_guardrail"])
                 else:
-                    self.assertIn("Survival40", prompt["topic_guardrail"])
+                    self.assertIn("Survival40", data["topic_guardrail"])
 
     def test_natural_post_without_mandatory_greeting(self):
         self.assertEqual(validate_post(
@@ -180,6 +207,8 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertNotIn("approved_clarity_examples", data)
         priorities = " ".join(data["editorial_priority"])
         self.assertIn("どうでもいい小さな話", priorities)
+        self.assertIn("人柄", priorities)
+        self.assertIn("言葉の主語は栞さん", priorities)
         self.assertIn("役立つ情報を教える記事紹介とは役割が違う", priorities)
         self.assertIn("短く素直に話せるなら一文", priorities)
         self.assertIn("話題は再登場して構わない", priorities)
