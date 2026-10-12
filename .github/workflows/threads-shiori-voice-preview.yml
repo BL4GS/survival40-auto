@@ -1,4 +1,4 @@
-name: Shiori voice: eight Gemini sample drafts (NO THREADS)
+name: 'Shiori voice: eight Gemini sample drafts (NO THREADS)'
 on:
   workflow_dispatch:
 permissions:
