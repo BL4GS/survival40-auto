@@ -19,6 +19,23 @@ FIRST_TEXT = (
 )
 # Verified published Survival40 article titles and HTTPS permalink URLs.
 # One article takes the place of that evening's everyday post, never added on top.
+MORNING_GREETING = "おはようございます。"
+
+
+def add_morning_greeting(text):
+    """A consistent opening for 08:00, never a duplicated model-generated greeting.
+
+    Evening posts and article introductions are intentionally not modified.
+    """
+    import re
+    if not isinstance(text, str):
+        raise ValueError("Morning copy must be text")
+    body = re.sub(r"^\\s*おはようございます[。！!、,\\s]*", "", text).strip()
+    if not body:
+        raise ValueError("Morning copy must include content beyond a greeting")
+    return MORNING_GREETING + "\\n" + body
+
+
 ARTICLE_CALENDAR = {
     "2026-10-14": {
         "title": "40代男性の日焼け止めの選び方｜毎日使いやすい条件を整理",
@@ -68,10 +85,10 @@ def choose_copy(now, config, gemini_key):
         if not gemini_key:
             raise ValueError("Gemini key is required for ordinary posts")
         instruction = build_prompt(now, slot, config)
-        text = validate_post(
-            gemini_generate(instruction["prompt"], gemini_key),
-            slot, config["max_characters"]
-        )
+        generated = gemini_generate(instruction["prompt"], gemini_key)
+        if slot == "morning":
+            generated = add_morning_greeting(generated)
+        text = validate_post(generated, slot, config["max_characters"])
         kind, title = "everyday", None
     if kind == "everyday":
         validate_post(text, slot, config["max_characters"])
