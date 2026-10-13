@@ -10,8 +10,6 @@ import sys
 
 from .compose import (CONFIG, JST, OUTPUT, build_prompt, choose_slot,
                       gemini_generate, validate_post)
-from .article_feed import (ArticleSourceError, build_article_text,
-                           fetch_public_posts, select_recent)
 
 START_DATE = dt.date(2026, 10, 13)
 FIRST_TEXT = (
@@ -64,29 +62,17 @@ def choose_copy(now, config, gemini_key):
         title, kind = article["title"], "article"
         article_url = url
     else:
-        # From 25 October, select a freshly published article for two
-        # evening slots per week. No article -> the usual Shiori post.
-        # Existing preapproved October posts and tonight's first post are unchanged.
-        fresh = None
-        if (slot == "evening" and now.date() > dt.date(2026, 10, 24)
-                and now.weekday() in (2, 5)):
-            try:
-                fresh = select_recent(fetch_public_posts(), now)
-            except ArticleSourceError as exc:
-                print("INFO: Public article API unavailable, using everyday post: " + str(exc))
-        if fresh is not None:
-            text = build_article_text(fresh)
-            title, kind = fresh["title"], "article"
-            article_id, article_url = fresh["id"], fresh["url"]
-        else:
-            if not gemini_key:
-                raise ValueError("Gemini key is required for ordinary posts")
-            instruction = build_prompt(now, slot, config)
-            text = validate_post(
-                gemini_generate(instruction["prompt"], gemini_key),
-                slot, config["max_characters"]
-            )
-            kind, title = "everyday", None
+        # Daily 08:00 and 20:00 slots stay Shiori's everyday posts.
+        # Separate 22:00 article introductions begin on 2026-10-19;
+        # the four preapproved October article nights above remain unchanged.
+        if not gemini_key:
+            raise ValueError("Gemini key is required for ordinary posts")
+        instruction = build_prompt(now, slot, config)
+        text = validate_post(
+            gemini_generate(instruction["prompt"], gemini_key),
+            slot, config["max_characters"]
+        )
+        kind, title = "everyday", None
     if kind == "everyday":
         validate_post(text, slot, config["max_characters"])
     elif not 30 <= len(text) <= 500:
