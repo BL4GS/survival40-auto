@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Pin reviewed persona-first generator and keep 08:00/20:00 as usual; article links move to separate 22:00 workflow.
-          ref: 2c6660b3856fd87e3d04583dd6c4f273020a0c17
+          ref: 7e2ab4321465acbd0a34413bfca167907db5fca0
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
