@@ -1,0 +1,51 @@
+{
+  "project": "Survival40",
+  "record_type": "owner_supplied_a8_banner_addition",
+  "recorded_date": "2026-10-13",
+  "deployment_state": "catalogued_only_not_placed_on_wordpress",
+  "note": "Existing 16 entries in planning/a8-banner-assets-unified-2026-10.json remain unchanged. This separately catalogued 17th banner awaits review and deliberate placement; avoid assumptions based on older screenshot showing 未提携.",
+  "assets": [
+    {
+      "name": "酒長快朝（しょうちょうかいちょう）",
+      "advertiser": "株式会社MAE",
+      "asp": "A8.net",
+      "program_id": "s00000027703001",
+      "category": "食生活・季節の会食",
+      "status": "approved_owner_confirmed",
+      "status_source": "Site owner directly confirmed instant partnership and that approval has already been obtained; earlier screenshots captured 未提携 before this confirmation",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEFL7+ENI5UA+5XRA+5YZ75",
+      "banner_src": "https://www21.a8.net/svt/bgt?aid=261013867886&wid=005&eno=01&mid=s00000027703001003000&mc=1",
+      "impression_src": "https://www17.a8.net/0.gif?a8mat=4BEFL7+ENI5UA+5XRA+5YZ75",
+      "width": 300,
+      "height": 250,
+      "campaign_product": "酒長快朝 14包入り グレープフルーツ味サプリメント（LP掲載の対象商品のみ）",
+      "conversion_conditions": [
+        "対象商品を初めて購入した新規顧客",
+        "Web注文から30日以内の入金確認",
+        "複数個購入でも報酬額は同一"
+      ],
+      "rejection_conditions": [
+        "返品・キャンセル・不正・重複・申込不備・いたずら",
+        "LINE経由の注文",
+        "リスティング違反"
+      ],
+      "restrictions": [
+        "本人申込み不可",
+        "対象商品・リンク先LPを照合",
+        "サイト内の人物画像使用不可",
+        "リスティングNGワードは社名・サービス名・表記ゆれ",
+        "A8の提供文をそのままサイト掲載しない",
+        "記事には広告表示・nofollow sponsoredを付ける",
+        "NMN・プラセンタ配合から二日酔い予防や疲労回復効果を断定しない",
+        "広告計測画像は実際の掲載時のみ表示する"
+      ],
+      "placement_candidates": [
+        "忘年会・会食シーズンの翌朝の過ごし方",
+        "40代の飲酒習慣と睡眠・休養",
+        "二日酔い対策情報の記事（商品効能は裏付けに応じて限定）"
+      ],
+      "seasonal_priority": "2026-11 to 2026-12",
+      "user_supplied_html_original": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEFL7+ENI5UA+5XRA+5YZ75\" rel=\"nofollow\"><img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www21.a8.net/svt/bgt?aid=261013867886&wid=005&eno=01&mid=s00000027703001003000&mc=1\"></a><img border=\"0\" width=\"1\" height=\"1\" src=\"https://www17.a8.net/0.gif?a8mat=4BEFL7+ENI5UA+5XRA+5YZ75\" alt=\"\">"
+    }
+  ]
+}
