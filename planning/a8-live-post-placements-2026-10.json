@@ -79,7 +79,18 @@
       "observed_status": "publish",
       "verified_wordpress_api": true,
       "verified_public_html": false,
-      "notes": "WPVibe exact-match content edit succeeded, saved content GET confirmed disclosure and exact tracking; public HTML browser not yet independently inspected."
+      "notes": "WPVibe exact-match content edit succeeded, saved content GET confirmed disclosure and exact tracking; public HTML browser not yet independently inspected.; Public rendered HTML not independently rechecked in this turn."
+    },
+    {
+      "post_id": 533,
+      "slug": "monovo-hair-tonic-grow-gel-guide",
+      "program_id": "s00000013307009",
+      "advertiser": "MONOVO ヘアトニックグロウジェル",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "placement": "New product-specific article with PR disclosure, sources and no invented first-person experience"
     }
   ],
   "planned_post_placement": [
@@ -128,6 +139,30 @@
       "from_slug": "40s-male-body-odor-care",
       "to_slug": "40s-male-body-soap-odor-guide",
       "verified_public_html": true
+    },
+    {
+      "from_post_id": 380,
+      "from_slug": "hair-tonic-vs-aga-treatment",
+      "to_slug": "monovo-hair-tonic-grow-gel-guide",
+      "verified_wordpress_api": true
+    },
+    {
+      "from_post_id": 364,
+      "from_slug": "40s-male-hair-loss-causes",
+      "to_slug": "hair-tonic-vs-aga-treatment",
+      "verified_wordpress_api": true
+    },
+    {
+      "from_post_id": 364,
+      "from_slug": "40s-male-hair-loss-causes",
+      "to_slug": "monovo-hair-tonic-grow-gel-guide",
+      "verified_wordpress_api": true
+    },
+    {
+      "from_post_id": 442,
+      "from_slug": "40s-male-scalp-shampoo-guide",
+      "to_slug": "monovo-hair-tonic-grow-gel-guide",
+      "verified_wordpress_api": true
     }
   ]
 }
