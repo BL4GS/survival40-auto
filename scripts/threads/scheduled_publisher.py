@@ -16,6 +16,7 @@ from .compose import CONFIG, JST, OUTPUT, choose_slot, validate_post
 from .ledger import GithubLedger, LedgerError
 from .meta_api import MetaThreadsClient, ThreadsApiError
 from .prepare_schedule import ARTICLE_CALENDAR, FIRST_TEXT, START_DATE
+from .article_feed import build_article_text, require_article_url
 
 
 EXPECTED_REPO = "BL4GS/survival40-auto"
@@ -48,18 +49,37 @@ def verify_draft(draft, now, config):
     if not isinstance(text, str) or not 18 <= len(text) <= 500:
         raise ValueError("Invalid draft text")
     if now.date().isoformat() == "2026-10-13" and slot == "evening":
-        if kind != "everyday" or text != FIRST_TEXT:
+        if (kind != "everyday" or text != FIRST_TEXT
+                or draft.get("article_id") is not None
+                or draft.get("article_url") is not None):
             raise ValueError("First post is not the approved Shiori text")
     elif slot == "evening" and now.date().isoformat() in ARTICLE_CALENDAR:
         article = ARTICLE_CALENDAR[now.date().isoformat()]
         url = "https://www.survival40.com/" + article["slug"] + "/"
         expected = "【PR】" + article["intro"] + "\n\n" + url
         if (kind != "article" or text != expected
-                or draft.get("article_title") != article["title"]):
+                or draft.get("article_title") != article["title"]
+                or draft.get("article_id") is not None
+                or draft.get("article_url") != url):
             raise ValueError("Article text/URL diverged from verified calendar")
+    elif kind == "article":
+        if (slot != "evening" or now.date() <= dt.date(2026, 10, 24)
+                or now.weekday() not in (2, 5)):
+            raise ValueError("Article posted outside approved recurring slots")
+        article_id = draft.get("article_id")
+        title = draft.get("article_title")
+        url = draft.get("article_url")
+        if (type(article_id) is not int or article_id <= 0
+                or not isinstance(title, str) or not 8 <= len(title) <= 150
+                or not isinstance(url, str)
+                or require_article_url(url) != url
+                or text != build_article_text({"title": title, "url": url})):
+            raise ValueError("Fresh article metadata or text is invalid")
     else:
-        if kind != "everyday" or draft.get("article_title") is not None:
-            raise ValueError("Unexpected article outside approved calendar")
+        if (kind != "everyday" or draft.get("article_title") is not None
+                or draft.get("article_id") is not None
+                or draft.get("article_url") is not None):
+            raise ValueError("Unexpected article or metadata in everyday slot")
         validate_post(text, slot, config["max_characters"])
     return text
 
@@ -99,6 +119,13 @@ def publish(draft, now, config, env):
     if not ledger.reserve(key, account, digest):
         print("SKIP: Slot already reserved; no duplicate post created.")
         return None
+    if draft.get("article_id") is not None:
+        # Independently reserve article identity to prevent reposting the same
+        # source after a schedule or implementation change.
+        article_key = "article-" + str(draft["article_id"])
+        if not ledger.reserve(article_key, account, digest):
+            print("SKIP: Article already introduced; do not repeat it.")
+            return None
     container_id = client.create_text_container(text)
     post_id = client.publish_container(container_id)
     ledger.mark_published(key, post_id)
