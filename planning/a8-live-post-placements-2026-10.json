@@ -57,6 +57,16 @@
       "inserted_before": "S40_RELATED_START",
       "observed_status": "publish",
       "verified_public_html": true
+    },
+    {
+      "post_id": 387,
+      "slug": "40s-fatigue-sleep-habits",
+      "program_id": "s00000016652002",
+      "advertiser": "マイまくら（寝具専門店）",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_public_html": true
     }
   ],
   "planned_post_placement": [
@@ -80,5 +90,31 @@
     "The WordPress plugin's automatic banner rollout remains disabled, as staged release preflight has not been met.",
     "Any change to live posts must be verified against current post content and rendered HTML; do not reapply these banners without checking for S40_A8_AD_START:<program_id> marker.",
     "Do not infer A8 current advertiser approval, conversion rate or payout from this file; reconcile current A8 account information before claiming those facts."
+  ],
+  "internal_link_placements": [
+    {
+      "from_post_id": 387,
+      "from_slug": "40s-fatigue-sleep-habits",
+      "to_slug": "40s-fatigue-food-meal-balance",
+      "verified_public_html": true
+    },
+    {
+      "from_post_id": 450,
+      "from_slug": "40s-male-protein-how-to-choose",
+      "to_slug": "40s-male-muscle-loss-home-training",
+      "verified_public_html": true
+    },
+    {
+      "from_post_id": 412,
+      "from_slug": "40s-male-muscle-loss-home-training",
+      "to_slug": "40s-male-protein-how-to-choose",
+      "verified_public_html": true
+    },
+    {
+      "from_post_id": 391,
+      "from_slug": "40s-male-body-odor-care",
+      "to_slug": "40s-male-body-soap-odor-guide",
+      "verified_public_html": true
+    }
   ]
 }
