@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 from scripts.threads.compose import CONFIG
 from scripts.threads.prepare_schedule import (
-    ARTICLE_CALENDAR, FIRST_TEXT, choose_copy,
+    ARTICLE_CALENDAR, FIRST_TEXT, choose_copy, add_morning_greeting, MORNING_GREETING,
 )
 from scripts.threads.scheduled_publisher import (
     assert_scheduled_env, publish, verify_draft,
@@ -76,10 +76,46 @@ class ScheduledLiveTests(unittest.TestCase):
             gemini.return_value = "洗面台の小物が増えてしまって、片づけるより先に新しい置き場所を考えています。"
             prepared = choose_copy(at, self.config, "FAKE_GEMINI")
             self.assertEqual(prepared["kind"], "everyday")
-            self.assertEqual(verify_draft(prepared, at, self.config), gemini.return_value)
+            self.assertEqual(
+                verify_draft(prepared, at, self.config),
+                MORNING_GREETING + "\n" + gemini.return_value
+            )
             gemini.assert_called_once()
         with self.assertRaises(ValueError):
             choose_copy(at, self.config, None)
+
+    def test_morning_greeting_is_exact_and_not_duplicated(self):
+        at = self.when(day=15, hour=8)
+        with patch("scripts.threads.prepare_schedule.gemini_generate") as gemini:
+            gemini.return_value = (
+                "おはようございます。洗面台に増えていく小物、"
+                "きれいに片づけたつもりでも翌朝には元通りです。"
+            )
+            prepared = choose_copy(at, self.config, "FAKE_GEMINI")
+        self.assertEqual(prepared["kind"], "everyday")
+        self.assertTrue(prepared["text"].startswith(MORNING_GREETING + "\n"))
+        self.assertEqual(prepared["text"].count("おはようございます"), 1)
+        self.assertEqual(verify_draft(prepared, at, self.config), prepared["text"])
+
+    def test_greeting_is_only_morning_evening_is_unforced(self):
+        eve = self.when(day=15, hour=20)
+        with patch("scripts.threads.prepare_schedule.gemini_generate",
+                   return_value="部屋着に着替えて、郵便物のことを思い出しました。") as generated:
+            draft = choose_copy(eve, self.config, "FAKE_GEMINI")
+        self.assertTrue(draft["text"].startswith("部屋着に"))
+        self.assertNotIn(MORNING_GREETING, draft["text"])
+        self.assertEqual(verify_draft(draft, eve, self.config), generated.return_value)
+
+    def test_missing_morning_greeting_rejected_by_live_gate(self):
+        at = self.when(day=15, hour=8)
+        raw = "片づけても翌朝にはまた小物が増えています。"
+        greeting = add_morning_greeting(raw)
+        draft = self.draft(greeting, at)
+        self.assertEqual(verify_draft(draft, at, self.config), greeting)
+        with self.assertRaisesRegex(ValueError, "opening greeting"):
+            verify_draft(dict(draft, text=raw), at, self.config)
+        with self.assertRaisesRegex(ValueError, "content beyond"):
+            add_morning_greeting("おはようございます。")
 
     def test_invalid_env_ref_event_and_missing_tokens_never_publish(self):
         for replacement in (
