@@ -15,7 +15,7 @@ import sys
 from .compose import CONFIG, JST, OUTPUT, choose_slot, validate_post
 from .ledger import GithubLedger, LedgerError
 from .meta_api import MetaThreadsClient, ThreadsApiError
-from .prepare_schedule import ARTICLE_CALENDAR, FIRST_TEXT, START_DATE
+from .prepare_schedule import ARTICLE_CALENDAR, FIRST_TEXT, START_DATE, MORNING_GREETING
 from .article_feed import build_article_text, require_article_url
 
 
@@ -81,6 +81,10 @@ def verify_draft(draft, now, config):
                 or draft.get("article_url") is not None):
             raise ValueError("Unexpected article or metadata in everyday slot")
         validate_post(text, slot, config["max_characters"])
+        # Exact greeting required only in 08:00 ordinary posts.
+        # A generated greeting must be normalized before publication.
+        if slot == "morning" and not text.startswith(MORNING_GREETING + "\n"):
+            raise ValueError("Morning Shiori post is missing its opening greeting")
     return text
 
 
