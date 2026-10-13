@@ -115,6 +115,17 @@
       "verified_wordpress_api": true,
       "verified_public_html": true,
       "notes": "One A8 banner as specialty-store/adjustable-pillow alternative; existing Amazon nishikawa comparison kept unchanged."
+    },
+    {
+      "post_id": 454,
+      "slug": "40s-male-body-soap-odor-guide",
+      "program_id": "s00000020317010",
+      "advertiser": "HOLO BELL グルーミング保湿ボディソープ",
+      "creative_ref": "existing_wordpress_post",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": false,
+      "notes": "Detected existing A8 click link in WordPress post content, owner-supplied creative not in unified inventory yet. Custom marker S40_A8_HOLO_BELL_START, adjacent PR・広告. No WordPress changes performed."
     }
   ],
   "planned_post_placement": [
