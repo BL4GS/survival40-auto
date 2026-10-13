@@ -88,7 +88,7 @@ class ArticleFeedTests(unittest.TestCase):
             {"article_title": "無関係のタイトル"},
             {"text": prepared["text"] + " 今すぐ購入"},
         ):
-            with self.subTest(changed=changed), self.assertRaises(ValueError):
+            with self.subTest(changed=changed), self.assertRaises((ValueError, ArticleSourceError)):
                 verify_draft(dict(prepared, **changed), wed, self.config)
 
         with patch("scripts.threads.prepare_schedule.fetch_public_posts", return_value=[]), patch(
