@@ -78,8 +78,8 @@
       "inserted_before": "S40_RELATED_START",
       "observed_status": "publish",
       "verified_wordpress_api": true,
-      "verified_public_html": false,
-      "notes": "WPVibe exact-match content edit succeeded, saved content GET confirmed disclosure and exact tracking; public HTML browser not yet independently inspected.; Public rendered HTML not independently rechecked in this turn."
+      "verified_public_html": true,
+      "notes": "A8 banner, PR label and original tracking confirmed in public .entry-content readback on Oct 14."
     },
     {
       "post_id": 533,
@@ -91,6 +91,30 @@
       "verified_wordpress_api": true,
       "verified_public_html": true,
       "placement": "New product-specific article with PR disclosure, sources and no invented first-person experience"
+    },
+    {
+      "post_id": 396,
+      "slug": "40s-male-dark-spots-uv-care",
+      "program_id": "s00000020317006",
+      "advertiser": "HOLO BELL プロテクト保湿UV",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "One contextual banner next to PR disclosure; official maker confirms sunscreen specification SPF50+/PA++++. No claim of dark-spot removal."
+    },
+    {
+      "post_id": 433,
+      "slug": "40s-male-pillow-how-to-choose",
+      "program_id": "s00000016652002",
+      "advertiser": "マイまくら（寝具専門店）",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "One A8 banner as specialty-store/adjustable-pillow alternative; existing Amazon nishikawa comparison kept unchanged."
     }
   ],
   "planned_post_placement": [
@@ -163,6 +187,12 @@
       "from_slug": "40s-male-scalp-shampoo-guide",
       "to_slug": "monovo-hair-tonic-grow-gel-guide",
       "verified_wordpress_api": true
+    },
+    {
+      "from_post_id": 417,
+      "from_slug": "40s-male-sunscreen-how-to-choose",
+      "to_slug": "40s-male-dark-spots-uv-care",
+      "verified_public_html": true
     }
   ]
 }
