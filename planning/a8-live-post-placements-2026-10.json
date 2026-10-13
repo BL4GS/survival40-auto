@@ -1,0 +1,84 @@
+{
+  "project": "Survival40",
+  "updated_on_jst": "2026-10-13",
+  "purpose": "Durable audit trail of owner-authorized A8 placements in live WordPress posts. This planning ledger is separate from the WordPress plugin's s40_affiliate_ledger_v1 option; updating this file does not auto-render banners or change plugin configuration.",
+  "scope": "Existing WordPress posts edited with exact-match /wpvibe/v1/content/edit and checked for public rendered A8 banner/link/PR disclosure. Future post recorded as future, not publicly live yet.",
+  "canonical_creative_sources": [
+    "planning/a8-banner-assets-unified-2026-10.json",
+    "planning/a8-approved-ads-additions-2026-10.json"
+  ],
+  "live_post_placements": [
+    {
+      "post_id": 450,
+      "slug": "40s-male-protein-how-to-choose",
+      "program_id": "s00000021719001",
+      "advertiser": "ULTORA",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_public_html": true
+    },
+    {
+      "post_id": 438,
+      "slug": "40s-male-all-in-one-skincare-guide",
+      "program_id": "s00000014286004",
+      "advertiser": "NULL オールインワンジェル",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_public_html": true
+    },
+    {
+      "post_id": 442,
+      "slug": "40s-male-scalp-shampoo-guide",
+      "program_id": "s00000007191012",
+      "advertiser": "プレミアムブラックシャンプー",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_public_html": true
+    },
+    {
+      "post_id": 514,
+      "slug": "40s-fatigue-food-meal-balance",
+      "program_id": "s00000023792001",
+      "advertiser": "DELISH KITCHEN Meals",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "参考資料",
+      "observed_status": "publish",
+      "verified_public_html": true
+    },
+    {
+      "post_id": 400,
+      "slug": "40s-male-waking-at-night",
+      "program_id": "s00000026776002",
+      "advertiser": "RingConn 第2世代",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_public_html": true
+    }
+  ],
+  "planned_post_placement": [
+    {
+      "post_id": 518,
+      "slug": "40s-year-end-party-morning-after-care",
+      "program_id": "s00000027703001",
+      "advertiser": "酒長快朝（サプリメント）",
+      "creative_ref": "planning/a8-approved-ads-additions-2026-10.json",
+      "observed_status": "future",
+      "scheduled_for_jst": "2026-10-19T21:00:00+09:00",
+      "verified_wordpress_future": true,
+      "verified_public_html": false
+    }
+  ],
+  "safeguards": [
+    "PR・広告 label immediately adjacent to banner in all five public placements.",
+    "A8 click destination uses original owner-provided URL with rel=nofollow sponsored; image URL and 1x1 impression tag preserved.",
+    "Use one relevant A8 banner per each newly edited post; no changing pre-existing Amazon links.",
+    "No assertions that shampoo treats androgenetic alopecia, sleep ring diagnoses conditions, foods cure fatigue, or supplement prevents hangovers.",
+    "The WordPress plugin's automatic banner rollout remains disabled, as staged release preflight has not been met.",
+    "Any change to live posts must be verified against current post content and rendered HTML; do not reapply these banners without checking for S40_A8_AD_START:<program_id> marker.",
+    "Do not infer A8 current advertiser approval, conversion rate or payout from this file; reconcile current A8 account information before claiming those facts."
+  ]
+}
