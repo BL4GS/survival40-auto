@@ -1,11 +1,12 @@
 {
   "project": "Survival40",
-  "updated_on_jst": "2026-10-13",
+  "updated_on_jst": "2026-10-14",
   "purpose": "Durable audit trail of owner-authorized A8 placements in live WordPress posts. This planning ledger is separate from the WordPress plugin's s40_affiliate_ledger_v1 option; updating this file does not auto-render banners or change plugin configuration.",
   "scope": "Existing WordPress posts edited with exact-match /wpvibe/v1/content/edit and checked for public rendered A8 banner/link/PR disclosure. Future post recorded as future, not publicly live yet.",
   "canonical_creative_sources": [
     "planning/a8-banner-assets-unified-2026-10.json",
-    "planning/a8-approved-ads-additions-2026-10.json"
+    "planning/a8-approved-ads-additions-2026-10.json",
+    "planning/a8-owner-submitted-2026-10-14.json"
   ],
   "live_post_placements": [
     {
@@ -67,6 +68,18 @@
       "inserted_before": "S40_RELATED_START",
       "observed_status": "publish",
       "verified_public_html": true
+    },
+    {
+      "post_id": 393,
+      "slug": "40s-male-belly-activity-fitness",
+      "program_id": "s00000020311001",
+      "advertiser": "マッスルデリ",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "inserted_before": "S40_RELATED_START",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": false,
+      "notes": "WPVibe exact-match content edit succeeded, saved content GET confirmed disclosure and exact tracking; public HTML browser not yet independently inspected."
     }
   ],
   "planned_post_placement": [
@@ -83,7 +96,7 @@
     }
   ],
   "safeguards": [
-    "PR・広告 label immediately adjacent to banner in all five public placements.",
+    "Use an adjacent PR・広告 label for each manually placed A8 banner; check current WordPress content before reusing a slot.",
     "A8 click destination uses original owner-provided URL with rel=nofollow sponsored; image URL and 1x1 impression tag preserved.",
     "Use one relevant A8 banner per each newly edited post; no changing pre-existing Amazon links.",
     "No assertions that shampoo treats androgenetic alopecia, sleep ring diagnoses conditions, foods cure fatigue, or supplement prevents hangovers.",
