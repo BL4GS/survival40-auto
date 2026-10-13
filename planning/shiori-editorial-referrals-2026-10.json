@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "created_at_jst": "2026-10-14",
+  "status": "review_and_implementation_queue_only_NOT_LIVE",
+  "source_proof": "2026-10-14 WPVibe post statuses and GitHub production workflow ref 2c6660b3856fd87e3d04583dd6c4f273020a0c17",
+  "current_behavior": {
+    "daily_persona_slots_jst": [
+      "08:00",
+      "20:00"
+    ],
+    "late_same_day_article_slot_jst": "22:00 (from Oct 19; new article published >=20:45 JST only)",
+    "preserved_calendar_dates": [
+      "2026-10-14",
+      "2026-10-17",
+      "2026-10-21",
+      "2026-10-24"
+    ],
+    "live_shiori_link_posts_so_far": "No actual article link publications verified as of morning Oct14; Oct13 first scheduled was persona everyday post."
+  },
+  "proposal": {
+    "principle": "Shiori is a reader-first personal guide, not an ad feed. A8 placement is never a requirement to recommend an article.",
+    "slot_policy": "Replace no more than two Wed/Sat 20:00 everyday posts per week with a verified, curated older article, AFTER the pinned Oct 14/17/21/24 calendar is over. Do not add new posts at other hours; keep 22:00 same-day introductions independently gated.",
+    "eligibility": [
+      "Published WordPress article only; canonical URL matches HTTPS host and article slug",
+      "Do not link future/draft post; do not trust the queued plan without live verification",
+      "Dedupe across article-id and date slot using existing state/threads-ledger; read whether article was already introduced before selecting candidates",
+      "No repeated article introduction in <=30 days; do not link the same article at 20:00 and 22:00",
+      "No made-up product use, product outcomes or purchase endorsement in Shiori's first person",
+      "Use 【PR】 on posts linking to articles with affiliate promotions and ensure article's own disclosures remain visible",
+      "Recommend some genuinely ad-free editorial content as well; do not favor commission alone",
+      "Rate cap: do not automatically substitute every 20:00 daily persona post; if no fresh eligible item, post ordinary Shiori everyday copy"
+    ],
+    "lookback_basis": "One evergreen candidate a few days or weeks old, aligned with common daily frustrations and a distinct topic across successive slots.",
+    "max_weekly_evergreen_posts": 2,
+    "preserve_early_dates": true
+  },
+  "candidates": [
+    {
+      "date_jst": "2026-10-28",
+      "slot": "evening",
+      "post_id": 442,
+      "slug": "40s-male-scalp-shampoo-guide",
+      "theme": "頭皮ケア",
+      "monetization": "A8",
+      "copy_angle": "洗浄力が強ければよいとは限らない。頭皮や使い心地で選ぶ"
+    },
+    {
+      "date_jst": "2026-10-31",
+      "slot": "evening",
+      "post_id": 512,
+      "slug": "40s-eye-strain-massage-breaks",
+      "theme": "目の疲れ",
+      "monetization": "none",
+      "copy_angle": "スマホや画面作業で目を使いすぎる日、手軽に休める方法"
+    },
+    {
+      "date_jst": "2026-11-04",
+      "slot": "evening",
+      "post_id": 450,
+      "slug": "40s-male-protein-how-to-choose",
+      "theme": "筋トレ・栄養",
+      "monetization": "A8",
+      "copy_angle": "続けられる量・味・コストで選ぶ。商品を買えば筋肉が増えるとは言わない"
+    },
+    {
+      "date_jst": "2026-11-07",
+      "slot": "evening",
+      "post_id": 433,
+      "slug": "40s-male-pillow-how-to-choose",
+      "theme": "寝具・休養",
+      "monetization": "A8 and Amazon",
+      "copy_angle": "高さと寝返りのしやすさ。睡眠障害への治療効果は主張しない"
+    },
+    {
+      "date_jst": "2026-11-11",
+      "slot": "evening",
+      "post_id": 389,
+      "slug": "40s-male-bad-breath-care",
+      "theme": "口の清潔感",
+      "monetization": "none",
+      "copy_angle": "口臭の原因を一つに決めつけず、日常のケアと受診目安を知る"
+    },
+    {
+      "date_jst": "2026-11-14",
+      "slot": "evening",
+      "post_id": 533,
+      "slug": "monovo-hair-tonic-grow-gel-guide",
+      "theme": "薬用育毛剤の選び方",
+      "monetization": "A8",
+      "copy_angle": "薬用育毛剤とAGA治療を混同せず、成分と費用を確認"
+    },
+    {
+      "date_jst": "2026-11-18",
+      "slot": "evening",
+      "post_id": 514,
+      "slug": "40s-fatigue-food-meal-balance",
+      "theme": "手軽な食事",
+      "monetization": "A8",
+      "copy_angle": "疲れた日の食事、便利さと栄養表示を使い分ける"
+    },
+    {
+      "date_jst": "2026-11-21",
+      "slot": "evening",
+      "post_id": 417,
+      "slug": "40s-male-sunscreen-how-to-choose",
+      "theme": "紫外線・肌",
+      "monetization": "Amazon",
+      "copy_angle": "一年を通して紫外線対策を続けられるか考える"
+    },
+    {
+      "date_jst": "2026-11-25",
+      "slot": "evening",
+      "post_id": 454,
+      "slug": "40s-male-body-soap-odor-guide",
+      "theme": "ボディソープ",
+      "monetization": "A8",
+      "copy_angle": "清潔感のために洗いすぎない"
+    },
+    {
+      "date_jst": "2026-11-28",
+      "slot": "evening",
+      "post_id": 438,
+      "slug": "40s-male-all-in-one-skincare-guide",
+      "theme": "簡単スキンケア",
+      "monetization": "A8",
+      "copy_angle": "続けられるスキンケアを選ぶ"
+    }
+  ],
+  "warnings": [
+    "This is not a live scheduler and creates no Threads posts.",
+    "Existing 08/20 production checkout is pinned to SHA and cannot be changed by planning-file edits.",
+    "The 22:00 workflow has not yet demonstrated a live article posting; first eligible day Oct19.",
+    "Owner goal is article discovery and trust, not forced advertising; no tracking clicks or conversions from this file.",
+    "For live implementation, test all paths without Threads credentials; require explicit review/activation of a new approved pin and a tested ledger-safe fallback."
+  ]
+}
