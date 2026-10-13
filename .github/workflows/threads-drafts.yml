@@ -24,9 +24,14 @@ jobs:
       THREADS_SLOT: ${{ inputs.slot || 'auto' }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      # Defense in depth: do not provide Meta publication credentials.
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
     steps:
       - uses: actions/checkout@v4
         with:
+          # Pinned review-only persona-first generator; PR #34 remains draft.
+          ref: 8677809801ce0f42214e86fd0da8c286a3c1d3d5
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
