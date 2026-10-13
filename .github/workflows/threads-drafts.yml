@@ -30,8 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Pinned review-only persona-first generator; PR #34 remains draft.
-          ref: 68f75584268a15e96576cc8cfa4d35a44e9d0e65
+          # Pin tested persona-first generator and two weekly sourced article links; PR #34 remains draft.
+          ref: 45d2f1b723084989186740d0854907e00d357890
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
