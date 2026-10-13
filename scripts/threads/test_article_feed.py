@@ -79,7 +79,7 @@ class ArticleFeedTests(unittest.TestCase):
         self.assertEqual(prepared["kind"], "article")
         self.assertEqual(prepared["article_id"], 514)
         self.assertEqual(prepared["article_url"], article["link"])
-        self.assertEqual(prepared["text"], build_article_text(prepared))
+        self.assertEqual(prepared["text"], build_article_text({"title": prepared["article_title"], "url": prepared["article_url"]}))
         self.assertEqual(verify_draft(prepared, wed, self.config), prepared["text"])
 
         for changed in (
