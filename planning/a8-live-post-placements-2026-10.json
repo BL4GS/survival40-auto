@@ -128,6 +128,42 @@
       "scheduled_for_jst": "2026-10-19T21:00:00+09:00",
       "verified_wordpress_future": true,
       "verified_public_html": false
+    },
+    {
+      "post_id": 542,
+      "slug": "40s-frozen-meal-delivery-cost-subscription",
+      "program_id": "s00000020311001",
+      "advertiser": "マッスルデリ",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "observed_status": "future",
+      "scheduled_for_jst": "2026-10-21T21:00:00+09:00",
+      "verified_wordpress_future": true,
+      "verified_public_html": false,
+      "notes": "Useful subscription-terms comparison with primary consumer authority and MuscDeli official sources, A8 PR disclosure. DO NOT report as live until 2026-10-21 21:00."
+    },
+    {
+      "post_id": 543,
+      "slug": "40s-custom-pillow-vs-adjustable",
+      "program_id": "s00000016652002",
+      "advertiser": "マイまくら（寝具専門店）",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "observed_status": "future",
+      "scheduled_for_jst": "2026-10-22T21:00:00+09:00",
+      "verified_wordpress_future": true,
+      "verified_public_html": false,
+      "notes": "Product comparison with official price, maintenance and health caution, A8 PR disclosure; not publicly live until Oct 22."
+    },
+    {
+      "post_id": 544,
+      "slug": "40s-wpc-vs-wpi-protein",
+      "program_id": "s00000021719001",
+      "advertiser": "ULTORA",
+      "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
+      "observed_status": "future",
+      "scheduled_for_jst": "2026-10-23T21:00:00+09:00",
+      "verified_wordpress_future": true,
+      "verified_public_html": false,
+      "notes": "WPC vs WPI educational product-selection article with public health sources and official ULTORA product distinctions; A8 PR disclosure, no claim of instant muscle gain. Not publicly live until Oct 23."
     }
   ],
   "safeguards": [
