@@ -30,10 +30,10 @@ def add_morning_greeting(text):
     import re
     if not isinstance(text, str):
         raise ValueError("Morning copy must be text")
-    body = re.sub(r"^\\s*おはようございます[。！!、,\\s]*", "", text).strip()
+    body = re.sub(r"^\s*おはようございます[。！!、,\s]*", "", text).strip()
     if not body:
         raise ValueError("Morning copy must include content beyond a greeting")
-    return MORNING_GREETING + "\\n" + body
+    return MORNING_GREETING + "\n" + body
 
 
 ARTICLE_CALENDAR = {
