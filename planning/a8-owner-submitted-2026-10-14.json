@@ -1,0 +1,45 @@
+{
+  "project": "Survival40",
+  "added_on_jst": "2026-10-14",
+  "inventory_kind": "Owner-submitted A8 campaign materials",
+  "important": "This is a source-of-truth for owner-provided tracking HTML, not proof of current partnership eligibility. Do not fetch/visit tracking URLs for validation; doing so may create artificial impressions or clicks.",
+  "assets": [
+    {
+      "name": "マッスルデリ",
+      "program_id": "s00000020311001",
+      "status": "owner_supplied_affiliate_tag",
+      "reward_from_owner_screenshot": "新規購入 2000円",
+      "conditions_from_owner_screenshot": [
+        "広告主を初めて利用する新規顧客",
+        "Web注文から30日以内の入金確認",
+        "返品・返品処理・キャンセル・リスティング違反などは否認条件"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEFL9+GIS576+4CPY+62MDD",
+      "banner_src": "https://www28.a8.net/svt/bgt?aid=261013869999&wid=005&eno=01&mid=s00000020311001020000&mc=1",
+      "impression_src": "https://www13.a8.net/0.gif?a8mat=4BEFL9+GIS576+4CPY+62MDD",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEFL9+GIS576+4CPY+62MDD\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www28.a8.net/svt/bgt?aid=261013869999&wid=005&eno=01&mid=s00000020311001020000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www13.a8.net/0.gif?a8mat=4BEFL9+GIS576+4CPY+62MDD\" alt=\"\">",
+      "wp_status": "placed_once_and_read_back",
+      "wp_post_id": 393,
+      "wp_post_slug": "40s-male-belly-activity-fitness"
+    },
+    {
+      "name": null,
+      "program_id": "s00000013307009",
+      "status": "owner_supplied_affiliate_tag_metadata_not_yet_confirmed",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL",
+      "banner_src": "https://www20.a8.net/svt/bgt?aid=261013869360&wid=005&eno=01&mid=s00000013307009011000&mc=1",
+      "impression_src": "https://www10.a8.net/0.gif?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www20.a8.net/svt/bgt?aid=261013869360&wid=005&eno=01&mid=s00000013307009011000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www10.a8.net/0.gif?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL\" alt=\"\">",
+      "wp_status": "not_placed",
+      "next_required_checks": [
+        "Correct advertiser and offer name",
+        "Conversion/denial terms and program restrictions",
+        "Match to an actual existing article without duplication"
+      ]
+    }
+  ]
+}
