@@ -30,8 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Pin tested persona-first generator and two weekly sourced article links; PR #34 remains draft.
-          ref: 45d2f1b723084989186740d0854907e00d357890
+          # Pin reviewed persona-first generator and keep 08:00/20:00 as usual; article links move to separate 22:00 workflow.
+          ref: 2c6660b3856fd87e3d04583dd6c4f273020a0c17
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:

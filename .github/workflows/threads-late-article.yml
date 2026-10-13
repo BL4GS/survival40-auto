@@ -1,0 +1,48 @@
+name: Shiori Survival40 nightly article introduction
+on:
+  schedule:
+    # 22:00 JST = 13:00 UTC. Actual starts can be delayed by GitHub Actions.
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Preview-only; publisher is explicitly schedule-gated.
+permissions:
+  contents: write # Durable duplicate ledger on state/threads-ledger only.
+concurrency:
+  group: survival40-threads-live
+  cancel-in-progress: false
+jobs:
+  article_intro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Pinned separately tested production candidate; PR #34 remains draft.
+          ref: 2c6660b3856fd87e3d04583dd6c4f273020a0c17
+          persist-credentials: false
+      - name: Run complete offline tests without credentials
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Read today's genuinely published Survival40 article
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+        run: python3 -m scripts.threads.scheduled_article_publisher prepare
+      - name: Send one extra Threads introduction to verified account if scheduled
+        if: github.event_name == 'schedule'
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 -m scripts.threads.scheduled_article_publisher publish
+      - name: Save reviewable copy (never secret)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-nightly-article-intro-${{ github.run_id }}
+          path: threads-output/late-article.json
+          if-no-files-found: ignore
+          retention-days: 14
