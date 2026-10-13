@@ -1,4 +1,4 @@
-name: Survival40 Threads Drafts (NO POSTING)
+name: Shiori Survival40 scheduled Threads posts
 on:
   schedule:
     # JST 08:00 = UTC previous day 23:00; JST 20:00 = UTC 11:00
@@ -12,14 +12,14 @@ on:
         type: choice
         options: [morning, evening]
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: survival40-threads-draft
+  group: survival40-threads-live
   cancel-in-progress: false
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 9
     env:
       THREADS_SLOT: ${{ inputs.slot || 'auto' }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -31,16 +31,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Pinned review-only persona-first generator; PR #34 remains draft.
-          ref: 8677809801ce0f42214e86fd0da8c286a3c1d3d5
+          ref: 68f75584268a15e96576cc8cfa4d35a44e9d0e65
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
           GEMINI_API_KEY: ''
           GOOGLE_API_KEY: ''
         run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
-      - name: Generate morning or evening draft with Gemini
-        run: python3 -m scripts.threads.compose
-      - name: Save preview to Actions artifacts, no Threads API call
+      - name: Prepare Shiori text (first approved, otherwise Gemini or sourced article)
+        run: python3 -m scripts.threads.prepare_schedule
+      - name: Publish once to verified @survival40_jp if scheduled (no retries)
+        if: github.event_name == 'schedule'
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 -m scripts.threads.scheduled_publisher
+      - name: Save generated text artifact even if publishing fails
         if: always()
         uses: actions/upload-artifact@v4
         with:
