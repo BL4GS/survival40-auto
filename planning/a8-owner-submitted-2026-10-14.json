@@ -34,7 +34,7 @@
       "width": 300,
       "height": 250,
       "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www20.a8.net/svt/bgt?aid=261013869360&wid=005&eno=01&mid=s00000013307009011000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www10.a8.net/0.gif?a8mat=4BEFL9+5YC5N6+2UOE+1HNDBL\" alt=\"\">",
-      "wp_status": "draft_article_created_not_published",
+      "wp_status": "published_and_verified_in_public_html",
       "next_required_checks": [
         "Correct advertiser and offer name",
         "Conversion/denial terms and program restrictions",
@@ -63,7 +63,14 @@
       "official_product_information": "https://www.krachaidam.jp/gel/item_417.php",
       "wp_post_id": 533,
       "wp_post_slug": "monovo-hair-tonic-grow-gel-guide",
-      "remark": "Created product-specific, sources-based WordPress draft with owner-provided A8 creative, disclosures and disclaimer; must not claim live ad impressions before publishing."
+      "remark": "Created product-specific, sources-based WordPress draft with owner-provided A8 creative, disclosures and disclaimer; must not claim live ad impressions before publishing.",
+      "wp_url": "https://www.survival40.com/monovo-hair-tonic-grow-gel-guide/",
+      "checked_sources": [
+        "https://www.krachaidam.jp/gel/item_417.php",
+        "https://minds.jcqhc.or.jp/summary/c00458/",
+        "https://www.mhlw.go.jp/content/11120000/000537052.pdf"
+      ],
+      "last_verified_date_jst": "2026-10-14"
     }
   ]
 }
