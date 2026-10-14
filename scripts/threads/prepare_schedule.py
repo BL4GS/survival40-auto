@@ -10,6 +10,8 @@ import sys
 
 from .compose import (CONFIG, JST, OUTPUT, build_prompt, choose_slot,
                       gemini_generate, validate_post)
+from .article_feed import ArticleSourceError, fetch_public_posts
+from .evergreen_links import select_verified, slot_spec
 
 START_DATE = dt.date(2026, 10, 13)
 FIRST_TEXT = (
@@ -65,7 +67,7 @@ def choose_copy(now, config, gemini_key):
     if slot is None or now.date() < START_DATE:
         return None
     date = now.date().isoformat()
-    article_id, article_url = None, None
+    article_id, article_url, fallback_text = None, None, None
     if date == "2026-10-13" and slot == "evening":
         text, kind, title = FIRST_TEXT, "everyday", None
     elif slot == "evening" and date in ARTICLE_CALENDAR:
@@ -79,22 +81,33 @@ def choose_copy(now, config, gemini_key):
         title, kind = article["title"], "article"
         article_url = url
     else:
-        # Daily 08:00 and 20:00 slots stay Shiori's everyday posts.
-        # Separate 22:00 article introductions begin on 2026-10-19;
-        # the four preapproved October article nights above remain unchanged.
+        # Always prepare an ordinary Shiori post as the safe fallback.
+        # This preserves the regular cadence if an older article is unavailable,
+        # unpublished, or already introduced on the independent 22:00 slot.
         if not gemini_key:
             raise ValueError("Gemini key is required for ordinary posts")
         instruction = build_prompt(now, slot, config)
         generated = gemini_generate(instruction["prompt"], gemini_key)
         if slot == "morning":
             generated = add_morning_greeting(generated)
-        text = validate_post(generated, slot, config["max_characters"])
-        kind, title = "everyday", None
+        ordinary_text = validate_post(generated, slot, config["max_characters"])
+        evergreen = None
+        if slot_spec(now) is not None:
+            try:
+                evergreen = select_verified(now, fetch_public_posts())
+            except (ArticleSourceError, ValueError, TypeError, OSError, TimeoutError):
+                evergreen = None
+        if evergreen is not None:
+            text, kind, title = evergreen["text"], "article", evergreen["title"]
+            article_id, article_url = evergreen["id"], evergreen["url"]
+            fallback_text = ordinary_text
+        else:
+            text, kind, title = ordinary_text, "everyday", None
     if kind == "everyday":
         validate_post(text, slot, config["max_characters"])
     elif not 30 <= len(text) <= 500:
         raise ValueError("Invalid article post length")
-    return {
+    draft = {
         "id": date + "-" + slot, "date_jst": date,
         "slot": slot, "account": "@survival40_jp",
         "kind": kind, "article_title": title,
@@ -103,6 +116,9 @@ def choose_copy(now, config, gemini_key):
         "status": "prepared_for_separate_publish_gate",
         "generated_at_jst": now.isoformat(timespec="seconds"),
     }
+    if fallback_text is not None:
+        draft["fallback_everyday_text"] = fallback_text
+    return draft
 
 
 def main():
