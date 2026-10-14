@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Credential-free verification of an isolated tested source commit.
+          ref: 56f5b6a3fbe626308cb2bfe8d1141a8f4ec2b074
           persist-credentials: false
       - name: Test Threads integration offline, no API secrets
         env:
