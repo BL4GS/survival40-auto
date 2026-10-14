@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/scripts/patch_navigator_mobile_lead_01921.py'
       - 'tests/test_navigator_mobile_lead.py'
+      - '.github/scripts/patch_navigator_mobile_interaction_01921.py'
+      - 'tests/test_navigator_mobile_interaction.py'
       - '.github/workflows/shiori-guide-mobile-timing-ci.yml'
   workflow_dispatch:
 permissions:
@@ -16,8 +18,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Check standalone timing guard tests
-        run: python3 -m unittest discover -s tests -p 'test_navigator_mobile_lead.py' -v
+      - name: Check mobile guide timing and interaction contract tests
+        run: python3 -m unittest discover -s tests -p 'test_navigator_mobile_*.py' -v
       - name: Reconstruct identical candidate PHP from reviewed release build
         run: |
           python3 - <<'PY'
@@ -46,6 +48,8 @@ jobs:
           set -euo pipefail
           cp survival40-auto/survival40-auto.php /tmp/s40-before-timing.php
           python3 .github/scripts/patch_navigator_mobile_lead_01921.py
+          cp survival40-auto/survival40-auto.php /tmp/s40-before-interaction.php
+          python3 .github/scripts/patch_navigator_mobile_interaction_01921.py
           php -l survival40-auto/survival40-auto.php
           python3 - <<'PY'
           from pathlib import Path
@@ -53,13 +57,34 @@ jobs:
           b=Path('survival40-auto/survival40-auto.php').read_text()
           old="? Math.min(window.innerHeight*.45,350)"
           new="? Math.min(window.innerHeight*.72,580)"
+          from importlib import util
+          mod=util.spec_from_file_location('mobile_ui','.github/scripts/patch_navigator_mobile_interaction_01921.py')
+          patch=util.module_from_spec(mod)
+          mod.loader.exec_module(patch)
+          timing=a.replace(old,new,1)
           assert a.count(old)==1 and b.count(new)==1
-          assert b==a.replace(old,new,1), "Unreviewed PHP or JS change"
+          assert Path('/tmp/s40-before-interaction.php').read_text()==timing, "Unexpected timing patch diff"
+          assert b==patch.apply(timing), "Unexpected mobile UI patch diff"
           assert " * Version: 0.19.21" in b
           assert "const VERSION = '0.19.21';" in b
           assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in b
-          print('PASS: exact single-expression change only, plugin PHP valid')
+          print('PASS: exact timing + mobile UI changes only, plugin PHP valid')
           PY
+      - name: Validate isolated presenter JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          raw=Path('survival40-auto/survival40-auto.php').read_text(encoding='utf-8')
+          js=re.search(r'<script id="s40-presenter-js">([\s\S]*?)</script>',raw)
+          assert js, 'Guide script missing'
+          data=re.sub(r'<\?php[\s\S]*?\?>',
+                      '{"normal":"normal.webp","explain":"explain.webp","summary":"summary.webp","caution":"caution.webp"}',
+                      js.group(1))
+          assert '<?php' not in data
+          Path('/tmp/s40-presenter-test.js').write_text(data,encoding='utf-8')
+          PY
+          node --check /tmp/s40-presenter-test.js
       - name: Staged source audit only (NO release/WordPress deployment)
         run: |
           git diff --stat
