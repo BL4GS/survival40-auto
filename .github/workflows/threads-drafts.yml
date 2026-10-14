@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Pin reviewed persona-first generator and keep 08:00/20:00 as usual; article links move to separate 22:00 workflow.
-          ref: 86f10183df2019ded49fb5dda8d4f83a99e74371
+          ref: 3c19f4b46a48a6748bc27d3ec21bff6b828e1aee
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
@@ -39,6 +39,9 @@ jobs:
           GOOGLE_API_KEY: ''
         run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
       - name: Prepare Shiori text (first approved, otherwise Gemini or sourced article)
+        env:
+          # Read-only discovery hint from existing GitHub state branch; optional.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 -m scripts.threads.prepare_schedule
       - name: Publish once to verified @survival40_jp if scheduled (no retries)
         if: github.event_name == 'schedule'
