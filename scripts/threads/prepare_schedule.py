@@ -12,6 +12,7 @@ from .compose import (CONFIG, JST, OUTPUT, build_prompt, choose_slot,
                       gemini_generate, validate_post)
 from .article_feed import ArticleSourceError, fetch_public_posts
 from .evergreen_links import select_verified, slot_spec
+from .topic_discovery import read_safe_signal
 
 START_DATE = dt.date(2026, 10, 13)
 FIRST_TEXT = (
@@ -86,7 +87,12 @@ def choose_copy(now, config, gemini_key):
         # unpublished, or already introduced on the independent 22:00 slot.
         if not gemini_key:
             raise ValueError("Gemini key is required for ordinary posts")
-        instruction = build_prompt(now, slot, config)
+        # Only Tue/Fri 20:00 ordinary slots may use a fresh, aggregated,
+        # source-verified topic. Missing scope/data keeps the old editorial plan.
+        signal = read_safe_signal(
+            now, os.getenv("GITHUB_TOKEN", ""), config, slot
+        ) if slot == "evening" and date not in ARTICLE_CALENDAR else None
+        instruction = build_prompt(now, slot, config, topic_signal=signal)
         generated = gemini_generate(instruction["prompt"], gemini_key)
         if slot == "morning":
             generated = add_morning_greeting(generated)
