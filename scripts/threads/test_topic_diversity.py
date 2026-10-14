@@ -44,7 +44,7 @@ class ShioriVarietyTests(unittest.TestCase):
         distinct="朝食の定番メニューを決めておくこと"
         self.assertIn("着替え",family_set(base)&family_set(alt))
         got=_pick({"topic_group":"daily_routine","theme":alt},[alt,distinct],
-                  [("daily_routine",base)],dt.date(2026,10,15),"evening")
+                  [("daily_routine",base)],dt.date(2026,10,15),"morning")
         self.assertEqual(got["theme"],distinct)
 
     def test_approved_deterministic_topics_in_four_slots(self):
