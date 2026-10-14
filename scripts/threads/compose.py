@@ -122,7 +122,7 @@ def select_tone_mode(today, slot):
     return "polite"
 
 
-def build_prompt(now, slot, config):
+def build_prompt(now, slot, config, topic_signal=None):
     """One canonical prompt for daily drafts and evaluation previews."""
     if slot not in ("morning", "evening"):
         raise ValueError("Unknown posting slot")
@@ -134,6 +134,15 @@ def build_prompt(now, slot, config):
         now.date(), slot, config["character"]["everyday_angles"]
     )
     theme, topic_group = editorial["theme"], editorial["topic_group"]
+    # An optional signal only chooses a PRE-APPROVED theme from the same
+    # static topic groups. Never include third-party Threads text/usernames.
+    if topic_signal is not None:
+        if (not isinstance(topic_signal, dict)
+                or set(topic_signal) != {"theme", "topic_group"}
+                or topic_signal["theme"] not in config["topic_groups"].get(
+                    topic_signal["topic_group"], [])):
+            raise ValueError("Untrusted topic signal")
+        theme, topic_group = topic_signal["theme"], topic_signal["topic_group"]
     shape = select_shape(now.date(), slot)
     tone_mode = select_tone_mode(now.date(), slot)
     weekday = ("月", "火", "水", "木", "金", "土", "日")[now.weekday()]
