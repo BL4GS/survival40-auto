@@ -1,16 +1,18 @@
 name: Shiori Survival40 scheduled Threads posts
 on:
   schedule:
-    # JST 08:00 = UTC previous day 23:00; JST 20:00 = UTC 11:00
+    # 08:00/12:00/16:00/20:00 JST: previous-day UTC 23:00, UTC 03:00, 07:00, 11:00.
     - cron: '0 23 * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 7 * * *'
     - cron: '0 11 * * *'
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Preview only; morning or evening'
+        description: 'Preview only; morning, midday, afternoon or evening'
         required: true
         type: choice
-        options: [morning, evening]
+        options: [morning, midday, afternoon, evening]
 permissions:
   contents: write
 concurrency:
@@ -30,8 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Pin reviewed persona-first generator and keep 08:00/20:00 as usual; article links move to separate 22:00 workflow.
-          ref: 3c19f4b46a48a6748bc27d3ec21bff6b828e1aee
+          # Pin 100-test four-slot generator; 22:00 articles stay in independent workflow.
+          ref: 56f5b6a3fbe626308cb2bfe8d1141a8f4ec2b074
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
