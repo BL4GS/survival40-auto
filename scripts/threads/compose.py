@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Survival40 Threads: draft-only morning/evening copy with Gemini free tier.
+"""Survival40 Threads: draft-only four daily slots with Gemini free tier.
 
 There is intentionally NO Threads publication code or token handling here.
 """
@@ -18,17 +18,18 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "threads" / "editorial.json"
 OUTPUT = ROOT / "threads-output" / "draft.json"
 JST = ZoneInfo("Asia/Tokyo")
+SLOTS = ("morning", "midday", "afternoon", "evening")
+SLOT_HOURS = {"morning": 8, "midday": 12, "afternoon": 16, "evening": 20}
 
 def choose_slot(now, requested="auto"):
-    if requested in ("morning", "evening"):
+    if requested in SLOTS:
         return requested
     if requested != "auto":
         raise ValueError("Invalid slot")
     # A late Actions start never creates a stale greeting.
-    if now.hour == 8 and now.minute <= 59:
-        return "morning"
-    if now.hour == 20 and now.minute <= 59:
-        return "evening"
+    for slot, hour in SLOT_HOURS.items():
+        if now.hour == hour and now.minute <= 59:
+            return slot
     return None
 
 def select_theme(today, slot, themes):
@@ -43,7 +44,7 @@ def select_editorial_topic(today, slot, groups, policy):
     exercise and daily life is deliberately *not* a weekly quota. A deterministic
     hash gives stable preview output and weekly limits without persisted state.
     """
-    if slot not in ("morning", "evening"):
+    if slot not in SLOTS:
         raise ValueError("Unknown posting slot")
     categories = ("grooming", "movement", "daily_routine", "small_talk")
     if set(groups) != set(categories) or not isinstance(policy, dict):
@@ -70,7 +71,12 @@ def select_editorial_topic(today, slot, groups, policy):
             ticket -= weights[k]
         raise AssertionError("Topic selection exhausted")
 
-    slot_index = today.weekday() * 2 + (0 if slot == "morning" else 1)
+    # Preserve the old deterministic 08/20 choices; separate 12/16 indices.
+    slot_index = (
+        today.weekday() * 2 + (0 if slot == "morning" else 1)
+        if slot in ("morning", "evening")
+        else 14 + today.weekday() * 2 + (0 if slot == "midday" else 1)
+    )
     topic_group = weighted_pick(slot_index, "usual", categories)
     earlier_asides = sum(
         weighted_pick(i, "usual", categories) == "small_talk"
@@ -83,11 +89,19 @@ def select_editorial_topic(today, slot, groups, policy):
     evening_only = ("夜", "帰宅後", "寝る前")
     eligible = [
         x for x in groups[topic_group]
-        if slot != "evening" or not any(k in x for k in morning_only)
-        if slot != "morning" or not any(k in x for k in evening_only)
+        if slot not in ("evening", "afternoon") or not any(k in x for k in morning_only)
+        if slot not in ("morning", "midday", "afternoon") or not any(k in x for k in evening_only)
     ]
     if not eligible:
         raise ValueError("No eligible topics for selected time")
+    if slot in ("midday", "afternoon"):
+        # Keep new daytime topics distinct from already-selected earlier slots.
+        earlier = ("morning",) if slot == "midday" else ("morning", "midday")
+        used = {select_editorial_topic(today, prev, groups, policy)["theme"]
+                for prev in earlier}
+        remaining = [theme for theme in eligible if theme not in used]
+        if remaining:
+            eligible = remaining
     return {"topic_group": topic_group,
             "theme": select_theme(today, slot, eligible)}
 
@@ -111,8 +125,11 @@ def select_shape(today, slot):
 
 def select_tone_mode(today, slot):
     """Permit a rare casual aside without mandating one or creating a calendar pattern."""
-    if slot not in ("morning", "evening"):
+    if slot not in SLOTS:
         raise ValueError("Unknown posting slot")
+    # The new daytime slots use a calm tone by default; 08/20 are unchanged.
+    if slot in ("midday", "afternoon"):
+        return "polite"
     index = today.toordinal() * 2 + (0 if slot == "morning" else 1)
     def candidate(n):
         digest = hashlib.sha256(f"shiori-voice-v1:{n}".encode()).digest()
@@ -124,7 +141,7 @@ def select_tone_mode(today, slot):
 
 def build_prompt(now, slot, config, topic_signal=None):
     """One canonical prompt for daily drafts and evaluation previews."""
-    if slot not in ("morning", "evening"):
+    if slot not in SLOTS:
         raise ValueError("Unknown posting slot")
     editorial = select_editorial_topic(
         now.date(), slot, config["topic_groups"],
@@ -149,7 +166,8 @@ def build_prompt(now, slot, config, topic_signal=None):
     prompt = json.dumps({
         "post_kind": "everyday_chat",
         "date_jst": now.date().isoformat(), "weekday": weekday,
-        "slot": slot, "theme": theme, "shape": shape, "topic_group": topic_group,
+        "slot": slot, "daypart": {"morning": "朝", "midday": "昼", "afternoon": "午後", "evening": "夜"}[slot],
+        "theme": theme, "shape": shape, "topic_group": topic_group,
         "persona_angle": persona_angle,
         "character": config["character"],
         "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな人柄や一面が見えるかを最優先する",
@@ -193,14 +211,16 @@ def build_prompt(now, slot, config, topic_signal=None):
             "毎回体験談にする必要はない。感想だけ、疑問だけ、ちょっと情けない失敗だけでもよい",
             "人物の継続設定になる仕事・家族・住居・年齢・交友関係を勝手に作らない",
             "抽象的な比喩、読者心理の憶測、意味の通らない因果関係を使わない",
-            "朝夜の枠に話題が合うようにするが、今朝や今夜何かをしたとは捏造しない"
+            "朝・昼・午後・夜の枠に話題が合うようにするが、今日何かをしたとは捏造しない"
         ],
         "guidelines": [
             "日本語25〜100字程度。短く自然なら一文でもよい。最大240字",
             "基本は『です・ます』の自然な丁寧語。敬語の堅さは不要だが、最初から友達口調にはしない",
             "tone_mode の指示を守り、毎回ラフな言葉を入れない",
             "『笑』やツッコミ、句点を抜く演出を定型化しない。語尾をわざと砕けさせない",
-            "冒頭の挨拶は任意。『おはようございます』『お疲れ様です』を毎回繰り返さない",
+            ("8時の投稿は冒頭の「おはようございます。」を後処理で付けるため、本文中に重複して書かない"
+             if slot == "morning" else
+             "12時・16時・20時は挨拶を固定しない。朝の挨拶を使い回さない"),
             "40代男性の日常を見下さず、指導者ではなく程よい距離感の案内役として書く",
             "AIやシステム、投稿テスト、運用中、連携といった舞台裏の話題は出さない",
             "根拠のない季節の状況、今日の天気、祝日、時事・地域イベントには触れない",
@@ -217,7 +237,7 @@ def build_prompt(now, slot, config, topic_signal=None):
 
 
 def validate_post(text, slot, max_chars):
-    if slot not in ("morning", "evening"):
+    if slot not in SLOTS:
         raise ValueError("Unknown posting slot")
     if not isinstance(text, str):
         raise ValueError("Text is not a string")
