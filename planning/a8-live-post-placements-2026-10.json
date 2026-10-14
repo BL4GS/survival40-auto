@@ -126,6 +126,30 @@
       "verified_wordpress_api": true,
       "verified_public_html": false,
       "notes": "Detected existing A8 click link in WordPress post content, owner-supplied creative not in unified inventory yet. Custom marker S40_A8_HOLO_BELL_START, adjacent PR・広告. No WordPress changes performed."
+    },
+    {
+      "post_id": 442,
+      "slug": "40s-male-scalp-shampoo-guide",
+      "program_id": "s00000021920005",
+      "advertiser": "ROOT BEAUTÉ スカルプマッサージシャンプー",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "inserted_before": "H2 抜け毛や薄毛が気になるときに知っておきたいこと",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "Second option in same shampoo article, distinct from existing Premium Black Shampoo; no unverified hair growth claims, PR disclosure"
+    },
+    {
+      "post_id": 380,
+      "slug": "hair-tonic-vs-aga-treatment",
+      "program_id": "s00000027814001",
+      "advertiser": "薬用ナノインパクト8",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "inserted_before": "H2 まとめ",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "Medicinal hair tonic option alongside neutral AGA treatment distinction and explicit warnings, PR disclosure"
     }
   ],
   "planned_post_placement": [
