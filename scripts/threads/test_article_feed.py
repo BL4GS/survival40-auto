@@ -72,16 +72,18 @@ class ArticleFeedTests(unittest.TestCase):
 
     def test_existing_twenty_hour_slots_are_persona_after_october_24(self):
         wed = dt.datetime(2026, 10, 28, 20, 5, tzinfo=JST)
-        with patch("scripts.threads.prepare_schedule.gemini_generate",
-                   return_value="洗面台の小物がいつの間にか増えていて、何から片づけるか迷っています。"):
+        with (patch("scripts.threads.prepare_schedule.gemini_generate",
+                    return_value="洗面台の小物がいつの間にか増えていて、何から片づけるか迷っています。"),
+              patch("scripts.threads.prepare_schedule.fetch_public_posts",
+                    return_value=[])):
             prepared = choose_copy(wed, self.config, "fake-key")
         self.assertEqual(prepared["kind"], "everyday")
         self.assertIsNone(prepared["article_id"])
         self.assertIsNone(prepared["article_url"])
         self.assertEqual(verify_draft(prepared, wed, self.config), prepared["text"])
 
-    def test_no_public_article_lookup_during_persona_slot(self):
-        wed = dt.datetime(2026, 10, 28, 20, 5, tzinfo=JST)
+    def test_no_public_article_lookup_during_non_referral_persona_slot(self):
+        wed = dt.datetime(2026, 10, 29, 20, 5, tzinfo=JST)
         with (patch("scripts.threads.prepare_schedule.gemini_generate",
                     return_value="洗面台の小物がいつの間にか増えていて、何から片づけるか迷っています。"),
               patch("scripts.threads.article_feed.fetch_public_posts",
