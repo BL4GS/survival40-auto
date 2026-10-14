@@ -1,0 +1,91 @@
+name: Shiori mobile guide H2 timing — offline review only
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/patch_navigator_mobile_lead_01921.py'
+      - 'tests/test_navigator_mobile_lead.py'
+      - '.github/scripts/patch_navigator_mobile_interaction_01921.py'
+      - 'tests/test_navigator_mobile_interaction.py'
+      - '.github/workflows/shiori-guide-mobile-timing-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check mobile guide timing and interaction contract tests
+        run: python3 -m unittest discover -s tests -p 'test_navigator_mobile_*.py' -v
+      - name: Reconstruct identical candidate PHP from reviewed release build
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          lines=Path('.github/workflows/release.yml').read_text(encoding='utf-8').splitlines()
+          steps=('Restore plugin source','Patch plugin to current release',
+                 'Stage reviewed affiliate features exactly as validated',
+                 'Promote reviewed version markers')
+          for name in steps:
+              marker='      - name: '+name
+              assert lines.count(marker)==1, name
+              pos=lines.index(marker)+1
+              assert lines[pos]=='        run: |'
+              script=[]
+              for line in lines[pos+1:]:
+                  if line and not line.startswith('          '):
+                      break
+                  script.append(line[10:] if line else '')
+              subprocess.run(['bash','-euo','pipefail','-c','\n'.join(script)+'\n'],
+                             check=True)
+              print('PASS:',name)
+          PY
+      - name: Apply only mobile heading trigger change to reconstructed 0.19.21
+        run: |
+          set -euo pipefail
+          cp survival40-auto/survival40-auto.php /tmp/s40-before-timing.php
+          python3 .github/scripts/patch_navigator_mobile_lead_01921.py
+          cp survival40-auto/survival40-auto.php /tmp/s40-before-interaction.php
+          python3 .github/scripts/patch_navigator_mobile_interaction_01921.py
+          php -l survival40-auto/survival40-auto.php
+          python3 - <<'PY'
+          from pathlib import Path
+          a=Path('/tmp/s40-before-timing.php').read_text()
+          b=Path('survival40-auto/survival40-auto.php').read_text()
+          old="? Math.min(window.innerHeight*.45,350)"
+          new="? Math.min(window.innerHeight*.72,580)"
+          from importlib import util
+          mod=util.spec_from_file_location('mobile_ui','.github/scripts/patch_navigator_mobile_interaction_01921.py')
+          patch=util.module_from_spec(mod)
+          mod.loader.exec_module(patch)
+          timing=a.replace(old,new,1)
+          assert a.count(old)==1 and b.count(new)==1
+          assert Path('/tmp/s40-before-interaction.php').read_text()==timing, "Unexpected timing patch diff"
+          assert b==patch.apply(timing), "Unexpected mobile UI patch diff"
+          assert " * Version: 0.19.21" in b
+          assert "const VERSION = '0.19.21';" in b
+          assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in b
+          print('PASS: exact timing + mobile UI changes only, plugin PHP valid')
+          PY
+      - name: Validate isolated presenter JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          raw=Path('survival40-auto/survival40-auto.php').read_text(encoding='utf-8')
+          js=re.search(r'<script id="s40-presenter-js">([\s\S]*?)</script>',raw)
+          assert js, 'Guide script missing'
+          data=re.sub(r'<\?php[\s\S]*?\?>',
+                      '{"normal":"normal.webp","explain":"explain.webp","summary":"summary.webp","caution":"caution.webp"}',
+                      js.group(1))
+          assert '<?php' not in data
+          Path('/tmp/s40-presenter-test.js').write_text(data,encoding='utf-8')
+          PY
+          node --check /tmp/s40-presenter-test.js
+      - name: Staged source audit only (NO release/WordPress deployment)
+        run: |
+          git diff --stat
+          echo 'Staging verified; production plugin remains untouched.'
