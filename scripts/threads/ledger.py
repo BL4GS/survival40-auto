@@ -36,7 +36,7 @@ class GithubLedger:
         if key == "test-20261013-v1":
             # Reserved once, forever, for the single explicitly approved test.
             return "threads-ledger/tests/test-20261013-v1.json"
-        match = re.fullmatch(r"(20[0-9]{2})-([01][0-9])-([0-3][0-9])-(morning|evening)", key)
+        match = re.fullmatch(r"(20[0-9]{2})-([01][0-9])-([0-3][0-9])-(morning|evening|late-article)", key)
         if not match:
             raise ValueError("Invalid date-slot or article id")
         return f"threads-ledger/{match[1]}/{match[2]}/{key}.json"
@@ -78,6 +78,10 @@ class GithubLedger:
         if sha:
             payload["sha"] = sha
         return payload
+
+    def exists(self, slot_id):
+        """Treat either a reservation or a published entry as already used."""
+        return self._call("GET", self.filename(slot_id)) is not None
 
     def reserve(self, slot_id, account_id, text_digest):
         if not account_id or not re.fullmatch(r"[a-f0-9]{64}", text_digest):
