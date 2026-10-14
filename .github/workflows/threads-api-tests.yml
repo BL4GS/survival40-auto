@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Offline test the isolated candidate, not the main branch scripts.
-          ref: 29a669d5ce4a21b424133736adc7df413fadc1ab
+          ref: a2b90110c98d8e827b9d80616ab0c01bfe577efa
           persist-credentials: false
       - name: Test Threads integration offline, no API secrets
         env:
