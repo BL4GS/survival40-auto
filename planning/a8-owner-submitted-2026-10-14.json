@@ -71,6 +71,50 @@
         "https://www.mhlw.go.jp/content/11120000/000537052.pdf"
       ],
       "last_verified_date_jst": "2026-10-14"
+    },
+    {
+      "name": "NULL ブラジリアンワックス",
+      "advertiser": "NULLメンズ化粧品",
+      "program_id": "s00000014286003",
+      "status": "owner_screenshot_confirms_partnered",
+      "category": "ボディケア・家庭用ワックス脱毛",
+      "new_purchase_reward_jpy": 1200,
+      "epc_or_approval_rate": "A8 screenshot displayed '-' for both (no reported metrics). Do not invent estimates.",
+      "conditions_from_owner_screenshot": [
+        "WEB注文後10日以内の入金確認",
+        "ブラジリアンワックスのみが成果対象",
+        "複数個購入でも報酬は一律"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "未入金・返品・キャンセル",
+        "全額返金申請",
+        "リスティング違反"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "本人申込みOK",
+        "ポイントNG、リスティング一部OK",
+        "リスティングNGワードに社名・商品名",
+        "広告表示を明確に",
+        "報酬確定目安 約30日、再訪問90日"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEGD7+2EBYKY+328C+HWXLD",
+      "banner_src": "https://www25.a8.net/svt/bgt?aid=261014875145&wid=005&eno=01&mid=s00000014286003009000&mc=1",
+      "impression_src": "https://www10.a8.net/0.gif?a8mat=4BEGD7+2EBYKY+328C+HWXLD",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEGD7+2EBYKY+328C+HWXLD\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www25.a8.net/svt/bgt?aid=261014875145&wid=005&eno=01&mid=s00000014286003009000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www10.a8.net/0.gif?a8mat=4BEGD7+2EBYKY+328C+HWXLD\" alt=\"\">",
+      "official_product_url": "https://store.mens-null.net/products/null-brazilian-wax",
+      "merchant_price_checked_jpy": 3545,
+      "merchant_price_date_jst": "2026-10-14",
+      "medical_guidance_source": "https://www.aad.org/public/everyday-care/skin-care-basics/hair/how-to-wax",
+      "cautions": [
+        "ワックスは一時的な毛の除去で永久脱毛ではない",
+        "蜂蜜由来の製品でも刺激や痛み・かぶれの可能性あり",
+        "敏感なデリケートゾーンや粘膜・陰部・肛門への自己処理は避け、説明書の使用部位と禁忌を遵守"
+      ],
+      "wp_status": "not_placed_yet",
+      "wp_post_id": null,
+      "wp_post_slug": null
     }
   ]
 }
