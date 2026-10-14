@@ -16,7 +16,8 @@ from .compose import CONFIG, JST, OUTPUT, choose_slot, validate_post
 from .ledger import GithubLedger, LedgerError
 from .meta_api import MetaThreadsClient, ThreadsApiError
 from .prepare_schedule import ARTICLE_CALENDAR, FIRST_TEXT, START_DATE, MORNING_GREETING
-from .article_feed import build_article_text, require_article_url
+from .article_feed import build_article_text, require_article_url, fetch_public_posts, ArticleSourceError
+from .evergreen_links import slot_spec, select_verified, validate_draft
 
 
 EXPECTED_REPO = "BL4GS/survival40-auto"
@@ -63,18 +64,9 @@ def verify_draft(draft, now, config):
                 or draft.get("article_url") != url):
             raise ValueError("Article text/URL diverged from verified calendar")
     elif kind == "article":
-        if (slot != "evening" or now.date() <= dt.date(2026, 10, 24)
-                or now.weekday() not in (2, 5)):
+        if slot_spec(now) is None:
             raise ValueError("Article posted outside approved recurring slots")
-        article_id = draft.get("article_id")
-        title = draft.get("article_title")
-        url = draft.get("article_url")
-        if (type(article_id) is not int or article_id <= 0
-                or not isinstance(title, str) or not 8 <= len(title) <= 150
-                or not isinstance(url, str)
-                or require_article_url(url) != url
-                or text != build_article_text({"title": title, "url": url})):
-            raise ValueError("Fresh article metadata or text is invalid")
+        validate_draft(draft, now, validate_post, config["max_characters"])
     else:
         if (kind != "everyday" or draft.get("article_title") is not None
                 or draft.get("article_id") is not None
@@ -117,22 +109,39 @@ def publish(draft, now, config, env):
     client = MetaThreadsClient(token)
     client.verify_account(account)
     ledger = GithubLedger(EXPECTED_REPO, LEDGER_BRANCH, env["GITHUB_TOKEN"])
+    article_key = None
+    if draft.get("article_id") is not None:
+        article_key = "article-" + str(draft["article_id"])
+        # Re-read published WordPress content immediately before the Meta write.
+        # Missing/unpublished/tampered article or prior 22:00 introduction:
+        # preserve the 20:00 slot with an independently validated ordinary post.
+        try:
+            current = select_verified(now, fetch_public_posts())
+        except (ArticleSourceError, OSError, TypeError, ValueError, TimeoutError):
+            current = None
+        if (current is None or current["id"] != draft["article_id"]
+                or current["title"] != draft["article_title"]
+                or current["url"] != draft["article_url"]
+                or current["text"] != text
+                or ledger.exists(article_key)):
+            text = draft["fallback_everyday_text"]
+            article_key = None
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
     key = now.date().isoformat() + "-" + draft["slot"]
     # Persist reservation BEFORE every Meta POST; never retry an uncertain attempt.
     if not ledger.reserve(key, account, digest):
         print("SKIP: Slot already reserved; no duplicate post created.")
         return None
-    if draft.get("article_id") is not None:
-        # Independently reserve article identity to prevent reposting the same
-        # source after a schedule or implementation change.
-        article_key = "article-" + str(draft["article_id"])
+    if article_key is not None:
+        # Reserve article identity across the 20:00 and 22:00 workflows.
         if not ledger.reserve(article_key, account, digest):
-            print("SKIP: Article already introduced; do not repeat it.")
+            print("SKIP: Article reservation raced another publisher; do not retry.")
             return None
     container_id = client.create_text_container(text)
     post_id = client.publish_container(container_id)
     ledger.mark_published(key, post_id)
+    if article_key is not None:
+        ledger.mark_published(article_key, post_id)
     print("PUBLISHED: " + key + "; Threads post ID: " + post_id)
     return post_id
 
