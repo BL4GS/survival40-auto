@@ -1,0 +1,43 @@
+name: Shiori Threads topic research (read only)
+on:
+  schedule:
+    # 17:00 JST = 08:00 UTC. Optional public search, never interacts with posts.
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Preview/tests only; do not call Meta on dispatch.
+permissions:
+  contents: write # Write only an anonymous topic hint into state/threads-ledger.
+concurrency:
+  group: survival40-shiori-topic-research
+  cancel-in-progress: false
+jobs:
+  topic_discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Reviewed independent topic collector; publishing source has own pin.
+          ref: 3c19f4b46a48a6748bc27d3ec21bff6b828e1aee
+          persist-credentials: false
+      - name: Offline research/unit tests without API keys
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GITHUB_TOKEN: ''
+          GEMINI_API_KEY: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Collect anonymized public keyword signal only (no likes/replies)
+        if: github.event_name == 'schedule'
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          THREADS_USER_ID: '' # No publication/user interaction in this job.
+        run: python3 -m scripts.threads.topic_discovery
+      - name: Upload topic report without post text or usernames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiori-topic-research-${{ github.run_id }}
+          path: threads-output/topic-research.json
+          retention-days: 7
+          if-no-files-found: ignore
