@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Offline CI for an exact isolated source commit, no production posts.
+          ref: daf2610ec4b84cbc7b3ca0b17f0215a0828a611d
           persist-credentials: false
       - name: Test Threads integration offline, no API secrets
         env:
