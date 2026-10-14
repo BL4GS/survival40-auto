@@ -46,8 +46,33 @@ class MetaThreadsClient:
             with urllib.request.urlopen(req, timeout=25) as response:
                 result = json.load(response)
         except urllib.error.HTTPError as exc:
-            # Never log response body, request headers, or access token.
-            raise ThreadsApiError("Meta API returned HTTP " + str(exc.code)) from None
+            # Meta can report HTTP 400 for several distinct causes. Record only
+            # vetted integer codes and the fixed endpoint stage for triage;
+            # never log raw Meta response, post text, IDs, request headers or token.
+            stage = {
+                "/me/threads": "create_text_container",
+                "/me/threads_publish": "publish_container",
+                "/me": "profile_check",
+            }.get(endpoint, "other_endpoint")
+            details = []
+            try:
+                body = json.loads(exc.read(4096).decode("utf-8"))
+                meta_error = body.get("error") if isinstance(body, dict) else None
+                if isinstance(meta_error, dict):
+                    for field in ("code", "error_subcode"):
+                        number = meta_error.get(field)
+                        if type(number) is int and 0 <= number <= 999999999:
+                            details.append(field + "=" + str(number))
+                    transient = meta_error.get("is_transient")
+                    if type(transient) is bool:
+                        details.append("transient=" + str(transient).lower())
+            except (ValueError, TypeError, AttributeError, UnicodeError, OSError):
+                pass
+            suffix = (" " + " ".join(details)) if details else ""
+            raise ThreadsApiError(
+                "Meta API returned HTTP " + str(exc.code) +
+                " at " + stage + suffix
+            ) from None
         except (urllib.error.URLError, TimeoutError):
             # Do not automatically retry ambiguous publish requests.
             raise ThreadsApiError("Meta API connection failed; manual reconciliation required") from None
