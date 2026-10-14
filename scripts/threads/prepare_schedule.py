@@ -13,6 +13,7 @@ from .compose import (CONFIG, JST, OUTPUT, build_prompt, choose_slot,
 from .article_feed import ArticleSourceError, fetch_public_posts
 from .evergreen_links import select_verified, slot_spec
 from .topic_discovery import read_safe_signal
+from .topic_diversity import select_diverse_topic
 
 START_DATE = dt.date(2026, 10, 13)
 FIRST_TEXT = (
@@ -92,7 +93,10 @@ def choose_copy(now, config, gemini_key):
         signal = read_safe_signal(
             now, os.getenv("GITHUB_TOKEN", ""), config, slot
         ) if slot == "evening" and date not in ARTICLE_CALENDAR else None
-        instruction = build_prompt(now, slot, config, topic_signal=signal)
+        # Choose a different approved scene if recent scheduled themes are
+        # identical or too close. No Meta token, no extra published slot.
+        spaced = select_diverse_topic(now, slot, config, preferred=signal)
+        instruction = build_prompt(now, slot, config, topic_signal=spaced)
         generated = gemini_generate(instruction["prompt"], gemini_key)
         if slot == "morning":
             generated = add_morning_greeting(generated)
