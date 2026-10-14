@@ -1,0 +1,30 @@
+name: Threads Meta HTTP error diagnostics — offline safety tests
+on:
+  pull_request:
+    paths:
+      - 'scripts/threads/meta_api.py'
+      - 'scripts/threads/test_meta_error_diagnostics.py'
+      - '.github/workflows/threads-meta-error-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run all Threads tests with NO live credentials or posts
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          GITHUB_TOKEN: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Check syntax and no accidental new publication methods
+        run: |
+          python3 -m compileall -q scripts/threads
+          grep -q 'Meta API returned HTTP' scripts/threads/meta_api.py
