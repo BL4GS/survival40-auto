@@ -34,15 +34,23 @@ def _is_time_eligible(theme, slot):
     return True
 
 
-def _pick(base, choices, previous, date, slot):
+def _pick(base, choices, previous, date, slot, allow_preferred_out_of_daypart=False):
     group, requested = base["topic_group"], base["theme"]
     if requested not in choices:
         raise ValueError("Topic not in the approved group")
     if not all(isinstance(x, str) and x for x in choices):
         raise ValueError("Unexpected topic options")
     eligible = [x for x in choices if _is_time_eligible(x, slot)]
-    if requested not in eligible or not eligible:
-        raise ValueError("Selected topic is ineligible for this daypart")
+    if requested not in eligible:
+        # Topic discovery may supply a verified allowlisted signal that is
+        # seasonally relevant despite wording such as "朝食" in an evening slot.
+        # Preserve previously approved signal behavior for that one target.
+        if allow_preferred_out_of_daypart:
+            eligible.append(requested)
+        else:
+            raise ValueError("Selected topic is ineligible for this daypart")
+    if not eligible:
+        raise ValueError("No topics eligible for this daypart")
 
     # Prefer entirely fresh themes within the 12-slot window; then avoid
     # sharing a distinctive object/scene within 8 slots. If no safe
@@ -72,7 +80,7 @@ def _pick(base, choices, previous, date, slot):
 
 
 def select_diverse_topic(now, slot, config, preferred=None):
-    """A bounded seven-day replay; no private account data, no external writes.
+    """A deterministic bounded-memory replay; no private data or network writes.
 
     Reproducing the preceding editorial selections gives consistent output for
     retries/fallbacks without storing or disclosing actual Threads post text.
@@ -86,7 +94,9 @@ def select_diverse_topic(now, slot, config, preferred=None):
                 or set(preferred) != {"theme", "topic_group"}
                 or preferred["theme"] not in groups.get(preferred["topic_group"], [])):
             raise ValueError("Unapproved external topic")
-    start = max(FIRST_SLOT, now.date() - dt.timedelta(days=7))
+    # Replay from a fixed launch epoch. A moving seven-day cutoff caused
+    # previous days to be recalculated differently at the boundary.
+    start = FIRST_SLOT
     history = []
     current_day = start
     while current_day <= now.date():
@@ -96,8 +106,17 @@ def select_diverse_topic(now, slot, config, preferred=None):
             base = select_editorial_topic(current_day, candidate_slot, groups, policy)
             if current_day == now.date() and candidate_slot == slot and preferred is not None:
                 base = preferred
-            chosen = _pick(base, groups[base["topic_group"]], history, current_day, candidate_slot)
+            is_verified_signal = (
+                preferred is not None
+                and current_day == now.date() and candidate_slot == slot
+            )
+            chosen = _pick(
+                base, groups[base["topic_group"]], history, current_day,
+                candidate_slot, allow_preferred_out_of_daypart=is_verified_signal
+            )
             history.append((base["topic_group"], chosen["theme"]))
+            if len(history) > COOLDOWN_EXACT_SLOTS:
+                del history[:-COOLDOWN_EXACT_SLOTS]
             if current_day == now.date() and candidate_slot == slot:
                 return chosen
         current_day += dt.timedelta(days=1)
