@@ -1,0 +1,31 @@
+name: Shiori schedule redundant trigger guardrails — NO POST
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/threads-drafts.yml'
+      - 'tests/test_threads_same_hour_fallback.py'
+      - '.github/workflows/threads-schedule-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify same-slot 08/12/16/20 + fallback schedule contract
+        run: python3 -m unittest discover -s tests -p 'test_threads_same_hour_fallback.py' -v
+      - name: Check exact source still protects ledger before Meta
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/BL4GS/survival40-auto/daf2610ec4b84cbc7b3ca0b17f0215a0828a611d/scripts/threads/scheduled_publisher.py -o /tmp/publisher.py
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('/tmp/publisher.py').read_text()
+          assert text.index('ledger.reserve(key, account, digest)') < text.index('client.create_text_container(text)') < text.index('client.publish_container(container_id)')
+          assert 'SKIP: Slot already reserved' in text
+          assert 'GITHUB_EVENT_NAME") != "schedule"' in text
+          print('PASS: durable at-most-once reservation before Meta POST')
+          PY
