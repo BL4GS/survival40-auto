@@ -54,7 +54,7 @@ def _json_request(url, token, *, method="GET", payload=None, timeout=15):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as res:
             return json.load(res)
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError, TimeoutError, ValueError):
         # Strip token, user data and response contents out of errors/artifacts.
         raise ResearchUnavailable("Provider or ledger access unavailable") from None
 
@@ -161,7 +161,7 @@ def write_sanitized_signal(signal, token):
         except urllib.error.HTTPError as ex:
             if ex.code != 404:
                 raise ResearchUnavailable("GitHub state unavailable") from None
-        except (urllib.error.URLError, TimeoutError):
+        except (urllib.error.URLError, OSError, TimeoutError):
             raise ResearchUnavailable("GitHub state unavailable") from None
     body = {"message": "Update anonymized Shiori topic signal",
             "branch": STATE_BRANCH,
@@ -210,7 +210,7 @@ def read_safe_signal(now, token, config, slot):
         info = _json_request(_github_path()+"?"+urllib.parse.urlencode({"ref": STATE_BRANCH}), token)
         value = json.loads(base64.b64decode(info["content"]).decode("utf-8"))
         return choose_safe_signal(now, value, config, slot)
-    except (ResearchUnavailable, ValueError, TypeError, KeyError, UnicodeError, OverflowError):
+    except (ResearchUnavailable, ValueError, TypeError, KeyError, UnicodeError, OverflowError, OSError):
         return None
 
 
