@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Pin 100-test four-slot generator; 22:00 articles stay in independent workflow.
-          ref: daf2610ec4b84cbc7b3ca0b17f0215a0828a611d
+          ref: a2b90110c98d8e827b9d80616ab0c01bfe577efa
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
