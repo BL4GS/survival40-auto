@@ -112,9 +112,13 @@
         "蜂蜜由来の製品でも刺激や痛み・かぶれの可能性あり",
         "敏感なデリケートゾーンや粘膜・陰部・肛門への自己処理は避け、説明書の使用部位と禁忌を遵守"
       ],
-      "wp_status": "not_placed_yet",
+      "wp_status": "editorial_draft_saved_to_GitHub_not_published_or_scheduled",
       "wp_post_id": null,
-      "wp_post_slug": null
+      "wp_post_slug": null,
+      "editorial_draft_path": "planning/articles/null-brazilian-wax-men-guide-2026-10-14.md",
+      "planned_post_slug": "null-brazilian-wax-men-guide",
+      "last_attempt_jst": "2026-10-14",
+      "attempt_outcome": "WPVibe new post request blocked by OpenAI safety screening; subsequent read attempt also blocked; no WordPress post creation claimed. Keep source draft and owner A8 creative intact for later safe review."
     }
   ]
 }
