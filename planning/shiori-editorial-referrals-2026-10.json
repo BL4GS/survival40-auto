@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "created_at_jst": "2026-10-14",
-  "status": "review_and_implementation_queue_only_NOT_LIVE",
+  "status": "PRODUCTION_WORKFLOW_PIN_PROMOTED; first eligible Wed 2026-10-28 20:00 JST pending real execution",
   "source_proof": "2026-10-14 WPVibe post statuses and GitHub production workflow ref 2c6660b3856fd87e3d04583dd6c4f273020a0c17",
   "current_behavior": {
     "daily_persona_slots_jst": [
@@ -19,7 +19,7 @@
   },
   "proposal": {
     "principle": "Shiori is a reader-first personal guide, not an ad feed. A8 placement is never a requirement to recommend an article.",
-    "slot_policy": "Replace no more than two Wed/Sat 20:00 everyday posts per week with a verified, curated older article, AFTER the pinned Oct 14/17/21/24 calendar is over. Do not add new posts at other hours; keep 22:00 same-day introductions independently gated.",
+    "slot_policy": "Up to two Wed/Sat 20:00 referrals weekly from Oct 28, replacing an existing everyday post. Other days use ordinary persona posts. The protected Oct14/17/21/24 intros and independent 22:00 same-day article slot are unchanged.",
     "eligibility": [
       "Published WordPress article only; canonical URL matches HTTPS host and article slug",
       "Do not link future/draft post; do not trust the queued plan without live verification",
@@ -28,7 +28,8 @@
       "No made-up product use, product outcomes or purchase endorsement in Shiori's first person",
       "Use 【PR】 on posts linking to articles with affiliate promotions and ensure article's own disclosures remain visible",
       "Recommend some genuinely ad-free editorial content as well; do not favor commission alone",
-      "Rate cap: do not automatically substitute every 20:00 daily persona post; if no fresh eligible item, post ordinary Shiori everyday copy"
+      "Rate cap: do not automatically substitute every 20:00 daily persona post; if no fresh eligible item, post ordinary Shiori everyday copy",
+      "At posting: re-read WordPress and GitHub article-id ledger; if removed/changed/previously introduced, use validated ordinary fallback; no retries on ambiguous Meta states."
     ],
     "lookback_basis": "One evergreen candidate a few days or weeks old, aligned with common daily frustrations and a distinct topic across successive slots.",
     "max_weekly_evergreen_posts": 2,
@@ -101,11 +102,11 @@
     {
       "date_jst": "2026-11-21",
       "slot": "evening",
-      "post_id": 417,
-      "slug": "40s-male-sunscreen-how-to-choose",
-      "theme": "紫外線・肌",
-      "monetization": "Amazon",
-      "copy_angle": "一年を通して紫外線対策を続けられるか考える"
+      "post_id": 400,
+      "slug": "40s-male-waking-at-night",
+      "theme": "睡眠・中途覚醒",
+      "monetization": "A8",
+      "copy_angle": "夜中に目が覚める日、生活習慣や寝室環境で確認する点を知る"
     },
     {
       "date_jst": "2026-11-25",
@@ -119,18 +120,25 @@
     {
       "date_jst": "2026-11-28",
       "slot": "evening",
-      "post_id": 438,
-      "slug": "40s-male-all-in-one-skincare-guide",
-      "theme": "簡単スキンケア",
-      "monetization": "A8",
-      "copy_angle": "続けられるスキンケアを選ぶ"
+      "post_id": 446,
+      "slug": "40s-male-mouthwash-guide",
+      "theme": "マウスウォッシュ",
+      "monetization": "none",
+      "copy_angle": "刺激の強さだけで選ばず、無理なく使い続けられるものを考える"
     }
   ],
   "warnings": [
-    "This is not a live scheduler and creates no Threads posts.",
-    "Existing 08/20 production checkout is pinned to SHA and cannot be changed by planning-file edits.",
     "The 22:00 workflow has not yet demonstrated a live article posting; first eligible day Oct19.",
     "Owner goal is article discovery and trust, not forced advertising; no tracking clicks or conversions from this file.",
-    "For live implementation, test all paths without Threads credentials; require explicit review/activation of a new approved pin and a tested ledger-safe fallback."
-  ]
+    "Production source ref now includes candidate logic but no evergreen post has run; earliest 2026-10-28 20:00 JST. Tests passed 84/84; the actual GitHub scheduled and Meta run remains unverified.",
+    "This JSON is still a planning/audit record, not read by the live publisher. Source is scripts/threads/evergreen_links.py in tested pin."
+  ],
+  "promoted_production_source_sha": "86f10183df2019ded49fb5dda8d4f83a99e74371",
+  "workflow_commit_sha": "e7a7506749b82f79983fedb3d75750eda16429af",
+  "pr": "https://github.com/BL4GS/survival40-auto/pull/53",
+  "test_runs": [
+    "https://github.com/BL4GS/survival40-auto/actions/runs/38505375381",
+    "https://github.com/BL4GS/survival40-auto/actions/runs/38505375383"
+  ],
+  "production_scope": "Exact scheduled 08:00/20:00 workflow code checkout ref only. 22:00 source ref unchanged; not a claim of successfully published posts."
 }
