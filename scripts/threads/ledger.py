@@ -79,6 +79,10 @@ class GithubLedger:
             payload["sha"] = sha
         return payload
 
+    def exists(self, slot_id):
+        """Treat either a reservation or a published entry as already used."""
+        return self._call("GET", self.filename(slot_id)) is not None
+
     def reserve(self, slot_id, account_id, text_digest):
         if not account_id or not re.fullmatch(r"[a-f0-9]{64}", text_digest):
             raise ValueError("Missing account id or text sha256")
