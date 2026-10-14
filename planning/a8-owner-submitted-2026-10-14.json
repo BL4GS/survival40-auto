@@ -119,6 +119,75 @@
       "planned_post_slug": "null-brazilian-wax-men-guide",
       "last_attempt_jst": "2026-10-14",
       "attempt_outcome": "WPVibe new post request blocked by OpenAI safety screening; subsequent read attempt also blocked; no WordPress post creation claimed. Keep source draft and owner A8 creative intact for later safe review."
+    },
+    {
+      "name": "ROOT BEAUTÉ スカルプマッサージシャンプー",
+      "advertiser": "スリーエム株式会社",
+      "program_id": "s00000021920005",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "初回購入2500円",
+      "category": "ヘアケア・スカルプシャンプー",
+      "conditions_from_owner_screenshot": [
+        "商品新規（対象商品を初めて購入する方）",
+        "WEB注文後30日以内の入金確認",
+        "対象商品はROOT BEAUTÉ スカルプマッサージシャンプー（定期）",
+        "複数個購入時も成果報酬一律"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "返品・キャンセル・未入金・不正・虚偽・入力不備・転売目的",
+        "LINE経由の購入",
+        "商品受領の延期や受取拒否",
+        "規定回数2回の継続がない場合",
+        "リスティング違反"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEGDB+4LIM1E+4P4W+TSJ41",
+      "banner_src": "https://www29.a8.net/svt/bgt?aid=261014879278&wid=005&eno=01&mid=s00000021920005004000&mc=1",
+      "impression_src": "https://www14.a8.net/0.gif?a8mat=4BEGDB+4LIM1E+4P4W+TSJ41",
+      "width": 300,
+      "height": 250,
+      "wp_status": "published_and_verified_wp_api_and_public_html",
+      "wp_post_id": 442,
+      "wp_post_slug": "40s-male-scalp-shampoo-guide",
+      "wp_url": "https://www.survival40.com/40s-male-scalp-shampoo-guide/",
+      "placement": "Within article after scalp shampoo selection criteria, separate from existing Premium Black Shampoo placement, clear PR and no unverified use experience",
+      "last_verified_date_jst": "2026-10-14"
+    },
+    {
+      "name": "薬用ナノインパクト8",
+      "advertiser": "ホソカワミクロン株式会社",
+      "program_id": "s00000027814001",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "新規購入4000円",
+      "category": "ヘアケア・薬用育毛剤（医薬部外品）",
+      "conditions_from_owner_screenshot": [
+        "広告主を初めて利用する新規購入者",
+        "WEB注文後30日以内の入金確認",
+        "対象は広告LP掲載の薬用ナノインパクト8・薬用ナノインパクト8レディ・アップセル商品"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "返品・キャンセル・不正・申込不備・虚偽・いたずら・重複成果",
+        "商品受領の延期や受取拒否",
+        "リスティング違反",
+        "ポイントサイト経由の後払い/代金引換"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "記事中でAGA治療薬と同等の効果を主張しない",
+        "実使用・育毛結果を創作しない",
+        "購入時の定期条件を確認",
+        "PR表記をつける",
+        "リスティングNGワードは社名・サービス名・表記ゆれ"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEGDB+4DRZ6A+5YM4+5YJRL",
+      "banner_src": "https://www21.a8.net/svt/bgt?aid=261014879265&wid=005&eno=01&mid=s00000027814001001000&mc=1",
+      "impression_src": "https://www16.a8.net/0.gif?a8mat=4BEGDB+4DRZ6A+5YM4+5YJRL",
+      "width": 300,
+      "height": 250,
+      "wp_status": "published_and_verified_wp_api_and_public_html",
+      "wp_post_id": 380,
+      "wp_post_slug": "hair-tonic-vs-aga-treatment",
+      "wp_url": "https://www.survival40.com/hair-tonic-vs-aga-treatment/",
+      "placement": "Before article summary, on impartial page separating drugstore hair tonic and medically reviewed AGA treatment",
+      "last_verified_date_jst": "2026-10-14"
     }
   ]
 }
