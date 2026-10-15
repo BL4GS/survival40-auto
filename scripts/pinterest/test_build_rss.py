@@ -4,63 +4,98 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
-
 from PIL import Image
 from scripts.pinterest import build_rss as m
 
 
-def source(pid=512, date="2026-10-14T12:30:00", url="https://www.survival40.com/40s-eye-strain-massage-breaks/"):
-    return {
-        "id": pid, "status": "publish", "date_gmt": date, "link": url,
-        "title": {"rendered": "40代男性の疲れ目をどうケアする？休憩の基本"},
-        "excerpt": {"rendered": "<p>疲れ目を感じたとき、日常で見直したい休憩と生活習慣を整理します。</p>"},
-        "content": {"rendered": "<p>広告なしの普通の記事</p>"},
-    }
+def item(pid=512, date="Tue, 13 Oct 2026 09:21:16 +0000",
+         url="https://www.survival40.com/40s-eye-strain-massage-breaks/?utm_source=rss&utm_medium=rss&utm_campaign=40s-eye-strain-massage-breaks",
+         title="眼精疲労に目のマッサージは効く？40代男性の疲れ目対策と休憩のコツ"):
+    x = ET.Element("item")
+    ET.SubElement(x,"title").text = title
+    ET.SubElement(x,"link").text = url
+    ET.SubElement(x,"pubDate").text = date
+    ET.SubElement(x,"description").text = (
+        "<p>日本眼科学会や厚生労働省の資料をもとに、40代男性の疲れ目対策や休憩の目安を解説。</p>"
+        "<p>The post a test appeared on Survival40.</p>"
+    )
+    ET.SubElement(x,"guid", {"isPermaLink":"false"}).text = "https://www.survival40.com/?p=" + str(pid)
+    ET.SubElement(x,"{com-wordpress:feed-additions:1}post-id").text = str(pid)
+    return x
+
+
+def make_feed(items):
+    root = ET.Element("rss",{"version":"2.0"})
+    ch = ET.SubElement(root,"channel")
+    for i in items: ch.append(i)
+    return ET.tostring(root,encoding="utf-8")
 
 
 class PinterestRssTests(unittest.TestCase):
-    def test_only_verified_claimed_origin_posts(self):
-        self.assertEqual(m.verify(source())["id"], 512)
-        for url in [
+    def test_parse_public_wordpress_rss_and_remove_tracking(self):
+        p = m.verify_rss_item(item())
+        self.assertEqual(p["id"],512)
+        self.assertEqual(p["link"],"https://www.survival40.com/40s-eye-strain-massage-breaks/")
+        self.assertIn("厚生労働省",p["excerpt"])
+        self.assertNotIn("The post",p["excerpt"])
+        self.assertTrue(p["has_ads"])
+
+    def test_reject_untrusted_links_and_invalid_items(self):
+        link = "https://www.survival40.com/valid/"
+        for bad in (
             "http://www.survival40.com/valid/",
             "https://survival40.com/valid/",
             "https://www.survival40.com.evil.test/valid/",
-            "https://www.survival40.com/valid/?share=1",
+            "https://www.survival40.com/valid/?utm_source=evil",
+            "https://www.survival40.com/valid/?foo=bar",
             "https://www.survival40.com/valid/evil/",
-        ]:
-            self.assertIsNone(m.verify(source(url=url)), url)
-        bad = source()
-        bad["status"] = "draft"
-        self.assertIsNone(m.verify(bad))
-        bad = source()
-        bad["id"] = "512"
-        self.assertIsNone(m.verify(bad))
+        ):
+            self.assertIsNone(m.verify_rss_item(item(url=bad)), bad)
+        badid = item()
+        badid.find("{com-wordpress:feed-additions:1}post-id").text="513"
+        self.assertIsNone(m.verify_rss_item(badid))
+        self.assertIsNone(m.verify_rss_item(item(date="Fri, 17 Oct 2099 09:21:16 +0000")))
+        self.assertIsNone(m.verify_rss_item(item(title="Title")))
 
-    def test_xml_is_valid_and_pinterest_image_tag_is_inside_item(self):
-        posts = [m.verify(source()), m.verify(source(pid=900, date="2026-10-15T14:20:00", url="https://www.survival40.com/new-article/"))]
-        raw = m.rss(posts)
-        root = ET.fromstring(raw)
-        self.assertEqual(root.attrib["version"], "2.0")
-        items = root.findall("./channel/item")
-        self.assertEqual(len(items), 2)
-        for item in items:
-            self.assertEqual(item.find("link").text.startswith(m.SITE + "/"), True)
-            enclosure = item.find("enclosure")
-            self.assertTrue(enclosure.attrib["url"].endswith(".png"))
-            self.assertEqual(enclosure.attrib["type"], "image/png")
-            self.assertEqual(item.find("guid").text, item.find("link").text)
+    def test_feed_selection_one_seed_then_new_articles_no_backfill(self):
+        base = item()
+        old = item(pid=450, date="Tue, 06 Oct 2026 15:42:05 +0000",
+                   url="https://www.survival40.com/protein/")
+        newer = item(pid=701,date="Fri, 16 Oct 2026 02:00:00 +0000",
+                     url="https://www.survival40.com/new-article/")
+        first_pin = item(pid=393, date="Fri, 16 Oct 2026 02:00:00 +0000",
+                         url="https://www.survival40.com/first-article/")
+        with patch.object(m,"request_bytes",return_value=make_feed([base,old,newer,first_pin])):
+            selected = m.collect()
+            self.assertEqual({p["id"] for p in selected},{512,701})
 
-    def test_cards_use_source_shiori_without_regenerating_or_overwriting(self):
+    def test_xml_has_canonical_article_link_and_real_image_enclosure(self):
+        p = m.verify_rss_item(item())
         with tempfile.TemporaryDirectory() as tmp:
-            portrait = Image.new("RGBA", (300, 400), (160, 0, 200, 255))
-            p = m.verify(source())
-            with patch.object(m, "ASSET_DIR", Path(tmp)):
-                generated = m.render(p, portrait)
-                with Image.open(generated) as rendered:
-                    self.assertEqual(rendered.size, (1000, 1500))
-                before = generated.read_bytes()
-                self.assertEqual(m.render(p, portrait).read_bytes(), before)
+            images=Path(tmp)
+            (images/"512.png").write_bytes(b"sample-image-bytes")
+            with patch.object(m,"ASSET_DIR",images):
+                raw=m.rss([p])
+        parsed=ET.fromstring(raw)
+        entry=parsed.find("./channel/item")
+        self.assertEqual(entry.findtext("link"),"https://www.survival40.com/40s-eye-strain-massage-breaks/")
+        enc=entry.find("enclosure")
+        self.assertEqual(enc.get("type"),"image/png")
+        self.assertEqual(enc.get("length"),"18")
+        self.assertTrue(enc.get("url").endswith("/512.png"))
+        self.assertEqual(entry.findtext("guid"),entry.findtext("link"))
+
+    def test_cards_use_existing_shiori_and_are_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            portrait=Image.new("RGBA",(300,400),(160,0,200,255))
+            p=m.verify_rss_item(item())
+            with patch.object(m,"ASSET_DIR",Path(tmp)):
+                generated=m.render(p,portrait)
+                with Image.open(generated) as im:
+                    self.assertEqual(im.size,(1000,1500))
+                before=generated.read_bytes()
+                self.assertEqual(m.render(p,portrait).read_bytes(),before)
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     unittest.main()
