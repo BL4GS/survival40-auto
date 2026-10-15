@@ -37,7 +37,7 @@ class PinterestRssTests(unittest.TestCase):
         self.assertIsNone(m.verify(bad))
 
     def test_xml_is_valid_and_pinterest_image_tag_is_inside_item(self):
-        posts = [m.verify(source()), m.verify(source(pid=900, date="2026-10-17T03:20:00", url="https://www.survival40.com/new-article/"))]
+        posts = [m.verify(source()), m.verify(source(pid=900, date="2026-10-15T14:20:00", url="https://www.survival40.com/new-article/"))]
         raw = m.rss(posts)
         root = ET.fromstring(raw)
         self.assertEqual(root.attrib["version"], "2.0")
@@ -56,7 +56,8 @@ class PinterestRssTests(unittest.TestCase):
             p = m.verify(source())
             with patch.object(m, "ASSET_DIR", Path(tmp)):
                 generated = m.render(p, portrait)
-                self.assertEqual(Image.open(generated).size, (1000, 1500))
+                with Image.open(generated) as rendered:
+                    self.assertEqual(rendered.size, (1000, 1500))
                 before = generated.read_bytes()
                 self.assertEqual(m.render(p, portrait).read_bytes(), before)
 
