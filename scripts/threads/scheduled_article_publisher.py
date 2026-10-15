@@ -1,4 +1,4 @@
-"""An additional 22:00 JST scheduled Threads post for today's VERIFIED new article.
+"""An additional 22:00 JST scheduled Threads post for today's VERIFIED article.
 
 Independent of the 08:00 / 20:00 Shiori posts. Public WordPress data only.
 Fail closed: no public article, stale article, bad source, credentials or ledger ->
@@ -34,15 +34,15 @@ def allowed_clock(now):
 
 
 def latest_evening_article(posts, now):
-    """Require a published post from TODAY at or after 20:45 JST.
+    """Require a published post from TODAY (00:00 JST through execution time).
 
-    A previous day's article must never be recycled as today's news.
+    Posts from the prior JST calendar day and future/unpublished posts are excluded.
     """
     if not allowed_clock(now):
         raise ValueError("Outside authorized 22:00 JST article slot")
     if not isinstance(posts, list):
         raise ArticleSourceError("Public articles response invalid")
-    cutoff = dt.datetime.combine(now.date(), dt.time(20, 45), tzinfo=JST)
+    cutoff = dt.datetime.combine(now.date(), dt.time.min, tzinfo=JST)
     found = []
     for item in posts:
         if not isinstance(item, dict) or item.get("status") != "publish":
@@ -126,7 +126,7 @@ def validate_prepared(draft, now):
             if not 0 <= (now - value).total_seconds() <= 600:
                 raise ValueError("Prepared text is stale")
         else:
-            start = dt.datetime.combine(now.date(), dt.time(20, 45), tzinfo=JST)
+            start = dt.datetime.combine(now.date(), dt.time.min, tzinfo=JST)
             if not start <= value <= now:
                 raise ValueError("Article was not published this evening")
     return draft["text"]
@@ -174,7 +174,7 @@ def main():
     if mode == "prepare":
         article = prepare(now, fetch_public_posts())
         if not article:
-            print("SKIP: No newly published eligible 21:00 article today.")
+            print("SKIP: No eligible published article from today.")
             return
         OUTPUT.parent.mkdir(parents=True, exist_ok=True)
         OUTPUT.write_text(json.dumps(article, ensure_ascii=False, indent=2) + "\n",

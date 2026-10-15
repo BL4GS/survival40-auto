@@ -46,15 +46,29 @@ class AdditionalArticleTests(unittest.TestCase):
         self.assertTrue(allowed_clock(when()))
         self.assertTrue(allowed_clock(when(day=19, hour=22, minute=59)))
 
-    def test_only_todays_published_article_after_evening(self):
+    def test_any_todays_published_article_from_midnight_jst(self):
         today = item()
         self.assertEqual(latest_evening_article([today], when())["id"], 901)
-        self.assertIsNone(latest_evening_article([item(day=18)], when()))
-        self.assertIsNone(latest_evening_article([item(hour=20, minute=30)], when()))
+        # Midnight, morning, lunch and afternoon are all eligible.
+        for hour, minute in ((0, 0), (8, 30), (12, 0), (16, 45), (20, 30)):
+            with self.subTest(hour=hour, minute=minute):
+                self.assertEqual(
+                    latest_evening_article([item(hour=hour, minute=minute)], when())["id"],
+                    901,
+                )
+        self.assertIsNone(latest_evening_article([item(day=18, hour=23, minute=59)], when()))
         self.assertIsNone(latest_evening_article([item(hour=22, minute=30)], when()))
         self.assertIsNone(latest_evening_article([item(state="future")], when()))
         self.assertIsNone(latest_evening_article([item(url="https://evil.test/post/")], when()))
         self.assertIsNone(latest_evening_article([], when()))
+
+    def test_later_published_article_takes_precedence_same_day(self):
+        morning = item(pid=902, hour=8, minute=0,
+                       url="https://www.survival40.com/morning-article/")
+        evening = item(pid=903, hour=19, minute=30,
+                       url="https://www.survival40.com/evening-article/")
+        self.assertEqual(latest_evening_article([evening, morning], when())["id"], 903)
+        self.assertEqual(latest_evening_article([morning, evening], when())["id"], 903)
 
     def test_prepare_exact_late_slot_article_and_verify(self):
         a = prepare(when(), [item()])
@@ -70,6 +84,7 @@ class AdditionalArticleTests(unittest.TestCase):
             {"text": a["text"] + "買うべき"},
             {"generated_at_jst": "2026-10-19T20:00:00+09:00"},
             {"source_published_jst": "2026-10-18T21:00:00+09:00"},
+            {"source_published_jst": "2026-10-19T22:30:00+09:00"},
             {"date_jst": "2026-10-20"},
             {"publish": True},
             {"status": "published"},
