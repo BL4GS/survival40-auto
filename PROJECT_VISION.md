@@ -26,6 +26,15 @@ Survival40 is an autonomous, reader-first WordPress information medium. AI indep
 - **Enduring positioning:** **「20代の自分には戻れない。だからといって、40代の自分が劣っている必要はない。」** / **「50代の自分を、今からつくる。」** The opponent in **「40代からの生存戦略、敵は自分」** is giving up on oneself because of age, **not aging people or age itself**. These are editorial compass phrases, not mandatory sentences to paste into every article.
 - **Automation requirement:** Apply this audience model and evidence-based future-consequence framework when the AI chooses topics, writes, reviews and refreshes relevant articles; avoid requiring routine owner prompts in each new thread. This document defines the target editorial policy; **it does not assert the current WordPress generator already enforces these new rules**.
 
+## Japanese article-title style (owner preference, 2026-10-15)
+- **Avoid the full-width vertical-bar separator 「｜」 in newly generated Japanese article titles and SEO titles by default.** The owner does not naturally write titles as 「前半｜後半」 and finds this mechanical, AI-like and repetitive. A bar is not an SEO requirement.
+- Prefer a **natural, complete Japanese headline** that resembles the specific question or concern of the reader; use ordinary particles, commas and question marks when they make the title clearer. Don't force every title to be a question, and don't mechanically repeat one syntactic template.
+- Example to **avoid**: 「旦那の加齢臭が気になる｜本人を傷つけずにできる対策と商品選び」. **Preferred voice**: 「旦那の加齢臭が気になるけど、傷つけずに伝えるには？」 or another concise, natural wording appropriate to the actual article.
+- Include relevant search terms naturally, without packing several keyword phrases or promises into a two-part heading. Match the article's real content and search intent. Do not mislead by removing necessary qualifying words.
+- Apply this voice at topic-planning, draft-title, final post-title and AIOSEO SEO-title stages. A WordPress theme/SEO plugin may have a separate, sitewide brand suffix template; evaluate that separately rather than overriding global formatting just to enforce this preference.
+- **Do not bulk-rename existing published posts or change permalinks merely because they contain 「｜」.** Preserve current URLs, SEO signals and internal links; consider specific rewrites only during a justified article refresh with measured evidence and safe URL handling.
+- This rule is canonical editorial direction, **not a claim that the installed AI publishing plugin has been modified or is already enforcing it**.
+
 ## Autonomous workflow (target)
 1. Discover demand: queries, seasonality, existing gaps and trend relevance.
 2. Select a genuinely useful topic; choose editorial type and determine whether commercial intent exists.
