@@ -1,0 +1,32 @@
+name: Survival40 first Pinterest pin asset 393 (build only)
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ops/pinterest/first-pin-393.trigger'
+permissions:
+  contents: write
+concurrency:
+  group: survival40-pinterest-first-pin-393
+  cancel-in-progress: false
+jobs:
+  render:
+    if: ${{ github.actor == 'BL4GS' && github.event.head_commit.message == 'Trigger Shiori first Pinterest Pin artwork 393' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Japanese font and image dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          python3 -m pip install --quiet 'Pillow==11.3.0'
+      - name: Validate script
+        run: python3 -m py_compile ops/pinterest/render_first_pin_393.py
+      - name: Compose from existing Survival40 Shiori explain artwork and save public image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 ops/pinterest/render_first_pin_393.py
