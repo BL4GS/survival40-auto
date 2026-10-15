@@ -15,6 +15,16 @@ Once a suitable Survival40 article is automatically published, create a relevant
 - The user created the Pinterest board **「40代からの生存戦略」** and explicitly confirmed changing it from secret to **public**. This is user-confirmed, not independently checked through Pinterest API.
 - **No RSS auto-publish connection has been enabled on Pinterest as part of this development task**. That setting lives in Pinterest's signed-in web interface and requires selecting a destination board.
 
+## Owner-approved visual template (2026-10-15)
+
+- **Canvas:** portrait 1000 × 1500 px, 2:3 ratio.
+- **Background:** use the same **Ghost White / ゴーストホワイト (#F8F8FF)** as the Survival40 blog's intended background color. Keep it uniform across the default Pin series; **no photo background, gradient or decorative AI-like graphics by default**. Before a production renderer ships, compare the live site's actual computed background color and adjust only if the site's token differs from #F8F8FF.
+- **Guide:** place the existing licensed/owned **栞さん "こちら" explanation/gesturing pose at the lower left**. Reuse the source asset, identity, clothing and natural expression; do not regenerate a lookalike or change the character design. Do not crop hands/face awkwardly. This consistent placement helps identify Survival40 in Pinterest's image grid.
+- **Copy:** make the article's specific reader question/topic the largest element, positioned upper/central with clear space away from the guide. Natural Japanese titles without the mechanical "｜" separator; shorter phrasing is allowed only if true to the article. Use a dark, high-contrast font against Ghost White with no crowded text.
+- **Branding:** small "Survival40" / 「40代からの生存戦略」 credit toward the bottom; never make it look like an ad. No A8 image, sales CTA, fake endorsements or site favicon as the main visual.
+- **Automation:** one consistent template as the starting default. Font size and line wrapping adapt to varying titles, and accessibility checks should ensure it remains readable in a small mobile Pinterest grid. No mandatory per-category backgrounds or further owner design approvals.
+- **Status:** template direction approved in chat, **not yet implemented as generated images or wired to Pinterest RSS**. Do not claim these Pins are live.
+
 ## Design and safety requirements
 
 1. Prefer Pinterest's first-party **RSS importer**, not a third-party scheduler or an unapproved direct Pinterest API integration. This avoids storing Pinterest credentials and posting API quotas.
