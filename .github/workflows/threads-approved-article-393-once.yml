@@ -1,0 +1,93 @@
+name: Shiori one-time approved article introduction 393
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ops/threads/approved-article-393-20261015.trigger'
+permissions:
+  contents: write
+concurrency:
+  group: survival40-threads-live
+  cancel-in-progress: false
+jobs:
+  once:
+    if: ${{ github.actor == 'BL4GS' && github.event.head_commit.message == 'Trigger approved one-time Shiori article introduction (393)' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 0bbe9adfc6e55a5cdaca839f508e4b5e3b4d8af4
+          persist-credentials: false
+      - name: Run Threads offline tests without credentials
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Publish user-approved article only once
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import datetime as dt
+          import hashlib
+          import os
+          import re
+          from zoneinfo import ZoneInfo
+          from scripts.threads.article_feed import fetch_public_posts, plain, require_article_url
+          from scripts.threads.ledger import GithubLedger
+          from scripts.threads.meta_api import MetaThreadsClient
+          from scripts.threads.token_preflight import safe_get, validate_profile, validate_debug_response
+
+          JST = ZoneInfo('Asia/Tokyo')
+          now = dt.datetime.now(JST)
+          if not dt.date(2026, 10, 15) <= now.date() <= dt.date(2026, 10, 17):
+              raise SystemExit('SKIP: Approval window expired; no post')
+          if (os.getenv('GITHUB_EVENT_NAME') != 'push'
+                  or os.getenv('GITHUB_REPOSITORY') != 'BL4GS/survival40-auto'
+                  or os.getenv('GITHUB_REF') != 'refs/heads/main'
+                  or os.getenv('GITHUB_ACTOR') != 'BL4GS'):
+              raise SystemExit('SKIP: Unapproved GitHub event or actor; no post')
+
+          url = 'https://www.survival40.com/40s-male-belly-activity-fitness/'
+          expected_title = '40代男性のお腹が出てきた原因は？体重だけでなく活動量も見直す'
+          text = (
+              '【PR】\n\n'
+              '40代になって、お腹まわりが気になり始めた。\n\n'
+              'そんなとき、体重ばかり見ていませんか？\n\n'
+              '食事だけでなく、普段どれくらい身体を動かしているかも大切なんです。\n\n'
+              'Survival40では、40代男性が今から見直せる生活習慣を紹介しています。\n\n'
+              + url
+          )
+          articles = fetch_public_posts()
+          found = next((p for p in articles if isinstance(p, dict) and p.get('id') == 393), None)
+          if (not found or found.get('status') != 'publish'
+                  or require_article_url(found.get('link')) != url
+                  or plain(found.get('title', {}).get('rendered')) != expected_title
+                  or len(plain(found.get('content', {}).get('rendered'))) < 120
+                  or not 50 <= len(text) <= 500):
+              raise SystemExit('SKIP: Article source invalid, changed, or unpublished')
+          token = os.getenv('THREADS_ACCESS_TOKEN', '').strip()
+          account = os.getenv('THREADS_USER_ID', '').strip()
+          github_token = os.getenv('GITHUB_TOKEN', '').strip()
+          if not token or not re.fullmatch(r'[0-9]{1,30}', account) or not github_token:
+              raise SystemExit('SKIP: Credentials unavailable; no post')
+          from time import time
+          validate_profile(safe_get('/me', token, {'fields': 'id,username'}), account)
+          validate_debug_response(safe_get('/debug_token', token, {'input_token': token}), account, int(time()))
+          client = MetaThreadsClient(token)
+          client.verify_account(account)
+          ledger = GithubLedger('BL4GS/survival40-auto', 'state/threads-ledger', github_token)
+          fingerprint = hashlib.sha256(text.encode('utf-8')).hexdigest()
+          if not ledger.reserve('article-393', account, fingerprint):
+              print('SKIP: Article 393 already used; no duplicate publication')
+              raise SystemExit(0)
+          post_id = client.publish_text(text)
+          ledger.mark_published('article-393', post_id)
+          print('PUBLISHED: Shiori article introduction 393. Threads post ID=' + post_id)
+          PY
