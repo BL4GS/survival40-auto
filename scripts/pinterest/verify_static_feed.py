@@ -8,8 +8,6 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlsplit
-
 from PIL import Image
 
 from scripts.pinterest.build_rss import ASSET_DIR, MAX_ITEMS, RAW, RSS_PATH, SITE
@@ -82,9 +80,12 @@ def validate(rss_path=RSS_PATH, asset_dir=ASSET_DIR, now=None):
             with Image.open(image_path) as image:
                 ensure(image.format == "PNG" and image.size == (1000, 1500),
                        "Pin card must be a PNG with 2:3 vertical proportions")
+                image.verify()
+            with Image.open(image_path) as image:
                 ensure(image.convert("RGB").getpixel((999, 1499)) == (248, 248, 255),
                        "Pin card does not have expected Ghost White base")
-                image.verify()
+        except InvalidPinterestFeed:
+            raise
         except (OSError, ValueError) as exc:
             raise InvalidPinterestFeed("Unreadable or invalid Pin card") from exc
     return len(items)
