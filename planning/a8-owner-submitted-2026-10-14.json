@@ -188,6 +188,74 @@
       "wp_url": "https://www.survival40.com/hair-tonic-vs-aga-treatment/",
       "placement": "Before article summary, on impartial page separating drugstore hair tonic and medically reviewed AGA treatment",
       "last_verified_date_jst": "2026-10-14"
+    },
+    {
+      "name": "BIOAESTECH デュアルオーブディープリフト",
+      "advertiser": "株式会社MD",
+      "program_id": "s00000027467001",
+      "category": "スキンケア・美容機器",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "初回購入8000円",
+      "epc_from_owner_screenshot": 14.34,
+      "approval_rate_from_owner_screenshot": "98.14%（過去実績・将来保証なし）",
+      "conditions_from_owner_screenshot": [
+        "商品新規（対象商品を初めて購入）",
+        "WEB注文後30日以内の入金確認",
+        "LP掲載 BIOAESTECH DUAL ORB DEEP LIFT + LIFT BOOSTER GEL2個 公式限定セット のみ対象"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "不正・申し込み不備・虚偽・いたずら・重複成果",
+        "商品受領延期・受取拒否",
+        "返金保証の利用",
+        "リスティング違反"
+      ],
+      "audience_from_owner_screenshot": "広告主は20〜50代女性を主対象として指定。40代男性向け記事に無条件で設置しない。",
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEH58+61WR9U+5VXQ+5ZEMP",
+      "banner_src": "https://www29.a8.net/svt/bgt?aid=261015884366&wid=005&eno=01&mid=s00000027467001005000&mc=1",
+      "impression_src": "https://www14.a8.net/0.gif?a8mat=4BEH58+61WR9U+5VXQ+5ZEMP",
+      "width": 100,
+      "height": 100,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEH58+61WR9U+5VXQ+5ZEMP\" rel=\"nofollow\">\n<img border=\"0\" width=\"100\" height=\"100\" alt=\"\" src=\"https://www29.a8.net/svt/bgt?aid=261015884366&wid=005&eno=01&mid=s00000027467001005000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www14.a8.net/0.gif?a8mat=4BEH58+61WR9U+5VXQ+5ZEMP\" alt=\"\">",
+      "wp_status": "owner_material_saved_not_placed_due_to_readership_mismatch",
+      "notes": "100×100は広告主公式素材として原寸維持。拡大やバナーの改変はしない。ブランドLP用途と読者属性を先に検証する。"
+    },
+    {
+      "name": "ハグラビ ウェイトブランケット",
+      "advertiser": "株式会社アイル",
+      "program_id": "s00000027668002",
+      "category": "寝具・ウェイトブランケット",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "購入5000円",
+      "approval_rate_from_owner_screenshot": "100%（過去実績、将来保証なし）",
+      "epc_from_owner_screenshot": "-（非表示）",
+      "conditions_from_owner_screenshot": [
+        "WEB注文後30日以内の入金確認",
+        "LP掲載のハグラビ ウェイトブランケットのみ対象",
+        "複数個購入の場合でも成果報酬は一律"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "不正、申し込み不備、虚偽、いたずら、重複成果",
+        "リスティング違反"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "本人NG",
+        "広告表示必須",
+        "睡眠改善・治療効果を保証しない",
+        "公式サイトでは小さな子ども・妊娠中・高齢者・持病のある人は利用不可と記載"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEH58+4QVIHE+5XHK+BYDTT",
+      "banner_src": "https://www26.a8.net/svt/bgt?aid=261015884287&wid=005&eno=01&mid=s00000027668002008000&mc=1",
+      "impression_src": "https://www10.a8.net/0.gif?a8mat=4BEH58+4QVIHE+5XHK+BYDTT",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEH58+4QVIHE+5XHK+BYDTT\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www26.a8.net/svt/bgt?aid=261015884287&wid=005&eno=01&mid=s00000027668002008000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www10.a8.net/0.gif?a8mat=4BEH58+4QVIHE+5XHK+BYDTT\" alt=\"\">",
+      "official_product_url": "https://hugravi.shop/",
+      "wp_status": "owner_material_saved_pending_product_guide",
+      "sources": [
+        "https://hugravi.shop/",
+        "https://link.springer.com/article/10.1186/s12888-024-06218-9",
+        "https://journals.sagepub.com/doi/full/10.5014/ajot.2024.050676"
+      ]
     }
   ]
 }
