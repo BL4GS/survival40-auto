@@ -16,8 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Pinned separately tested production candidate; PR #34 remains draft.
-          ref: 0bbe9adfc6e55a5cdaca839f508e4b5e3b4d8af4
+          # Pinned source: tested JST calendar-day article selection; no WordPress deployment.
+          ref: dbc5291990a270fb4d0cef8498d5e5fd36986bee
           persist-credentials: false
       - name: Run complete offline tests without credentials
         env:
