@@ -1,13 +1,8 @@
 name: Survival40 Pinterest original-image RSS (NO PUBLISH)
+# Paused: WordPress public API returns HTTP 403 to GitHub runners.
+# No recurring failed runs. Re-enable only after a verified permitted source exists.
 on:
-  schedule:
-    # 4 checks/day, UTC; GitHub schedule time may be delayed.
-    - cron: '35 0,6,12,18 * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'ops/pinterest/build-image-feed.trigger'
 permissions:
   contents: write
 concurrency:
