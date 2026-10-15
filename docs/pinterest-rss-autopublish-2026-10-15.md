@@ -1,6 +1,6 @@
 # Pinterest automatic publishing — implementation contract
 
-Status: **PARTIAL / NOT LIVE** (2026-10-15). Owner requested automatic Pinterest publication from Survival40 after successfully claiming https://www.survival40.com/ in Pinterest. This document records evidence and the safe integration route. Connecting a domain is **not** the same as activating automatic Pins.
+Status: **PARTIAL / NOT LIVE** (2026-10-15). Pinterest domain is verified and the first board was created and switched to public, as confirmed by the owner. Owner requested automatic Pinterest publication from Survival40 after successfully claiming https://www.survival40.com/ in Pinterest. This document records evidence and the safe integration route. Connecting a domain is **not** the same as activating automatic Pins.
 
 ## Objective
 
@@ -12,6 +12,7 @@ Once a suitable Survival40 article is automatically published, create a relevant
 - Verified WordPress feed URL: `https://www.survival40.com/feed/`. WPVibe returned valid-looking **RSS 2.0** XML with correct domain article links, titles, descriptions and 10 items; `posts_per_rss=10`, `rss_use_excerpt=1`.
 - **Blocking issue:** sampled RSS items had **no item-level `<enclosure>`, `<media:content>` or `<image>` element**. WP REST's 15 latest published posts (including posts 585, 581, 533, 514, 512) all reported `featured_media=0`. The channel-level site icon does not satisfy the required **item-level** artwork.
 - Pinterest's official guidance: an RSS feed can auto-create Pins within 24 hours of new feed content; it reads item-level `image` / `enclosure` / `media:content` for images and item `title` / `description` for text; every item must link to the claimed domain. RSS 2.x is supported. See https://help.pinterest.com/ja/business/article/auto-publish-pins-from-your-rss-feed and https://help.pinterest.com/en/business/article/import-content-to-pinterest .
+- The user created the Pinterest board **「40代からの生存戦略」** and explicitly confirmed changing it from secret to **public**. This is user-confirmed, not independently checked through Pinterest API.
 - **No RSS auto-publish connection has been enabled on Pinterest as part of this development task**. That setting lives in Pinterest's signed-in web interface and requires selecting a destination board.
 
 ## Design and safety requirements
@@ -34,4 +35,4 @@ Once a suitable Survival40 article is automatically published, create a relevant
 - In Pinterest desktop UI use **Settings → コンテンツのインポート** (or **ピンの一括作成**) → RSS link, provide the proven feed URL, select the public board, and save.
 - Verify a single end-to-end Pin, correct attribution, destination, and no duplicate / affiliate-only graphic. Then leave the feed autonomous.
 
-**Current completion:** Pinterest site claim DONE; live RSS assessed; blocker identified; automatic image generation, Pinterest feed with art, in-app RSS connection and end-to-end posting all NOT DONE.
+**Current completion:** Pinterest site claim DONE; public destination board user-confirmed DONE; live RSS assessed; blocker identified; automatic image generation, Pinterest feed with art, in-app RSS connection and end-to-end posting all NOT DONE.
