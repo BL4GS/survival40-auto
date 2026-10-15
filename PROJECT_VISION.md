@@ -45,6 +45,13 @@ Survival40 is an autonomous, reader-first WordPress information medium. AI indep
 - **Editorial QA for automation:** Before publication, inspect candidate articles for repetitive introductions, uniform title/section formulae, empty statements, unnatural particles or cadence, keyword stuffing, unsupported specifics and false implied experience. Revise or defer failures without turning ordinary publication into routine manual owner editing. Preserve accuracy, source traceability, disclosures and reader trust over a merely 'human-sounding' performance.
 - **Rollout status:** This is a canonical instruction for future planning, writing, review and refresh work; it does **not** assert that the installed WordPress auto-writer has been changed or now enforces every check. Do not bulk-rewrite published posts solely to remove AI-sounding language without separate quality review and safe content/SEO controls.
 
+## Pinterest distribution (owner-approved 2026-10-15)
+- Pinterest website ownership was confirmed for Survival40. The owner wants **automatic article-to-Pinterest posting**, with no per-article manual upload or visual selection; this is an additional organic acquisition channel, not a new independent content brand.
+- Prefer Pinterest's official **RSS auto-publish** feature. A real Pin needs an eligible article-specific image, natural Japanese title/description, correct claimed-domain destination and a public board. An image-free RSS feed does **not** satisfy the intended experience.
+- Preserve 栞さん and the site's existing images/layout; use truthful, original/licensed visual assets and avoid automatic affiliate-banner reposting. Do not publish new or old articles indiscriminately without correct image, quality and duplicate controls.
+- **Current status is NOT LIVE:** website claim confirmed; existing WordPress RSS is missing image media per item and sampled posts have no featured images. Image automation, feed integration, Pinterest in-app RSS connection and actual Pin verification are pending. Canonical design and safety notes: [Pinterest RSS autopublish plan](docs/pinterest-rss-autopublish-2026-10-15.md).
+- Do not bypass the existing WordPress release / backup safeguards to accelerate this social integration.
+
 ## Autonomous workflow (target)
 1. Discover demand: queries, seasonality, existing gaps and trend relevance.
 2. Select a genuinely useful topic; choose editorial type and determine whether commercial intent exists.
