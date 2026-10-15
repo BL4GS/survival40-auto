@@ -100,17 +100,17 @@ class AdditionalArticleTests(unittest.TestCase):
             ledger.return_value.reserve.side_effect = (
                 lambda key, *args: (calls.append("reserve:" + key) or True)
             )
-            meta.return_value.create_text_container.side_effect = (
-                lambda txt: (calls.append("container") or "123")
-            )
-            meta.return_value.publish_container.side_effect = (
-                lambda x: (calls.append("publish") or "777")
+            meta.return_value.publish_text.side_effect = (
+                lambda txt: (calls.append("auto_publish") or "777")
             )
             self.assertEqual(publish_once(post, when(), ENV), "777")
             self.assertEqual(calls, [
                 "reserve:2026-10-19-late-article", "reserve:article-901",
-                "container", "publish"
+                "auto_publish"
             ])
+            meta.return_value.publish_text.assert_called_once_with(post["text"])
+            meta.return_value.publish_container.assert_not_called()
+            meta.return_value.create_text_container.assert_not_called()
             self.assertEqual(ledger.return_value.mark_published.call_count, 2)
 
     def test_existing_article_is_never_posted_again(self):
@@ -122,6 +122,7 @@ class AdditionalArticleTests(unittest.TestCase):
               patch("scripts.threads.scheduled_article_publisher.GithubLedger") as ledger):
             ledger.return_value.reserve.side_effect = [True, False]
             self.assertIsNone(publish_once(post, when(), ENV))
+            meta.return_value.publish_text.assert_not_called()
             meta.return_value.create_text_container.assert_not_called()
             meta.return_value.publish_container.assert_not_called()
 
