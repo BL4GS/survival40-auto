@@ -137,8 +137,9 @@ def publish(draft, now, config, env):
         if not ledger.reserve(article_key, account, digest):
             print("SKIP: Article reservation raced another publisher; do not retry.")
             return None
-    container_id = client.create_text_container(text)
-    post_id = client.publish_container(container_id)
+    # Official one-request TEXT publish avoids container propagation races.
+    # Durable slot/article reservation above remains in force; no retries.
+    post_id = client.publish_text(text)
     ledger.mark_published(key, post_id)
     if article_key is not None:
         ledger.mark_published(article_key, post_id)
