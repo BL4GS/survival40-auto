@@ -100,6 +100,9 @@ jobs:
           python .github/scripts/patch_affiliate_frontend_staged.py
           python .github/scripts/patch_update_diagnostics_staged.py
 
+      - name: Persist SEO metadata for automatically generated articles
+        run: python .github/scripts/patch_seo_autofill_01921.py
+
       - name: Promote reviewed version markers
         run: |
           python - <<'PY'
