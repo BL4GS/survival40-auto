@@ -1,0 +1,65 @@
+name: Validate Survival40 auto SEO patch (no deployment)
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/patch_seo_autofill_01921.py'
+      - '.github/workflows/release.yml'
+      - '.github/workflows/seo-sync-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reconstruct current plugin source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat survival40-auto/source.part{01,02,03,04,05,06,07} > /tmp/s40-source.b64
+          base64 -d /tmp/s40-source.b64 > /tmp/s40-source.php.gz
+          gunzip -c /tmp/s40-source.php.gz > survival40-auto/survival40-auto.php
+      - name: Apply the exact release patch sequence (no WordPress access)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          workflow = Path('.github/workflows/release.yml').read_text(encoding='utf-8')
+          scripts = re.findall(r'^\s+python\s+(\.github/scripts/patch_[a-zA-Z0-9_]+\.py)\s*$', workflow, re.M)
+          assert scripts, "could not identify release patches"
+          assert scripts[-1] == '.github/scripts/patch_seo_autofill_01921.py'
+          for script in scripts:
+              print("Applying", script, flush=True)
+              subprocess.run(["python3", script], check=True)
+          PY
+      - name: Validate reconstructed PHP and non-destructive contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l survival40-auto/survival40-auto.php
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('survival40-auto/survival40-auto.php').read_text(encoding='utf-8')
+          assert s.count("private function s40_sync_aioseo_native(") == 1
+          assert s.count("$this->s40_sync_aioseo_native($post_id, $p);") == 1
+          assert "$this->sync_aioseo_rest($post_id, $p);" not in s
+          assert s.count("s40_category_not_found") == 1
+          assert "'_survival40_auto_planned'=>'1'" in s
+          assert "'post_status'=>$status" in s
+          assert "'post_category'=>$cat ? [$cat] : []" in s
+          assert "get_term_by('name', sanitize_text_field($p['category']), 'category')" in s
+          assert "if (trim((string) ($meta->title ?? '')) === '')" in s
+          assert "if (trim((string) ($meta->description ?? '')) === '')" in s
+          assert "update_post_meta($post_id, '_survival40_seo_sync_status'" in s
+          print("PASS: native SEO writes only missing fields and category must resolve")
+          PY
