@@ -1,4 +1,4 @@
-"""Build Pinterest-specific RSS plus original Shiori-backed cards from PUBLIC WordPress articles.
+"""Build Pinterest-specific RSS plus original Shiori-backed cards from PUBLIC WordPress RSS.
 
 Intentionally separate from WordPress's own RSS, the Survival40 Auto release pipeline,
 and Metricool's individual scheduling flow. No Pinterest/WordPress credentials.
@@ -10,6 +10,7 @@ import io
 import json
 import os
 import re
+from email.utils import parsedate_to_datetime
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -17,7 +18,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 SITE = "https://www.survival40.com"
-API = SITE + "/wp-json/wp/v2/posts"
+API = SITE + "/feed/"
 SOURCE_ART = SITE + "/wp-content/plugins/survival40-auto/assets/navigator/explain.webp"
 RAW = "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/"
 RSS_PATH = Path("pinterest/survival40-pins.xml")
@@ -41,59 +42,71 @@ def plain(raw):
     return re.sub(r"\s+", " ", text).strip()
 
 
-def verify(post):
-    if not isinstance(post, dict) or post.get("status") != "publish":
+def verify_rss_item(item, now=None):
+    """Accept only public WordPress RSS items on the claimed canonical domain."""
+    if not isinstance(item, ET.Element):
         return None
-    pid = post.get("id")
-    if type(pid) is not int or pid < 1:
+    raw_link = (item.findtext("link") or "").strip()
+    parsed = urllib.parse.urlsplit(raw_link)
+    if parsed.scheme != "https" or parsed.netloc != "www.survival40.com":
         return None
-    url = post.get("link")
-    if not isinstance(url, str):
+    # WordPress AIOSEO adds tracking parameters to feed URLs. Remove them
+    # only if they are the expected first-party RSS tracking keys and values.
+    pairs = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    allowed = {"utm_source": "rss", "utm_medium": "rss",
+               "utm_campaign": parsed.path.strip("/")}
+    if any(k not in allowed or v != allowed[k] for k,v in pairs):
         return None
-    parsed = urllib.parse.urlsplit(url)
-    if (parsed.scheme != "https" or parsed.netloc != "www.survival40.com"
-            or not re.fullmatch(r"/[A-Za-z0-9_-]+/", parsed.path)
-            or parsed.query or parsed.fragment):
+    url = urllib.parse.urlunsplit((parsed.scheme,parsed.netloc,parsed.path,"",""))
+    if not re.fullmatch(r"https://www[.]survival40[.]com/[A-Za-z0-9_-]+/",url):
         return None
-    title = plain(post.get("title", {}).get("rendered"))
-    excerpt = plain(post.get("excerpt", {}).get("rendered"))
+    title = plain(item.findtext("title"))
+    desc_html = item.findtext("description") or ""
+    # Strip the WordPress RSS "The post ... first appeared on ..." boilerplate.
+    desc_html = re.split(r"<p>\s*The post\s",desc_html,1,flags=re.I)[0]
+    excerpt = plain(desc_html)
     if not 9 <= len(title) <= 160 or len(excerpt) < 15:
         return None
-    raw_time = post.get("date_gmt")
+    pid = item.findtext("{com-wordpress:feed-additions:1}post-id")
+    guid = item.findtext("guid") or ""
+    # Both ID representations must agree to eliminate accidental re-mapping.
+    match = re.fullmatch(r"https://www[.]survival40[.]com/\?p=([1-9][0-9]{0,17})",guid)
+    if not match or not pid or not pid.isdigit() or int(pid) != int(match.group(1)):
+        return None
     try:
-        when = dt.datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
+        when = parsedate_to_datetime(item.findtext("pubDate") or "")
         if when.tzinfo is None:
-            when = when.replace(tzinfo=dt.timezone.utc)
+            return None
         when = when.astimezone(dt.timezone.utc)
-    except (AttributeError, TypeError, ValueError):
+    except (TypeError,ValueError,OverflowError,IndexError):
         return None
-    if when > dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=1):
+    now = now or dt.datetime.now(dt.timezone.utc)
+    if when > now + dt.timedelta(minutes=1):
         return None
-    return {"id": pid, "link": url, "title": title, "excerpt": excerpt,
-            "date": when, "has_ads": "px.a8.net" in post.get("content", {}).get("rendered", "")}
+    return {"id":int(pid),"link":url,"title":title,"excerpt":excerpt,"date":when,
+            # These are links into an affiliate-funded site, so an explicit
+            # PR label is safe even if the source RSS excludes ad markup.
+            "has_ads":True}
 
 
 def collect():
-    query = urllib.parse.urlencode({
-        "status": "publish", "orderby": "date", "order": "desc", "per_page": 70,
-        "_fields": "id,status,link,title,excerpt,date_gmt,content"
-    })
-    data = json.loads(request_bytes(API + "?" + query, 1_500_000).decode("utf-8"))
-    if not isinstance(data, list):
-        raise ValueError("WordPress posts were not a JSON list")
-    valid = [x for p in data if (x := verify(p)) and
-             (x["date"] >= START_UTC or x["id"] == SEED_ID)]
-    if SEED_ID not in {x["id"] for x in valid}:
-        url = API + "/" + str(SEED_ID) + "?_fields=id,status,link,title,excerpt,date_gmt,content"
-        seed = verify(json.loads(request_bytes(url).decode("utf-8")))
-        if seed:
-            valid.append(seed)
-    # Never publish already-scheduled first metricool Pin 393 or backfill many old posts.
-    unique = {x["id"]: x for x in valid if x["id"] != 393}
-    if not unique:
-        raise RuntimeError("No eligible articles; refuse empty RSS")
-    return sorted(unique.values(), key=lambda x: (x["date"], x["id"]))[-MAX_ITEMS:]
-
+    # Do not use the WordPress REST API: GitHub runners receive HTTP 403
+    # for /wp-json, while the PUBLIC WordPress RSS and artwork return 200.
+    root = ET.fromstring(request_bytes(API,800_000))
+    if root.tag != "rss" or root.get("version") != "2.0":
+        raise RuntimeError("Unexpected source feed format; refuse to publish")
+    items = root.findall("./channel/item")
+    if len(items) > 30:
+        raise RuntimeError("Unexpectedly large source RSS; refuse to backfill")
+    valid = [p for item in items if (p:=verify_rss_item(item)) is not None]
+    # No mass backfill: a single previously reviewed seed article, then
+    # articles newly published since the owner-approved automation start.
+    selected = [p for p in valid if (p["date"] >= START_UTC or p["id"] == SEED_ID)
+                and p["id"] != 393]
+    dedup = {p["id"]:p for p in selected}
+    if not dedup:
+        raise RuntimeError("No eligible public articles in the RSS; leave prior feed untouched")
+    return sorted(dedup.values(),key=lambda p:(p["date"],p["id"]))[-MAX_ITEMS:]
 
 def font(size, bold=True):
     choices = ([
@@ -152,7 +165,7 @@ def render(post, portrait):
         shiori = shiori.convert("RGBA")
     canvas.paste(shiori, (22, 1490 - shiori.height), shiori)
     sub = font(40, False)
-    desc = wrap(draw, post["excerpt"][:85].rstrip("、。") + "。", sub, 825, 3)
+    desc = wrap(draw, post["excerpt"][:48].rstrip("、。") + "。", sub, 825, 3)
     y = max(700, y + 55)
     draw.line([(88, y), (912, y)], fill="#C8D0DD", width=3)
     y += 46
@@ -188,7 +201,7 @@ def rss(posts):
         ET.SubElement(item, "pubDate").text = format_datetime(post["date"])
         ET.SubElement(item, "enclosure", {
             "url": RAW + str(ASSET_DIR / (str(post["id"]) + ".png")),
-            "length": "1",
+            "length": str((ASSET_DIR / (str(post["id"]) + ".png")).stat().st_size),
             "type": "image/png",
         })
     ET.indent(root)
