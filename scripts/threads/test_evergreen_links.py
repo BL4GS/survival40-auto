@@ -146,11 +146,8 @@ class EvergreenTests(unittest.TestCase):
             ledger.return_value.reserve.side_effect = (
                 lambda *args: (events.append("reserve:" + args[0]) or reserve.pop(0))
             )
-            meta.return_value.create_text_container.side_effect = (
-                lambda text: (events.append("text:" + text[:14]) or "100")
-            )
-            meta.return_value.publish_container.side_effect = (
-                lambda _: (events.append("publish") or "12345")
+            meta.return_value.publish_text.side_effect = (
+                lambda text: (events.append("auto_publish:" + text[:14]) or "12345")
             )
             self.assertEqual(publish(draft, clock, self.config, ENV), "12345")
             return events, ledger.return_value, meta.return_value
@@ -161,10 +158,12 @@ class EvergreenTests(unittest.TestCase):
         events, ledger, meta = self._publish_with(draft, clock, [source(clock)])
         self.assertEqual(events[:2], ["reserve:2026-10-28-evening",
                                       "reserve:article-442"])
-        self.assertEqual(events[-1], "publish")
+        self.assertTrue(events[-1].startswith("auto_publish:"))
         self.assertEqual(ledger.mark_published.call_count, 2)
         ledger.exists.assert_called_once_with("article-442")
-        meta.create_text_container.assert_called_once_with(draft["text"])
+        meta.publish_text.assert_called_once_with(draft["text"])
+        meta.create_text_container.assert_not_called()
+        meta.publish_container.assert_not_called()
 
     def test_already_introduced_article_uses_ordinary_fallback(self):
         clock = when()
@@ -173,14 +172,14 @@ class EvergreenTests(unittest.TestCase):
         self.assertEqual(events[0], "reserve:2026-10-28-evening")
         self.assertNotIn("reserve:article-442", events)
         self.assertEqual(ledger.mark_published.call_count, 1)
-        meta.create_text_container.assert_called_once_with(ORDINARY)
+        meta.publish_text.assert_called_once_with(ORDINARY)
 
     def test_unpublished_after_preparation_uses_ordinary_fallback(self):
         clock = when()
         draft = self.prepare(clock)
         _, ledger, meta = self._publish_with(draft, clock, [source(clock, status="draft")])
         ledger.exists.assert_not_called()
-        meta.create_text_container.assert_called_once_with(ORDINARY)
+        meta.publish_text.assert_called_once_with(ORDINARY)
 
     def test_lost_identity_reservation_never_posts_or_retries(self):
         clock = when()
@@ -195,6 +194,7 @@ class EvergreenTests(unittest.TestCase):
             ledger.return_value.exists.return_value = False
             ledger.return_value.reserve.side_effect = [True, False]
             self.assertIsNone(publish(draft, clock, self.config, ENV))
+            meta.return_value.publish_text.assert_not_called()
             meta.return_value.create_text_container.assert_not_called()
             meta.return_value.publish_container.assert_not_called()
 
