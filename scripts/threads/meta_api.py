@@ -50,7 +50,8 @@ class MetaThreadsClient:
             # vetted integer codes and the fixed endpoint stage for triage;
             # never log raw Meta response, post text, IDs, request headers or token.
             stage = {
-                "/me/threads": "create_text_container",
+                "/me/threads": ("auto_publish_text" if (params or {}).get("auto_publish_text") == "true"
+                                else "create_text_container"),
                 "/me/threads_publish": "publish_container",
                 "/me": "profile_check",
             }.get(endpoint, "other_endpoint")
@@ -90,6 +91,24 @@ class MetaThreadsClient:
                 str(profile.get("username", "")).casefold() != expected_username.lstrip("@").casefold()):
             raise ThreadsApiError("Connected Threads account does not match Survival40")
         return {"id": str(profile["id"]), "username": profile["username"]}
+
+
+    def publish_text(self, text):
+        """Publish a TEXT post with one official Meta API request.
+
+        Avoids the two-stage propagation race (code=24/subcode=4279009)
+        seen Oct 14 and Oct 15. The caller MUST reserve its durable slot
+        before calling this method. No automatic retry under any exception.
+        """
+        if not isinstance(text, str) or not 1 <= len(text) <= 500:
+            raise ValueError("Invalid text length")
+        result = self._call("POST", "/me/threads", {
+            "media_type": "TEXT", "text": text, "auto_publish_text": "true",
+        })
+        post_id = result.get("id")
+        if not isinstance(post_id, str) or not post_id.isdigit():
+            raise ThreadsApiError("Auto-publish response has no post id; reconcile before retry")
+        return post_id
 
     def create_text_container(self, text):
         if not isinstance(text, str) or not 1 <= len(text) <= 500:
