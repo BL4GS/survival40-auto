@@ -161,6 +161,17 @@
       "verified_wordpress_api": true,
       "verified_public_html": true,
       "notes": "Owner-provided 300x250 creative and 1x1 pixel; published with PR and cautionary evidence-based guide. One banner, not inserted into ad-free article #568."
+    },
+    {
+      "post_id": 585,
+      "slug": "40s-algo-chair-pro-before-buy",
+      "program_id": "s00000027668001",
+      "advertiser": "ALGO Chair Pro（株式会社アイル）",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "User-provided 300x250 official A8 banner and 1x1 pixel, single non-duplicated placement. PR disclosure, official 149,800 yen, neutral sourcing and purchase conditions, no first-hand claims. 40代の不調 category."
     }
   ],
   "planned_post_placement": [
@@ -289,6 +300,14 @@
       "target_slug": "40s-hugravi-weighted-blanket-guide",
       "marker": "S40_HUGRAVI_RELATED_START",
       "verified_public_html": true
+    },
+    {
+      "source_post_id": 512,
+      "target_post_id": 585,
+      "target_slug": "40s-algo-chair-pro-before-buy",
+      "marker": "S40_ALGO_RELATED_START",
+      "verified_public_html": true,
+      "notes": "Screen-breaks article to a 40s ergonomic chair decision guide; does not claim chair treats eye strain."
     }
   ]
 }
