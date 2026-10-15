@@ -19,19 +19,25 @@ Metricool help says autolists read image from the linked article's `og:image` (f
 
 Do not use **both** Pinterest native RSS ingestion and a parallel Metricool autolist for the same article feed: duplicates would result.
 
-## One-time user-controlled Pinterest connection required
+## Pinterest native RSS connection — completed in owner UI (2026-10-16 JST)
 
-Pinterest business account `Survival40` claims `www.survival40.com`; its public board is `40代からの生存戦略`.
+The owner connected the verified `Survival40` business account's **native Pinterest RSS** through Pinterest Settings → コンテンツのインポート → RSS → ピンの一括作成 → RSSフィードをリンクする.
 
-Go to Pinterest web desktop: Settings → ピンの一括作成 (Create Pins in bulk) → RSS フィードをリンクする → input:
+Feed URL retained in Pinterest's saved RSS configuration (visible alongside the **編集する** and **さらに追加する** controls):
 
 `https://raw.githubusercontent.com/BL4GS/survival40-auto/main/pinterest/survival40-pins.xml`
 
-Choose public board `40代からの生存戦略` → Save.
+Intended target is the public board `40代からの生存戦略`, previously confirmed with the owner. Do not connect a duplicate feed, add Metricool autolist, or request repeating this one-time setup absent a specific error.
 
-Only one image is included per RSS item. Each item `<link>` is a canonical claimed-domain URL. Source image appears in each item `<enclosure type="image/png" length="...">`; this is supported by Pinterest's [official RSS specification](https://help.pinterest.com/ja/business/article/auto-publish-pins-from-your-rss-feed).
+Each RSS item has exactly one original Shiori artwork image in `<enclosure type="image/png" length="...">` and an article `<link>` under the verified `https://www.survival40.com/` domain. This is consistent with the [official Pinterest RSS specification](https://help.pinterest.com/ja/business/article/auto-publish-pins-from-your-rss-feed), which requires claimed-domain **item links**. The RSS file itself is hosted on GitHub and the connection was saved; nevertheless acceptance as a **published Pin** is still unproven.
 
-The Pinterest official UI has to accept this cross-domain-hosted XML feed. **Do not report production auto-publishing active until Pinterest confirms RSS connection and a real Pin linking to a correct article is observed.** If refused because the RSS URL is hosted on GitHub rather than the claimed WordPress domain, do not repeatedly retry or change security settings; propose a safely staged same-domain feed proxy with release/rollback gates.
+**Do not conflate three separate statuses:**
+- GitHub RSS generation **PASSED** (first full build `38760524474`; first subsequent scheduled run `38791814199`).
+- Pinterest native RSS **CONNECTED** in the owner's Pinterest UI on 2026-10-16.
+- First Pin created **from that RSS: NOT YET VERIFIED**. Target: older vetted article ID `512`, `40s-eye-strain-massage-breaks`; verify actual Pin ID, correct image and outbound URL. Pinterest may take up to 24 hours after RSS update according to its help.
+- The separate Metricool one-off article ID `393` **IS VERIFIED PUBLISHED** (Metricool Pinterest provider status `PUBLISHED`, pin `1101411652652841054` at 2026-10-16 00:20 JST); do **not** mistake it for native RSS ingest.
+
+If no RSS Pin appears after a reasonable ingestion period, diagnose the actual Pinterest state and the public XML/image/article links first. Do not silently republish items, edit article dates, backfill hundreds of old posts, or change claimed-domain verification. A same-domain RSS proxy would require a separate tested WordPress deployment with reliable Web/DB backup and rollback, not an unattended production plugin update.
 
 ## Operational tests
 
