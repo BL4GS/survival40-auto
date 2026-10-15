@@ -1,7 +1,10 @@
 name: Survival40 Pinterest original-image RSS (NO PUBLISH)
 # Uses public WordPress RSS (HTTP 200 verified); no WordPress REST requests.
-# First run is manual-trigger only until end-to-end image/feed test passes.
+# Output is a static image-backed RSS; this workflow never posts to Pinterest.
 on:
+  schedule:
+    # Four checks a day, UTC. RSS updates only when approved public posts appear.
+    - cron: '35 0,6,12,18 * * *'
   workflow_dispatch:
   push:
     branches: [main]
