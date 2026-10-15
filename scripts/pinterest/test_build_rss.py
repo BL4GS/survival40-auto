@@ -61,9 +61,9 @@ class PinterestRssTests(unittest.TestCase):
         base = item()
         old = item(pid=450, date="Tue, 06 Oct 2026 15:42:05 +0000",
                    url="https://www.survival40.com/protein/")
-        newer = item(pid=701,date="Fri, 16 Oct 2026 02:00:00 +0000",
+        newer = item(pid=701,date="Thu, 15 Oct 2026 15:01:00 +0000",
                      url="https://www.survival40.com/new-article/")
-        first_pin = item(pid=393, date="Fri, 16 Oct 2026 02:00:00 +0000",
+        first_pin = item(pid=393, date="Thu, 15 Oct 2026 15:01:00 +0000",
                          url="https://www.survival40.com/first-article/")
         with patch.object(m,"request_bytes",return_value=make_feed([base,old,newer,first_pin])):
             selected = m.collect()
