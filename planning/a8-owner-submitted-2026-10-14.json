@@ -261,6 +261,45 @@
       "wp_url": "https://www.survival40.com/40s-hugravi-weighted-blanket-guide/",
       "last_verified_date_jst": "2026-10-15",
       "notes": "Original 300x250 A8 creative and 1x1 tracking verified once in public article. PR disclosure, neutral product evidence and usage restrictions. Two contextual backlinks from WP posts #400, #387 checked. Post #568 intentionally ad-free, untouched."
+    },
+    {
+      "name": "ALGO Chair Pro（アルゴチェア プロ）",
+      "advertiser": "株式会社アイル",
+      "program_id": "s00000027668001",
+      "category": "高機能オフィスチェア・家具",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "購入16000円",
+      "epc_from_owner_screenshot": "-（非表示）",
+      "approval_rate_from_owner_screenshot": "-（非表示）",
+      "conditions_from_owner_screenshot": [
+        "WEB注文後の決済完了確認",
+        "対象：LP掲載 ALGO Chair Pro のみ",
+        "複数個購入した場合も成果報酬一律"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "不正・申込不備・虚偽・いたずら・重複成果",
+        "リスティング違反"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "本人NG",
+        "PR表記をわかりやすく示す",
+        "腰痛を治す・疲労が消える等の効果を断定しない",
+        "購入使用していないため体験レビュー・画像レビューを捏造しない"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEH58+5XQQ1E+5XHK+5YZ75",
+      "banner_src": "https://www24.a8.net/svt/bgt?aid=261015884359&wid=005&eno=01&mid=s00000027668001003000&mc=1",
+      "impression_src": "https://www17.a8.net/0.gif?a8mat=4BEH58+5XQQ1E+5XHK+5YZ75",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEH58+5XQQ1E+5XHK+5YZ75\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www24.a8.net/svt/bgt?aid=261015884359&wid=005&eno=01&mid=s00000027668001003000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www17.a8.net/0.gif?a8mat=4BEH58+5XQQ1E+5XHK+5YZ75\" alt=\"\">",
+      "official_product_url": "https://algo.promo/",
+      "observed_official_price": "税込149800円・送料無料（2026-10-15公式サイト）",
+      "official_sources": [
+        "https://algo.promo/",
+        "https://algo.promo/pages/manual"
+      ],
+      "editorial_audience": "長時間パソコンや在宅デスクワークをする40代男性。安価な椅子を安易に否定しない。",
+      "wp_status": "owner_material_saved_pending_verified_editorial_placement"
     }
   ]
 }
