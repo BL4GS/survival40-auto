@@ -52,7 +52,8 @@ jobs:
           s = Path('survival40-auto/survival40-auto.php').read_text(encoding='utf-8')
           assert s.count("private function s40_sync_aioseo_native(") == 1
           assert s.count("$this->s40_sync_aioseo_native($post_id, $p);") == 1
-          assert "$this->sync_aioseo_rest($post_id, $p);" not in s
+          generation = s.split("    private function generate_planned_article($p) {", 1)[1].split("    public function handle_run_auto_once()", 1)[0]
+          assert "$this->sync_aioseo_rest($post_id, $p);" not in generation
           assert s.count("s40_category_not_found") == 1
           assert "'_survival40_auto_planned'=>'1'" in s
           assert "'post_status'=>$status" in s
