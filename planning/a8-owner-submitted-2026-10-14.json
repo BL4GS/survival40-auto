@@ -304,36 +304,36 @@
       "wp_post_slug": "40s-algo-chair-pro-before-buy",
       "wp_url": "https://www.survival40.com/40s-algo-chair-pro-before-buy/",
       "last_verified_date_jst": "2026-10-15",
-      "notes": "Official price 149,800 yen checked; article #585 has original A8 300x250 banner and 1x1 pixel, PR, independent desk ergonomics content and no first-person use claims. Public full HTML independently confirmed. Category: 40代の不調 (#35). Link from screen-fatigue post #512 added."
+      "notes": "Existing published #585, full editorial PR guide, official 300x250 banner one time plus 1x1 tracking, independently checked public HTML. Do not reproduce ad or falsely claim firsthand testing. Linked from article #512 on eyestrain, existing marker S40_ALGO_RELATED_START; verify public HTML before claiming."
     },
     {
-      "name": "RIZAP プライベートジム 入会申込み",
+      "name": "RIZAP プライベートジム（新規来店）",
       "advertiser": "RIZAP株式会社",
       "program_id": "s00000015695001",
-      "category": "パーソナルトレーニング",
+      "category": "パーソナルトレーニング・ダイエット",
       "status": "owner_screenshot_confirms_partnered",
       "reward_from_owner_screenshot": "新規来店7000円",
       "epc_from_owner_screenshot": "5.23",
       "approval_rate_from_owner_screenshot": "45.9%（過去実績・将来保証なし）",
       "conditions_from_owner_screenshot": [
-        "広告主新規",
-        "WEB申込み後30日以内に来店完了",
-        "問い合わせのみでは対象外"
+        "広告主新規利用のみ（過去利用者を除く）",
+        "WEB申込後、30日以内の来店完了",
+        "問い合わせ・無料カウンセリング申込だけでは成果にならない"
       ],
       "denial_conditions_from_owner_screenshot": [
-        "全額返金制度利用",
+        "全額返金制度の利用",
         "いたずら・重複申込み",
-        "入会済み・卒業生の申込み",
-        "他キャンペーンの併用",
+        "入会済み・卒業生からの申込",
+        "問い合わせのみ",
         "リスティング違反",
-        "当広告主の利用歴がある方"
+        "当広告主を利用したことのある人",
+        "他キャンペーン・紹介制度などとの併用"
       ],
       "restrictions_from_owner_screenshot": [
-        "本人NG",
-        "ランキングは合理的根拠必須・費用で順位を操作しない",
-        "一般消費者向けのキャンペーン・体験特典の掲載に禁止事項あり（必ず広告主資料を確認）",
-        "既に他ASPや代理店と取引がある場合、A8リンク使用前に広告主への事前確認が必要",
-        "表記NGワード：会社名・ブランド名の表記ゆれ、誤記、掛け合わせ。正式な表記は広告主規約確認"
+        "RIZAPの社名・ブランド表記揺れはリスティングNG。自然検索記事とリスティング広告を混同しない",
+        "返金保証等の特別キャンペーンをSNSやブログ等でアフィリエイト訴求することは禁止と表示あり。広告主の許諾なしに取り上げない",
+        "根拠のない痩身効果や必ず結果が出る表現は禁止",
+        "PRを明記し、未利用の体験談を作らない"
       ],
       "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEH58+5PENKI+3D3Q+6ARKX",
       "banner_src": "https://www23.a8.net/svt/bgt?aid=261015884345&wid=005&eno=01&mid=s00000015695001058000&mc=1",
@@ -341,8 +341,10 @@
       "width": 300,
       "height": 250,
       "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEH58+5PENKI+3D3Q+6ARKX\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www23.a8.net/svt/bgt?aid=261015884345&wid=005&eno=01&mid=s00000015695001058000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www18.a8.net/0.gif?a8mat=4BEH58+5PENKI+3D3Q+6ARKX\" alt=\"\">",
-      "wp_status": "owner_material_saved_pending_advertiser_restriction_review",
-      "notes": "Owner-provided screenshots confirm partnered but advertiser has unusually strict campaign/creative/ranking/other-ASP prohibitions. Do not place until compliant article and RIZAP materials thoroughly checked."
+      "wp_status": "owner_material_saved_pending_editorial_review",
+      "notes": "More thematically aligned with existing exercise articles #412 and #393 than high-price ALGO; conversion requires physical visit in 30 days; do not infer from counseling booking. Review advertiser rules and consult source pricing before article.",
+      "revisit_period_from_owner_screenshot": "90日",
+      "approx_approval_time_from_owner_screenshot": "約30日"
     }
   ]
 }
