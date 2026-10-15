@@ -299,7 +299,50 @@
         "https://algo.promo/pages/manual"
       ],
       "editorial_audience": "長時間パソコンや在宅デスクワークをする40代男性。安価な椅子を安易に否定しない。",
-      "wp_status": "owner_material_saved_pending_verified_editorial_placement"
+      "wp_status": "published_and_verified_in_public_html",
+      "wp_post_id": 585,
+      "wp_post_slug": "40s-algo-chair-pro-before-buy",
+      "wp_url": "https://www.survival40.com/40s-algo-chair-pro-before-buy/",
+      "last_verified_date_jst": "2026-10-15",
+      "notes": "Official price 149,800 yen checked; article #585 has original A8 300x250 banner and 1x1 pixel, PR, independent desk ergonomics content and no first-person use claims. Public full HTML independently confirmed. Category: 40代の不調 (#35). Link from screen-fatigue post #512 added."
+    },
+    {
+      "name": "RIZAP プライベートジム 入会申込み",
+      "advertiser": "RIZAP株式会社",
+      "program_id": "s00000015695001",
+      "category": "パーソナルトレーニング",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "新規来店7000円",
+      "epc_from_owner_screenshot": "5.23",
+      "approval_rate_from_owner_screenshot": "45.9%（過去実績・将来保証なし）",
+      "conditions_from_owner_screenshot": [
+        "広告主新規",
+        "WEB申込み後30日以内に来店完了",
+        "問い合わせのみでは対象外"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "全額返金制度利用",
+        "いたずら・重複申込み",
+        "入会済み・卒業生の申込み",
+        "他キャンペーンの併用",
+        "リスティング違反",
+        "当広告主の利用歴がある方"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "本人NG",
+        "ランキングは合理的根拠必須・費用で順位を操作しない",
+        "一般消費者向けのキャンペーン・体験特典の掲載に禁止事項あり（必ず広告主資料を確認）",
+        "既に他ASPや代理店と取引がある場合、A8リンク使用前に広告主への事前確認が必要",
+        "表記NGワード：会社名・ブランド名の表記ゆれ、誤記、掛け合わせ。正式な表記は広告主規約確認"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEH58+5PENKI+3D3Q+6ARKX",
+      "banner_src": "https://www23.a8.net/svt/bgt?aid=261015884345&wid=005&eno=01&mid=s00000015695001058000&mc=1",
+      "impression_src": "https://www18.a8.net/0.gif?a8mat=4BEH58+5PENKI+3D3Q+6ARKX",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEH58+5PENKI+3D3Q+6ARKX\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www23.a8.net/svt/bgt?aid=261015884345&wid=005&eno=01&mid=s00000015695001058000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www18.a8.net/0.gif?a8mat=4BEH58+5PENKI+3D3Q+6ARKX\" alt=\"\">",
+      "wp_status": "owner_material_saved_pending_advertiser_restriction_review",
+      "notes": "Owner-provided screenshots confirm partnered but advertiser has unusually strict campaign/creative/ranking/other-ASP prohibitions. Do not place until compliant article and RIZAP materials thoroughly checked."
     }
   ]
 }
