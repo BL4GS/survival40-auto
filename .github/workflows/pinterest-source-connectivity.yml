@@ -1,0 +1,16 @@
+name: Survival40 Pinterest source connectivity (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/pinterest/connectivity-check.trigger'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only connectivity probe, one request per resource
+        run: python3 ops/pinterest/diagnose_connectivity.py
