@@ -1,0 +1,45 @@
+name: Survival40 Pinterest original-image RSS (NO PUBLISH)
+on:
+  schedule:
+    # 4 checks/day, UTC; GitHub schedule time may be delayed.
+    - cron: '35 0,6,12,18 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/pinterest/build-image-feed.trigger'
+permissions:
+  contents: write
+concurrency:
+  group: survival40-pinterest-image-feed
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install fonts and image renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          python3 -m pip install --quiet 'Pillow==11.3.0'
+      - name: Validate feed rules with no external secrets
+        run: |
+          python3 -m unittest discover -s scripts/pinterest -p 'test_*.py' -v
+          python3 -m py_compile scripts/pinterest/build_rss.py
+      - name: Build image-backed RSS from verified public Survival40 articles
+        run: python3 -m scripts.pinterest.build_rss
+      - name: Publish static images and XML to repo ONLY (never to Pinterest or WordPress)
+        run: |
+          git add assets/pinterest/auto/ pinterest/survival40-pins.xml
+          if git diff --staged --quiet; then
+            echo 'UNCHANGED: static RSS feed and images already current'
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "pinterest: refresh static Shiori image-backed article feed [skip ci]"
+          git push origin HEAD:main
