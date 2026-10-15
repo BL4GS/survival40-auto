@@ -161,16 +161,16 @@ class ScheduledLiveTests(unittest.TestCase):
             )
             client = meta_class.return_value
             client.verify_account.side_effect = lambda *x: called.append("identity")
-            client.create_text_container.side_effect = lambda *x: (called.append("container") or "321")
-            client.publish_container.side_effect = lambda *x: (called.append("publish") or "654")
+            client.publish_text.side_effect = lambda *x: (called.append("auto_publish") or "654")
             ledger = ledger_class.return_value
             ledger.reserve.side_effect = lambda *x: (called.append("reserve") or True)
             ledger.mark_published.side_effect = lambda *x: called.append("mark")
             self.assertEqual(publish(prepared, at, self.config, ENV), "654")
-            self.assertEqual(called, ["identity", "reserve", "container", "publish", "mark"])
+            self.assertEqual(called, ["identity", "reserve", "auto_publish", "mark"])
             self.assertEqual(ledger.reserve.call_count, 1)
-            self.assertEqual(client.create_text_container.call_count, 1)
-            self.assertEqual(client.publish_container.call_count, 1)
+            client.publish_text.assert_called_once_with(FIRST_TEXT)
+            client.create_text_container.assert_not_called()
+            client.publish_container.assert_not_called()
             self.assertEqual(safe.call_count, 2)
             profile.assert_called_once()
             debug.assert_called_once()
@@ -186,6 +186,7 @@ class ScheduledLiveTests(unittest.TestCase):
             safe.return_value = {}
             ledger.return_value.reserve.return_value = False
             self.assertIsNone(publish(prepared, at, self.config, ENV))
+            meta.return_value.publish_text.assert_not_called()
             meta.return_value.create_text_container.assert_not_called()
             meta.return_value.publish_container.assert_not_called()
 
