@@ -1,6 +1,6 @@
 {
   "project": "Survival40",
-  "updated_on_jst": "2026-10-14",
+  "updated_on_jst": "2026-10-15",
   "purpose": "Durable audit trail of owner-authorized A8 placements in live WordPress posts. This planning ledger is separate from the WordPress plugin's s40_affiliate_ledger_v1 option; updating this file does not auto-render banners or change plugin configuration.",
   "scope": "Existing WordPress posts edited with exact-match /wpvibe/v1/content/edit and checked for public rendered A8 banner/link/PR disclosure. Future post recorded as future, not publicly live yet.",
   "canonical_creative_sources": [
@@ -150,6 +150,17 @@
       "verified_wordpress_api": true,
       "verified_public_html": true,
       "notes": "Medicinal hair tonic option alongside neutral AGA treatment distinction and explicit warnings, PR disclosure"
+    },
+    {
+      "post_id": 581,
+      "slug": "40s-hugravi-weighted-blanket-guide",
+      "program_id": "s00000027668002",
+      "advertiser": "ハグラビ ウェイトブランケット",
+      "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
+      "observed_status": "publish",
+      "verified_wordpress_api": true,
+      "verified_public_html": true,
+      "notes": "Owner-provided 300x250 creative and 1x1 pixel; published with PR and cautionary evidence-based guide. One banner, not inserted into ad-free article #568."
     }
   ],
   "planned_post_placement": [
@@ -263,6 +274,20 @@
       "from_post_id": 417,
       "from_slug": "40s-male-sunscreen-how-to-choose",
       "to_slug": "40s-male-dark-spots-uv-care",
+      "verified_public_html": true
+    },
+    {
+      "source_post_id": 400,
+      "target_post_id": 581,
+      "target_slug": "40s-hugravi-weighted-blanket-guide",
+      "marker": "S40_HUGRAVI_RELATED_START",
+      "verified_public_html": true
+    },
+    {
+      "source_post_id": 387,
+      "target_post_id": 581,
+      "target_slug": "40s-hugravi-weighted-blanket-guide",
+      "marker": "S40_HUGRAVI_RELATED_START",
       "verified_public_html": true
     }
   ]
