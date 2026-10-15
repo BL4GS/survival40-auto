@@ -34,6 +34,8 @@ jobs:
           python3 -m py_compile scripts/pinterest/build_rss.py
       - name: Build image-backed RSS from verified public Survival40 articles
         run: python3 -m scripts.pinterest.build_rss
+      - name: Fail closed if RSS media, links or cards are inconsistent
+        run: python3 -m scripts.pinterest.verify_static_feed
       - name: Publish static images and XML to repo ONLY (never to Pinterest or WordPress)
         run: |
           git add assets/pinterest/auto/ pinterest/survival40-pins.xml
