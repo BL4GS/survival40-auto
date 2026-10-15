@@ -156,8 +156,9 @@ def publish_once(draft, now, env):
     if not ledger.reserve("article-" + str(draft["article_id"]), expected_id, digest):
         print("SKIP: Same published article was already introduced.")
         return None
-    container = client.create_text_container(text)
-    post_id = client.publish_container(container)
+    # Same single-request TEXT path as the regular 4-slot publisher.
+    # Existing durable article + slot reservations remain unchanged.
+    post_id = client.publish_text(text)
     ledger.mark_published(slot, post_id)
     ledger.mark_published("article-" + str(draft["article_id"]), post_id)
     print("PUBLISHED: One additional Threads article introduction for " + slot)
