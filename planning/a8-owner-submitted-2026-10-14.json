@@ -345,6 +345,44 @@
       "notes": "More thematically aligned with existing exercise articles #412 and #393 than high-price ALGO; conversion requires physical visit in 30 days; do not infer from counseling booking. Review advertiser rules and consult source pricing before article.",
       "revisit_period_from_owner_screenshot": "90日",
       "approx_approval_time_from_owner_screenshot": "約30日"
+    },
+    {
+      "name": "にんにく玉本舗 国内産にんにく玉ゴールド 初回限定980円",
+      "advertiser": "株式会社燦樹",
+      "program_id": "s00000014723001",
+      "category": "健康食品",
+      "status": "owner_screenshot_confirms_partnered",
+      "reward_from_owner_screenshot": "初回購入980円",
+      "epc_from_owner_screenshot": "5.31",
+      "approval_rate_from_owner_screenshot": "100%（過去実績であり保証ではない）",
+      "revisit_period_from_owner_screenshot": "90日",
+      "conditions_from_owner_screenshot": [
+        "商品新規の方のみ",
+        "国産にんにく玉ゴールド 初回限定価格1袋980円の購入",
+        "WEB注文後14日以内の入金確認"
+      ],
+      "denial_conditions_from_owner_screenshot": [
+        "重複・虚偽・キャンセル",
+        "入金確認できない",
+        "同ユーザー二回目以降の購入",
+        "リスティング違反",
+        "商品受領延期・受取拒否",
+        "返金保証の利用"
+      ],
+      "restrictions_from_owner_screenshot": [
+        "会社名・商標・サイト名（部分一致や複合キーワードを含む）のリスティングNG",
+        "健康食品をうつ病・不眠症・自律神経失調症などの症状・疾病に効果があるように紹介しない",
+        "効能を保証する利用体験談を捏造しない",
+        "PR表示を明確にする"
+      ],
+      "click_url": "https://px.a8.net/svt/ejp?a8mat=4BEGD6+F7QWEQ+35LQ+5YZ75",
+      "banner_src": "https://www27.a8.net/svt/bgt?aid=261014874920&wid=005&eno=01&mid=s00000014723001003000&mc=1",
+      "impression_src": "https://www19.a8.net/0.gif?a8mat=4BEGD6+F7QWEQ+35LQ+5YZ75",
+      "width": 300,
+      "height": 250,
+      "original_html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BEGD6+F7QWEQ+35LQ+5YZ75\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www27.a8.net/svt/bgt?aid=261014874920&wid=005&eno=01&mid=s00000014723001003000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www19.a8.net/0.gif?a8mat=4BEGD6+F7QWEQ+35LQ+5YZ75\" alt=\"\">",
+      "wp_status": "owner_material_saved_not_placed",
+      "notes": "Screenshot says existing program partnered; submitted creative preserved. No matching public article currently carrying this program. Lower priority than existing higher payout campaigns. Do not submit A8 ad placement URL until an actual published article carries the A8 link."
     }
   ]
 }
