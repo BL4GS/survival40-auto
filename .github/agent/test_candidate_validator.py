@@ -14,6 +14,24 @@ class CandidateGateTest(unittest.TestCase):
     def test_accept_safe(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertEqual(module.validate({'change':{'path':PATH,'content':TEST}},Path(root))[0],PATH)
+    def test_trim_trailing_spaces_before_git_whitespace_check(self):
+        dirty=TEST.replace('    def test_safe(self):',
+                           '    def test_safe(self):    ') + '    \n'
+        with tempfile.TemporaryDirectory() as root:
+            path, normalized = module.validate(
+                {'change': {'path': PATH, 'content': dirty}}, Path(root))
+            self.assertEqual(path, PATH)
+            self.assertTrue(normalized.endswith('\n'))
+            self.assertNotIn('    \n', normalized)
+            self.assertIn('    def test_safe(self):\n', normalized)
+
+    def test_reject_whitespace_change_inside_multiline_literal(self):
+        dirty=(TEST + 'MESSAGE = """first line    \nsecond line"""\n')
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(ValueError, 'semantics'):
+                module.validate({'change': {'path': PATH, 'content': dirty}},
+                                Path(root))
+
     def test_block_release_workflow(self):
         with tempfile.TemporaryDirectory() as root:
             with self.assertRaises(ValueError):

@@ -51,7 +51,14 @@ def validate(proposal, root):
                 has_unittest_class=True
     if 'unittest' not in imports or not has_unittest_class or 'def test_' not in content:
         raise ValueError('Expected unittest.TestCase with a test_ method')
-    return path,content
+    # Generated tests may contain whitespace-only lines. Normalize that harmless
+    # formatting before running the tests AND before git diff --cached --check.
+    # Fail closed if trimming would change Python semantics (e.g. multiline text).
+    normalized='\n'.join(line.rstrip(' \t') for line in content.splitlines())+'\n'
+    normalized_tree=ast.parse(normalized,filename=path)
+    if ast.dump(tree,include_attributes=False) != ast.dump(normalized_tree,include_attributes=False):
+        raise ValueError('Unsafe whitespace normalization would change test semantics')
+    return path,normalized
 
 def main():
     proposal=json.loads(Path('agent-output/proposal.json').read_text(encoding='utf-8'))
