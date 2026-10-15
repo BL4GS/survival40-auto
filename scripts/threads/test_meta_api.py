@@ -35,6 +35,47 @@ class ThreadsApiTests(unittest.TestCase):
             self.client.verify_account("123")
 
     @patch("scripts.threads.meta_api.urllib.request.urlopen")
+    def test_one_step_text_auto_publish_returns_published_post_id(self, urlopen):
+        urlopen.return_value = FakeResponse({"id": "17912345678901234"})
+        self.assertEqual(self.client.publish_text("おはようございます。体調に気を配っていきます。"),
+                         "17912345678901234")
+        urlopen.assert_called_once()
+        req = urlopen.call_args.args[0]
+        self.assertEqual(req.full_url, "https://graph.threads.net/me/threads")
+        self.assertEqual(req.get_method(), "POST")
+        self.assertIn(b"media_type=TEXT", req.data)
+        self.assertIn(b"auto_publish_text=true", req.data)
+        self.assertNotIn(b"creation_id", req.data)
+        self.assertNotIn(b"TEST_TOKEN_NOT_REAL", req.data)
+
+    @patch("scripts.threads.meta_api.urllib.request.urlopen")
+    def test_auto_publish_missing_post_id_fails_closed_without_retry(self, urlopen):
+        urlopen.return_value = FakeResponse({"success": True})
+        with self.assertRaisesRegex(ThreadsApiError, "reconcile before retry"):
+            self.client.publish_text("同じ投稿を繰り返しません。")
+        urlopen.assert_called_once()
+
+    @patch("scripts.threads.meta_api.urllib.request.urlopen")
+    def test_auto_publish_http400_reports_safe_stage_only_once(self, urlopen):
+        import io
+        error = {
+            "error": {"code": 24, "error_subcode": 4279009, "is_transient": False,
+                      "message": "SECRET_READABLE_DETAILS"}
+        }
+        data = json.dumps(error).encode("utf-8")
+        urlopen.side_effect = urllib.error.HTTPError(
+            "https://graph.threads.net/me/threads", 400, "Bad Request", {},
+            io.BytesIO(data))
+        with self.assertRaises(ThreadsApiError) as caught:
+            self.client.publish_text("安全なテスト投稿。")
+        message = str(caught.exception)
+        self.assertIn("at auto_publish_text", message)
+        self.assertIn("code=24", message)
+        self.assertIn("error_subcode=4279009", message)
+        self.assertNotIn("SECRET_READABLE_DETAILS", message)
+        urlopen.assert_called_once()
+
+    @patch("scripts.threads.meta_api.urllib.request.urlopen")
     def test_container_is_not_auto_published(self, urlopen):
         urlopen.return_value = FakeResponse({"id": "123456"})
         self.assertEqual(self.client.create_text_container("おはようございます！"), "123456")
