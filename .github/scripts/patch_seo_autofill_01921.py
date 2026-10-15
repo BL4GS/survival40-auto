@@ -74,7 +74,10 @@ source = source.replace(old_call, "        $this->s40_sync_aioseo_native($post_i
 # category_id() is already the generator's category selector.
 # Never silently publish an article as Uncategorized on lookup failure.
 old_category = "        $cat = $this->category_id($p['category']);"
-assert source.count(old_category) == 1, "planned-article category assignment changed"
+generation_start = source.index(anchor)
+generation_end = source.index("    public function handle_run_auto_once()", generation_start)
+section = source[generation_start:generation_end]
+assert section.count(old_category) == 1, "planned-article category assignment changed"
 new_category = r'''        $cat = $this->category_id($p['category']);
         if (!$cat && !empty($p['category'])) {
             $matching_category = get_term_by('name', sanitize_text_field($p['category']), 'category');
@@ -85,7 +88,8 @@ new_category = r'''        $cat = $this->category_id($p['category']);
         if (!$cat) {
             return new WP_Error('s40_category_not_found', '予定カテゴリが存在しないため自動公開を停止しました。');
         }'''
-source = source.replace(old_category, new_category, 1)
+section = section.replace(old_category, new_category, 1)
+source = source[:generation_start] + section + source[generation_end:]
 
 assert source.count("private function s40_sync_aioseo_native(") == 1
 assert source.count(old_call) == 0
