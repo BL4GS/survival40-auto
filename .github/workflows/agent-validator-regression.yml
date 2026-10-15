@@ -1,0 +1,21 @@
+name: Agent validator regression tests (read-only)
+on:
+  pull_request:
+    paths:
+      - '.github/agent/**'
+      - '.github/workflows/agent-validator-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile trusted validator and execute its safety tests
+        run: |
+          python3 -m py_compile .github/agent/validate_candidate.py
+          python3 -m unittest discover -s .github/agent -p test_candidate_validator.py -v
