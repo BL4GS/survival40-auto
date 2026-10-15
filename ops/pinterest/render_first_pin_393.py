@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 URL = "https://www.survival40.com/wp-content/plugins/survival40-auto/assets/navigator/explain.webp"
 OWNER = "BL4GS/survival40-auto"
-OUTPUT = "assets/pinterest/40s-belly-activity-393.png"
+OUTPUT = "assets/pinterest/40s-belly-activity-393-v2.png"
 BACKGROUND = "#F8F8FF"
 INK = "#273041"
 
@@ -50,7 +50,8 @@ def main():
     assert not output.exists(), "Do not overwrite a previously approved pin"
     artwork = get_shiori()
     # Preserve the original Shiori face and gesture with no synthetic edits.
-    artwork.thumbnail((475, 570), Image.Resampling.LANCZOS)
+    scale = min(430 / artwork.height, 380 / artwork.width)
+    artwork = artwork.resize((int(artwork.width * scale), int(artwork.height * scale)), Image.Resampling.LANCZOS)
     canvas = Image.new("RGBA", (1000, 1500), BACKGROUND)
     draw = ImageDraw.Draw(canvas)
     heavy = font(90)
@@ -68,7 +69,7 @@ def main():
     draw.text((98, 764), "今から見直せることを整理", font=small, fill="#46536C")
 
     # Lower-left guide, no crop, no face or pose modification.
-    x, y = 24, 1468 - artwork.height
+    x, y = 24, 1490 - artwork.height
     canvas.alpha_composite(artwork, (x, y))
 
     draw.text((490, 1268), "Survival40", font=brand, fill=INK)
