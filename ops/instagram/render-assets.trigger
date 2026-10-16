@@ -1,0 +1,2 @@
+Owner-approved Instagram asset-only kickoff, 2026-10-16 JST.
+No Instagram publishing credentials or WordPress writes.
