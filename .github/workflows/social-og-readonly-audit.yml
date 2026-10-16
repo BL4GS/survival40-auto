@@ -1,0 +1,37 @@
+name: Survival40 public OG image audit (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'scripts/social/**'
+      - '.github/workflows/social-og-readonly-audit.yml'
+  schedule:
+    # 10:25 JST every day; no site mutation.
+    - cron: '25 1 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline source and HTML contract tests
+        run: python3 -m unittest discover -s scripts/social -p 'test_*.py' -v
+      - name: Check published article Open Graph metadata (GET ONLY)
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ''
+          THREADS_ACCESS_TOKEN: ''
+          INSTAGRAM_ACCESS_TOKEN: ''
+        run: python3 -m scripts.social.check_og
+      - name: Save diagnostic evidence only
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-og-readonly-${{ github.run_id }}
+          path: social-audit/og-status.json
+          retention-days: 14
+          if-no-files-found: warn
