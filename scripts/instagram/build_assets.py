@@ -148,10 +148,10 @@ def caption_from_source(post):
     if not 9 <= len(title) <= 160 or not 12 <= len(subtitle) <= 210:
         raise ValueError("Unverifiable or oversized Instagram introduction")
     text = (
-        "【PR】\\n" + title
-        + "\\n\\n" + subtitle
-        + "\\n\\n詳しくはプロフィールのリンクからSurvival40へ。"
-        + "\\n\\n#40代男性 #Survival40"
+        "【PR】\n" + title
+        + "\n\n" + subtitle
+        + "\n\n詳しくはプロフィールのリンクからSurvival40へ。"
+        + "\n\n#40代男性 #Survival40"
     )
     if len(text) > 500:
         raise ValueError("Instagram caption exceeds review limit")
