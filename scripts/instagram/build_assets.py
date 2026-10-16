@@ -136,24 +136,38 @@ def render_social_og(post, portrait, asset_dir=OG_DIR):
     return out
 
 
+def caption_from_source(post):
+    """Public Instagram caption: complete article-based thought and real profile CTA.
+
+    Do not use a non-clickable raw URL, fabricate a hands-on testimonial, or
+    truncate survey sample counts/medical context in the middle of a sentence.
+    The website is affiliate-funded, so PR disclosure is conservative.
+    """
+    title = post["title"].strip()
+    subtitle = complete_subtitle(post["excerpt"])
+    if not 9 <= len(title) <= 160 or not 12 <= len(subtitle) <= 210:
+        raise ValueError("Unverifiable or oversized Instagram introduction")
+    text = (
+        "【PR】\\n" + title
+        + "\\n\\n" + subtitle
+        + "\\n\\n詳しくはプロフィールのリンクからSurvival40へ。"
+        + "\\n\\n#40代男性 #Survival40"
+    )
+    if len(text) > 500:
+        raise ValueError("Instagram caption exceeds review limit")
+    return text
+
+
 def manifest_entry(post, ig_path, og_path):
-    # Instagram post captions do not make URLs clickable. Do not claim that
-    # bio link exists or imply this manifest has been published.
-    excerpt = post["excerpt"].strip()
-    if len(excerpt) > 110:
-        excerpt = excerpt[:109].rstrip("、。") + "。"
-    caption = (post["title"] + "\n\n" + excerpt +
-               "\n\n詳しい内容はSurvival40の記事で確認できます。" +
-               "\n\n#40代男性 #40代からの生存戦略 #Survival40")
     return {
         "article_id": post["id"],
         "title": post["title"],
         "article_url": post["article_url"],
         "instagram_image": pins.RAW + "assets/instagram/auto/" + ig_path.name,
         "social_og_image": pins.RAW + "assets/social/og/" + og_path.name,
-        "caption_draft": caption,
+        "caption_draft": caption_from_source(post),
         "status": "assets_ready_not_published",
-        "requires": "connected Instagram professional account, approved caption, working profile link",
+        "requires": "verified connected Instagram business account; no automatic scheduling without publication gate",
     }
 
 
