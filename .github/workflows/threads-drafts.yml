@@ -39,8 +39,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Reviewed + offline-tested source: only Shiori copy prompt, copy tests, editorial JSON changed; schedule/Meta ledger unchanged.
-          ref: ae752c72a72113ad0abccffe79f886d0e42ae99e
+          # Reviewed and offline tested: Shiori copy + single bounded Gemini draft-only HTTP503 retry; publishing unchanged.
+          ref: 030e1f8a4cb23550802653b1dbcc97a263473566
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
