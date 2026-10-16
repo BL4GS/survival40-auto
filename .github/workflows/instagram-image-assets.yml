@@ -38,10 +38,13 @@ jobs:
       - name: Generate safe Instagram and OG assets from verified Pinterest feed
         if: github.event_name != 'pull_request'
         run: python3 -m scripts.instagram.build_assets
+      - name: Prepare verified Instagram candidates (NO PUBLISHING)
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.instagram.prepare_queue
       - name: Save only the image assets and offline review manifest to GitHub
         if: github.event_name != 'pull_request'
         run: |
-          git add assets/instagram/auto/ assets/social/og/ instagram/ready-posts.json
+          git add assets/instagram/auto/ assets/social/og/ instagram/ready-posts.json instagram/publish-queue.json
           if git diff --staged --quiet; then
             echo 'UNCHANGED: no new social image assets'
             exit 0
