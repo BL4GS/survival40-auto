@@ -1,0 +1,53 @@
+name: Survival40 Instagram Shiori cards (ASSETS ONLY)
+# Produces Instagram-ready images/metadata. Never publishes to Instagram.
+on:
+  pull_request:
+    paths:
+      - 'scripts/instagram/**'
+      - '.github/workflows/instagram-image-assets.yml'
+  schedule:
+    # Check after the independent Pinterest image RSS build, four times daily.
+    - cron: '50 0,6,12,18 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/instagram/render-assets.trigger'
+permissions:
+  contents: write
+concurrency:
+  group: survival40-instagram-assets
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: ${{ github.event_name != 'pull_request' }}
+      - name: Install pinned image renderer and Japanese typography
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          python3 -m pip install --quiet 'Pillow==11.3.0'
+      - name: Test isolated original-image social asset generation
+        run: |
+          python3 -m unittest discover -s scripts/instagram -p 'test_*.py' -v
+          python3 -m py_compile scripts/instagram/build_assets.py
+      - name: Generate safe Instagram and OG assets from verified Pinterest feed
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.instagram.build_assets
+      - name: Save only the image assets and offline review manifest to GitHub
+        if: github.event_name != 'pull_request'
+        run: |
+          git add assets/instagram/auto/ assets/social/og/ instagram/ready-posts.json
+          if git diff --staged --quiet; then
+            echo 'UNCHANGED: no new social image assets'
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --cached --check
+          git commit -m "instagram: refresh Shiori image assets [skip ci]"
+          git push origin HEAD:main
