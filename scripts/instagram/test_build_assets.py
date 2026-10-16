@@ -97,7 +97,8 @@ class InstagramAssetTests(unittest.TestCase):
             self.build()
         self.assertNotEqual(img.read_bytes(), previous)
         self.assertEqual(self.build()["publishing_enabled"], False)
-        self.assertNotEqual(img.read_bytes(), previous)
+        # Restoring the original renderer also restores the original bytes.
+        self.assertEqual(img.read_bytes(), previous)
 
     def test_subtitle_never_clips_survey_sample_size_or_partial_words(self):
         text = ("女性は男性のヒゲ・髪型・肌・体臭のどこを見ている？"
