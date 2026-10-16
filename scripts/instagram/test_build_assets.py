@@ -89,13 +89,27 @@ class InstagramAssetTests(unittest.TestCase):
         self.assertFalse(self.ig_dir.exists())
         self.assertFalse(self.manifest.exists())
 
-    def test_previously_prepared_images_not_overwritten(self):
+    def test_cards_regenerate_on_editorial_render_change(self):
         self.build()
         img = self.ig_dir / "512.png"
         previous = img.read_bytes()
         with patch.object(m, "BG", "#000000"):
             self.build()
+        self.assertNotEqual(img.read_bytes(), previous)
+        self.assertEqual(self.build()["publishing_enabled"], False)
+        # Restoring the original renderer also restores the original bytes.
         self.assertEqual(img.read_bytes(), previous)
+
+    def test_subtitle_never_clips_survey_sample_size_or_partial_words(self):
+        text = ("女性は男性のヒゲ・髪型・肌・体臭のどこを見ている？"
+                "婚活アプリ会員2,090人と男女505人の調査を、"
+                "対象・質問内容の違いも含めて解説。")
+        self.assertEqual(m.complete_subtitle(text),
+                         "婚活アプリ会員2,090人と男女505人の調査を、対象・質問内容の違いも含めて解説。")
+        self.assertNotIn("男女5。", m.complete_subtitle(text))
+        self.assertEqual(m.complete_subtitle("ひとつの結果を確認。"), "ひとつの結果を確認。")
+        with self.assertRaisesRegex(ValueError, "complete"):
+            m.complete_subtitle("記事を読もうと思うけれど")
 
     def test_no_remote_fetch_when_portrait_provided(self):
         with patch.object(p, "request_bytes", side_effect=RuntimeError("No network")):

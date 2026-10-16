@@ -65,6 +65,25 @@ def scaled_shiori(portrait, maxwidth, maxheight):
     ).convert("RGBA")
 
 
+def complete_subtitle(text):
+    """Choose a source-verifiable COMPLETE sentence, never sever a number or word."""
+    sentences = re.findall(r"[^。！？!?]+[。！？!?]", text.strip())
+    if not sentences:
+        raise ValueError("Missing complete source sentence for Instagram card")
+    # Article RSS teasers often start by repeating the headline as a question.
+    # Prefer the immediately following complete explanatory sentence, if any.
+    return sentences[1].strip() if sentences[0].endswith(("？", "?")) and len(sentences) > 1 else sentences[0].strip()
+
+
+def write_changed_png(canvas, out):
+    """Regenerate cards when typography/source improves; avoid noop Git commits."""
+    memory = io.BytesIO()
+    canvas.save(memory, format="PNG", optimize=True)
+    data = memory.getvalue()
+    if not out.exists() or out.read_bytes() != data:
+        out.write_bytes(data)
+
+
 def render_instagram(post, portrait, asset_dir=ASSET_DIR):
     """Instagram feed 4:5; reflows typography rather than cropping the Pinterest art."""
     canvas = Image.new("RGB", IG_SIZE, BG)
@@ -79,10 +98,10 @@ def render_instagram(post, portrait, asset_dir=ASSET_DIR):
     if y > 780:
         raise ValueError("Title encroaches on Instagram body")
     draw.line([(88, y), (992, y)], fill="#C8D0DD", width=3)
-    excerpt = post["excerpt"][:42].rstrip("、。") + "。"
-    description_font = pins.font(36, False)
-    for line in pins.wrap(draw, excerpt, description_font, 906, 2):
-        y += 56
+    excerpt = complete_subtitle(post["excerpt"])
+    description_font = pins.font(34, False)
+    for line in pins.wrap(draw, excerpt, description_font, 906, 3):
+        y += 51
         draw.text((88, y), line, font=description_font, fill=MUTED)
     shiori = scaled_shiori(portrait, 370, 376)
     canvas.paste(shiori, (30, IG_SIZE[1] - shiori.height - 8), shiori)
@@ -91,8 +110,7 @@ def render_instagram(post, portrait, asset_dir=ASSET_DIR):
               font=pins.font(31, False), fill=MUTED)
     out = Path(asset_dir) / (str(post["id"]) + ".png")
     out.parent.mkdir(parents=True, exist_ok=True)
-    if not out.exists():
-        canvas.save(out, format="PNG", optimize=True)
+    write_changed_png(canvas, out)
     return out
 
 
@@ -114,8 +132,7 @@ def render_social_og(post, portrait, asset_dir=OG_DIR):
     canvas.paste(shiori, (OG_SIZE[0] - shiori.width - 4, 623 - shiori.height), shiori)
     out = Path(asset_dir) / (str(post["id"]) + ".png")
     out.parent.mkdir(parents=True, exist_ok=True)
-    if not out.exists():
-        canvas.save(out, format="PNG", optimize=True)
+    write_changed_png(canvas, out)
     return out
 
 
