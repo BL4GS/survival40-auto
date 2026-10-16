@@ -242,7 +242,10 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertEqual(data["post_kind"], "everyday_chat")
         self.assertNotIn("approved_clarity_examples", data)
         priorities = " ".join(data["editorial_priority"])
-        self.assertIn("どうでもいい小さな話", priorities)
+        self.assertIn("読み手が情景を思い浮かべられる", priorities)
+        self.assertNotIn("どうでもいい小さな話で終えてもよい", priorities)
+        self.assertIn("読者の記憶に残る具体性",
+                      config["editorial_modes"]["everyday_chat"]["format"])
         self.assertIn("人柄", priorities)
         self.assertIn("言葉の主語は栞さん", priorities)
         self.assertIn("役立つ情報を教える記事紹介とは役割が違う", priorities)
@@ -251,6 +254,22 @@ class ThreadsDraftTests(unittest.TestCase):
         self.assertIn("25〜100字", " ".join(data["guidelines"]))
         self.assertEqual(config["editorial_modes"]["article_introduction"]["activation"].startswith("このモードは構想"), True)
         self.assertEqual(config["mode"], "draft_only")
+
+    def test_reader_first_posts_are_memorable_without_forced_advice(self):
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        now = self.at(8)
+        data = json.loads(build_prompt(now, "morning", config)["prompt"])
+        priorities = " ".join(data["editorial_priority"])
+        self.assertIn("人柄", priorities)
+        self.assertIn("固有の物・手間・行動・失敗", priorities)
+        self.assertIn("印象に残るか", " ".join(data["guidelines"]))
+        self.assertNotIn("意味や価値を持たせる必要はない", priorities)
+        self.assertIn("具体的", data["editorial_goal"])
+        self.assertNotIn("商品誘導を強制", priorities)
+        # No change to the publishing, scheduler or identity safety rules.
+        self.assertEqual(config["mode"], "draft_only")
+        self.assertEqual(config["account"], "@survival40_jp")
+        self.assertEqual(data["post_kind"], "everyday_chat")
 
     def test_small_fictional_everyday_anecdotes_are_allowed_in_persona(self):
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
