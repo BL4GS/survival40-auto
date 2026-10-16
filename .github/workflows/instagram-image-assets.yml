@@ -41,10 +41,13 @@ jobs:
       - name: Prepare verified Instagram candidates (NO PUBLISHING)
         if: github.event_name != 'pull_request'
         run: python3 -m scripts.instagram.prepare_queue
+      - name: Convert verified Instagram cards to original JPEG (NO PUBLISHING)
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.instagram.prepare_api_images
       - name: Save only the image assets and offline review manifest to GitHub
         if: github.event_name != 'pull_request'
         run: |
-          git add assets/instagram/auto/ assets/social/og/ instagram/ready-posts.json instagram/publish-queue.json
+          git add assets/instagram/auto/ assets/instagram/api-jpeg/ assets/social/og/ instagram/ready-posts.json instagram/publish-queue.json instagram/api-media-assets.json
           if git diff --staged --quiet; then
             echo 'UNCHANGED: no new social image assets'
             exit 0
