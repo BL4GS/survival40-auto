@@ -1,0 +1,25 @@
+{
+  "brand": "Survival40",
+  "publishing_enabled": false,
+  "official_instagram_api_enabled": false,
+  "account": "survival40_jp",
+  "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
+  "items": [
+    {
+      "article_id": 512,
+      "article_url": "https://www.survival40.com/40s-eye-strain-massage-breaks/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/512.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/512.jpg",
+      "sha256": "cd67fd6a04f5c7b3c4aebacfd68b081faf7eb6520f3afcd29deb6e7caf6ae1c2",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 516,
+      "article_url": "https://www.survival40.com/women-men-grooming-impression-survey/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/516.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/516.jpg",
+      "sha256": "9fbe0f3e673209870fbd1d2f313865cc5cf76766ccc499ec442af1780373099c",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    }
+  ]
+}
