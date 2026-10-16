@@ -120,6 +120,28 @@ jobs:
           git diff --cached --check
           git commit -m 'test: propose one AI-reviewed regression guard'
           git push origin "HEAD:refs/heads/$BRANCH"
-          gh pr create --draft --base main --head "$BRANCH" \
+          # Some repositories disallow the default GitHub Actions token from
+          # opening pull requests. Preserve the validated branch and link it
+          # in the run summary without weakening repository permissions.
+          PR_ERROR="$(mktemp)"
+          if gh pr create --draft --base main --head "$BRANCH" \
             --title 'AI nightly: one reviewed regression test' \
-            --body 'Automated Gemini regression-test proposal. Fixed validator and test runner passed in a secret-free job. No live WordPress changes, no automatic merge, no release. Review the test assertions and decide whether to merge.'
+            --body 'Automated Gemini regression-test proposal. Fixed validator and test runner passed in a secret-free job. No live WordPress changes, no automatic merge, no release. Review the test assertions and decide whether to merge.' 2>"$PR_ERROR"; then
+            echo 'PASS: Draft PR created; no automatic merge or deployment.'
+          elif grep -qF 'GitHub Actions is not permitted to create or approve pull requests' "$PR_ERROR"; then
+            echo 'NOTICE: GitHub Actions cannot create PRs under current repository settings.'
+            echo 'The validated review-only branch was pushed and remains unmerged.'
+            {
+              echo '### Nightly review: PR creation restricted'
+              echo
+              echo "Validated branch: [${BRANCH}](https://github.com/${GITHUB_REPOSITORY}/tree/${BRANCH})"
+              echo
+              echo 'GitHub Actions is not permitted to create PRs. A repository owner may review the branch and create a draft PR manually. No WordPress or SNS publishing occurred.'
+              echo
+              echo 'This is a permission limitation, not a passing publication test.'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            cat "$PR_ERROR" >&2
+            echo 'FAIL: unexpected PR creation error; reviewed branch was pushed, but further investigation is required.' >&2
+            exit 1
+          fi
