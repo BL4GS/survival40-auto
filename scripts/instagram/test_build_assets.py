@@ -111,6 +111,26 @@ class InstagramAssetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "complete"):
             m.complete_subtitle("記事を読もうと思うけれど")
 
+    def test_caption_follows_source_without_half_sentences_or_false_clickable_url(self):
+        manifest = self.build()
+        for entry in manifest["items"]:
+            caption = entry["caption_draft"]
+            self.assertTrue(caption.startswith("【PR】\\n"))
+            self.assertIn("詳しくはプロフィールのリンク", caption)
+            self.assertNotIn("https://", caption)
+            self.assertNotIn("男女5。", caption)
+            self.assertNotIn("\\\\n", caption)
+            self.assertLessEqual(len(caption), 500)
+        survey = next(x for x in manifest["items"] if x["article_id"] == 516)
+        # The source RSS sentence is complete even when it holds sample counts.
+        self.assertIn("40代男性向けに役立つポイント", survey["caption_draft"])
+
+    def test_caption_rejects_broken_or_truncated_article_source(self):
+        post = {"title": "眼精疲労のセルフケアをどう考えるか",
+                "excerpt": "調査は複数の対象を含むが"}
+        with self.assertRaisesRegex(ValueError, "complete"):
+            m.caption_from_source(post)
+
     def test_no_remote_fetch_when_portrait_provided(self):
         with patch.object(p, "request_bytes", side_effect=RuntimeError("No network")):
             self.build()
