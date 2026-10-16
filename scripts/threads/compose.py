@@ -10,6 +10,7 @@ import os
 import pathlib
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from zoneinfo import ZoneInfo
@@ -339,6 +340,12 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             with urllib.request.urlopen(request, timeout=60) as response:
                 data = json.load(response)
         except urllib.error.HTTPError as error:
+            # Only 503 is retried once. This is draft generation before ANY
+            # ledger reservation or Threads publication call. Never retry a
+            # 429, permission failure, network uncertainty or a Meta request.
+            if error.code == 503 and attempt == 0:
+                time.sleep(2)
+                continue
             raise RuntimeError(f"Gemini unavailable (HTTP {error.code}); draft skipped") from None
         except (urllib.error.URLError, TimeoutError) as error:
             raise RuntimeError(f"Gemini connection error: {type(error).__name__}") from None
