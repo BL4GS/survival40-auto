@@ -373,6 +373,41 @@ class ThreadsDraftTests(unittest.TestCase):
                 gemini_generate("{}", "FAKE_GEMINI_SECRET")
             self.assertEqual(urlopen.call_count, 2)
 
+    def test_temporary_503_retries_one_draft_generation_only(self):
+        class Envelope:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self):
+                return json.dumps({"candidates": [{"content": {"parts": [
+                    {"text": '{"text":"洗面台の引き出しを開けたら、同じハンドクリームが2本ありました。"}'}
+                ]}}]}).encode("utf-8")
+
+        transient = urllib.error.HTTPError(
+            url="https://generativelanguage.googleapis.com", code=503,
+            msg="Service Unavailable", hdrs=None, fp=None
+        )
+        with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen, \
+             patch("scripts.threads.compose.time.sleep") as delay:
+            urlopen.side_effect = [transient, Envelope()]
+            self.assertIn("2本", gemini_generate("{}", "FAKE_GEMINI_SECRET"))
+            self.assertEqual(urlopen.call_count, 2)
+            delay.assert_called_once_with(2)
+
+    def test_persistent_503_fails_closed_after_one_retry(self):
+        transient = urllib.error.HTTPError(
+            url="https://generativelanguage.googleapis.com", code=503,
+            msg="Service Unavailable", hdrs=None, fp=None
+        )
+        with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen, \
+             patch("scripts.threads.compose.time.sleep") as delay:
+            urlopen.side_effect = transient
+            with self.assertRaisesRegex(RuntimeError, "HTTP 503"):
+                gemini_generate("{}", "FAKE_GEMINI_SECRET")
+            self.assertEqual(urlopen.call_count, 2)
+            delay.assert_called_once_with(2)
+
     def test_rate_limit_never_retried_or_fallen_back(self):
         with patch("scripts.threads.compose.urllib.request.urlopen") as urlopen:
             urlopen.side_effect = urllib.error.HTTPError(
