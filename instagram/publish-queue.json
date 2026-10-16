@@ -1,0 +1,14 @@
+{
+  "brand": "Survival40",
+  "publishing_enabled": false,
+  "metricool_connected_account": "survival40_jp",
+  "pilot_article_id": 516,
+  "pilot_success_verified": false,
+  "requires": [
+    "Confirm Instagram pilot ID 516 is PUBLISHED, not PENDING/FAILED",
+    "Read live Metricool existing posts and check duplicate URLs/titles",
+    "Check plan limits and future publication slot",
+    "Schedule at most one image-backed post; verify persisted PENDING"
+  ],
+  "items": []
+}
