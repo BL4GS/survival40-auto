@@ -39,8 +39,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Pin 100-test four-slot generator; 22:00 articles stay in independent workflow.
-          ref: 0bbe9adfc6e55a5cdaca839f508e4b5e3b4d8af4
+          # Reviewed + offline-tested source: only Shiori copy prompt, copy tests, editorial JSON changed; schedule/Meta ledger unchanged.
+          ref: ae752c72a72113ad0abccffe79f886d0e42ae99e
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
