@@ -1,0 +1,25 @@
+name: Survival40 staged AIOSEO social tags (NO DEPLOY)
+on:
+  pull_request:
+    paths:
+      - 'staging/wordpress/**'
+      - '.github/workflows/staged-aioseo-social-image-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PHP syntax
+        run: |
+          php -l staging/wordpress/shiori-social-og-aioseo.php
+          php -l staging/wordpress/test-shiori-social-og-aioseo.php
+      - name: Verify staging stays disabled unless explicitly enabled
+        run: php staging/wordpress/test-shiori-social-og-aioseo.php disabled
+      - name: Mock AIOSEO filters without WordPress or social credentials
+        run: php staging/wordpress/test-shiori-social-og-aioseo.php enabled
