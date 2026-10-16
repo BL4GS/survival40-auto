@@ -50,6 +50,7 @@ def canonical(url):
     parsed = urlsplit(url)
     if (parsed.scheme != "https" or parsed.netloc != "www.survival40.com"
             or parsed.query or parsed.fragment
+            or parsed.path.startswith(("/wp-admin/", "/wp-login/"))
             or not re.fullmatch(r"/[a-z0-9][a-z0-9-]*/", parsed.path)):
         raise ValueError("Only verified published Survival40 permalink allowed")
     return url
