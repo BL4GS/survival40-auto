@@ -170,13 +170,13 @@ def build_prompt(now, slot, config, topic_signal=None):
         "theme": theme, "shape": shape, "topic_group": topic_group,
         "persona_angle": persona_angle,
         "character": config["character"],
-        "editorial_goal": "今日は何を宣伝するかではなく、栞さんのどんな人柄や一面が見えるかを最優先する",
+        "editorial_goal": "宣伝しないことだけをゴールにしない。身近な場面の具体的な気づき・迷い・小さな行動から栞さんの人柄を見せ、『また読みたい』と思える一言にする。教訓や商品誘導は不要",
         "conversation_policy": config["editorial_modes"]["everyday_chat"]["conversation_policy"],
         "voice": config["voice"], "tone_mode": tone_mode,
         "topic_guardrail": (
             "これは少数枠だけ許可された、身の回りの持ち物や小さな家事の雑談です。"
             "主題を変えて政治、芸能、ニュース、ゲーム、恋愛、ビジネス、買い物レビューなどへ広げない。"
-            "教訓や役立つ話に変換せず、軽い一言で終わって構いません。"
+            "結論や教訓は不要。ただし状況・小さな出来事・その人らしい反応を具体的に書き、内容のない雰囲気だけで終わらない。" 
             if topic_group == "small_talk" else
             "Survival40の中心領域である身だしなみ、スキンケア、軽い運動、毎日の基本習慣から逸れない。"
             "雑談に脱線せず、設定された具体的なテーマに留まる。"
@@ -198,12 +198,12 @@ def build_prompt(now, slot, config, topic_signal=None):
             "投稿ごとに人柄が少し見えることを目的にする。言葉の主語は栞さんであり、運営者やブログではない",
             "指定されたpersona_angleは感情や人柄のヒント。演じる義務ではなく自然に合うときだけ使う",
             "商品名・誘導文・有益な結論を入れるために日常の話を歪めない",
-            "ひとりの人物が身近な物事について普通に話している雰囲気を優先する",
+            "ひとりの人物が身近な物事について普通に話している雰囲気を優先する。雰囲気だけの作文にはせず、固有の物・手間・行動・失敗のどれかを見せる",
             "読者が最初に見る投稿でも、何の話か一読で分かる",
             "話題は再登場して構わない。ただし表現や問いかけを毎回同じ型にしない",
-            "話題に意味や価値を持たせる必要はない。どうでもいい小さな話で終えてもよい",
+            "大きな教訓はいらない。ただしどうでもよさそうな話でも、細部や反応に栞さんらしさがあり、読み手が情景を思い浮かべられるようにする",
             "事実を教える、改善策を勧める、自己啓発の結論を出すことを目的にしない",
-            "短く素直に話せるなら一文で止める。説明を足して文字数を稼がない",
+            "短く素直に話せるなら一文で止める。説明を足して文字数を稼がない。とはいえ『迷った・気がする・面白い』という評価語だけで終えず何が起きたかを示す",
             "話題について本当に他の人にも聞きたいときは質問で終えてよい。読者が自分の経験を気軽に返信できる問いは歓迎",
             "質問は毎回不要。独り言や小さな失敗談はそのまま終えてよい。会話を無理やり取りにいかない",
             "質問するなら直前の出来事と自然につながること。無関係な質問や反応稼ぎの二択、連続した問いかけを付け足さない",
@@ -229,7 +229,7 @@ def build_prompt(now, slot, config, topic_signal=None):
             "健康効果を断定しない。これは通常の雑談であり、記事紹介や商品宣伝を混ぜない",
             "努力・癒し・自分磨きなどの説教、無理な励まし、義務的な問いかけやまとめを避ける",
             "書き出し、リズム、長さを変える。啓蒙系の独白ではなく、実写アイコンの人物が自然に話す文章",
-            "出来事と感想が一読で分かり、栞さんの性格が少し伝わるかを優先。短ければ短いままでよい"
+            "出来事と感想が一読で分かり、栞さんの性格が少し伝わるかを優先。『何について話し、何が印象に残るか』を自分で確かめ、空疎なら書き直す。短ければ短いままでよい"
         ]
     }, ensure_ascii=False)
     return {"prompt": prompt, "theme": theme, "topic_group": topic_group,
@@ -282,11 +282,16 @@ def gemini_generate(prompt, key, model="gemini-3.5-flash-lite"):
             "the reader can get to know and like over many posts. "
             "Prioritize genuine personality, reactions, quirks, and relatable "
             "small moments over content marketing, informational value, or SEO. "
+            "Give a reader a reason to remember this person or recognize their "
+            "own small friction. Not every post needs a practical takeaway. "
             "A character-angle hint is optional, never a formula. "
             "This is a casual everyday post, NOT an article promotion or advice column. "
             "No requirement for lessons, useful tips, improvement plans, or conclusions. "
             "An ordinary trivial observation or a mildly embarrassing, "
-            "relatable everyday incident is an acceptable complete post. "
+            "relatable everyday incident is an acceptable complete post only when "
+            "it contains a memorable concrete action, friction, choice, or reaction. "
+            "Vague mood, mere indecision, or saying something is interesting is not "
+            "a sufficient post by itself. "
             "Allow topics to repeat over time, but not canned phrasing. "
             "Do not imitate previous sample posts or repeat their sentence structures. "
             "Stay tightly within the assigned theme and topic group; avoid "
