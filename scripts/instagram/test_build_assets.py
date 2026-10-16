@@ -66,7 +66,7 @@ class InstagramAssetTests(unittest.TestCase):
             ident = item["article_id"]
             self.assertEqual(item["status"], "assets_ready_not_published")
             self.assertIn("Survival40", item["caption_draft"])
-            self.assertNotIn("プロフィールのリンク", item["caption_draft"])
+            self.assertIn("プロフィールのリンク", item["caption_draft"])
             self.assertTrue(item["article_url"].startswith(p.SITE + "/"))
             self.assertEqual(
                 item["instagram_image"],
@@ -115,7 +115,7 @@ class InstagramAssetTests(unittest.TestCase):
         manifest = self.build()
         for entry in manifest["items"]:
             caption = entry["caption_draft"]
-            self.assertTrue(caption.startswith("【PR】\\n"))
+            self.assertTrue(caption.startswith("【PR】\n"))
             self.assertIn("詳しくはプロフィールのリンク", caption)
             self.assertNotIn("https://", caption)
             self.assertNotIn("男女5。", caption)
