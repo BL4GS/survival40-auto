@@ -49,7 +49,7 @@ jobs:
         run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
       # Runtime persona guardrails are applied to the pinned checkout (which
       # deliberately does not read main). They do not change the immutable SHA.
-      - name: Remove incompatible male self-grooming scene from Shiori topics
+      - name: Apply Shiori persona boundaries before drafting
         run: |
           python3 - <<'PY'
           import json
@@ -68,7 +68,15 @@ jobs:
           # never narrated as Shiori's own facial-hair shaving experience.
           persona = ("栞さんは女性。40代男性向けの記事テーマと本人の"
                      "一人称体験は区別し、男性のひげを自分で剃ったと"
-                     "いう設定や行動を創作しない。")
+                     "いう設定や行動を創作しない。"
+                     "栞さんは独身（未婚）。恋愛関係は非公開であり、"
+                     "恋人の有無や交際経験を推測・明言・匂わせしない。"
+                     "夫・妻・配偶者・恋人・子どもが本人の生活にいる"
+                     "という設定や実体験を勝手に作らない。"
+                     "独身だからといって一人暮らしや恋人不在とは限らない。"
+                     "独身・恋愛を話題にして男性読者の興味をあおらない。"
+                     "サイトで妻・夫などの読者視点を扱っても、"
+                     "栞さん自身の個人的な体験と混同しない。")
           config["character"]["identity"] += " " + persona
           config["character"]["boundaries"] += " " + persona
           config["voice"]["persona_policy"] += " " + persona
@@ -77,7 +85,7 @@ jobs:
               json.dumps(config, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8"
           )
-          print("PASS: incompatible Shiori topic removed for this run")
+          print("PASS: Shiori persona (unmarried, relationships private) applied")
           PY
       - name: Prepare Shiori text (first approved, otherwise Gemini or sourced article)
         env:
@@ -87,7 +95,7 @@ jobs:
       # Check independently of the pinned generator code: the checkout uses an
       # approved immutable SHA, so fixes on main alone are not loaded by it.
       # Fail closed rather than silently rewriting or publishing a mismatched persona.
-      - name: Reject first-person beard-shaving stories attributed to Shiori
+      - name: Reject Shiori gender and relationship persona conflicts
         run: |
           python3 - <<'PY'
           import json
@@ -103,23 +111,39 @@ jobs:
 
           beard = re.compile(r"(?:ひげ|ヒゲ|髭)")
           shave = re.compile(r"(?:剃|そり|シェービング)")
-          def self_shaving_conflict(text):
+          # Only everyday / fallback posts are checked: sourced article
+          # intros can address a spouse's concerns without being Shiori's life.
+          relationship = re.compile(
+              r"(?:旦那|夫婦|配偶者|嫁|(?<!工)夫(?:の|が|を|と|に|は|も|です)"
+              r"|妻(?:の|が|を|と|に|は|も|です)|彼氏|彼女|恋人|元カレ|元カノ"
+              r"|交際|婚約|結婚|恋愛|デート|片思い|好きな人|独身|未婚|既婚"
+              r"|一人暮らし|ひとり暮らし|独り暮らし"
+              r"|子ども|子供|息子|娘|赤ちゃん|妊娠)"
+          )
+          def persona_conflict(text):
               # Ordinary Shiori posts must never narrate shaving facial hair,
               # even when Japanese omits the implicit first-person subject.
               if not isinstance(text, str):
                   return True
-              return bool(beard.search(text) and shave.search(text))
+              return bool((beard.search(text) and shave.search(text))
+                          or relationship.search(text))
 
           # Self-checks make the failure mode auditable without calling Gemini.
-          assert self_shaving_conflict("ひげを剃ったあとに保湿をしました。")
-          assert self_shaving_conflict("ヒゲ剃りをした後にクリームを塗りました。")
-          assert not self_shaving_conflict("ハンドクリームを置き忘れました。")
+          assert persona_conflict("ひげを剃ったあとに保湿をしました。")
+          assert persona_conflict("ヒゲ剃りをした後にクリームを塗りました。")
+          assert persona_conflict("夫と買い物に行きました。")
+          assert persona_conflict("彼氏とデートしてきました。")
+          assert persona_conflict("一人暮らしなので買い置きは少なめです。")
+          assert persona_conflict("子どもと公園に行きました。")
+          assert persona_conflict("独身なんです。")
+          assert not persona_conflict("ハンドクリームを置き忘れました。")
+          assert not persona_conflict("部屋を片づける工夫を考えています。")
 
-          if draft.get("kind") == "everyday" and self_shaving_conflict(draft.get("text")):
-              raise SystemExit("STOP: Shiori persona conflict in everyday post")
-          if "fallback_everyday_text" in draft and self_shaving_conflict(draft["fallback_everyday_text"]):
-              raise SystemExit("STOP: Shiori persona conflict in fallback everyday post")
-          print("PASS: Shiori everyday post has no facial-hair shaving claim")
+          if draft.get("kind") == "everyday" and persona_conflict(draft.get("text")):
+              raise SystemExit("STOP: Shiori gender or relationship-setting conflict in everyday post")
+          if "fallback_everyday_text" in draft and persona_conflict(draft["fallback_everyday_text"]):
+              raise SystemExit("STOP: Shiori gender or relationship-setting conflict in fallback post")
+          print("PASS: Shiori gender and private-relationship boundaries respected")
           PY
       - name: Publish once to verified @survival40_jp if scheduled (no retries)
         if: github.event_name == 'schedule'
