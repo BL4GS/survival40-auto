@@ -46,7 +46,9 @@ def _source_group(source_medium):
         return "pinterest"
     if source == "(direct)":
         return "direct_or_unattributed"
-    return "unclassified_referral"
+    if source_medium.strip().lower() in ("google / organic", "bing / organic", "yahoo / organic", "duckduckgo / organic"):
+        return "organic_search"
+    return "unclassified_source"
 
 
 def audit_funnel(payload):
@@ -73,7 +75,11 @@ def audit_funnel(payload):
     total = sum(traffic.values())
     warnings = ["GA4 sessions are not unique people; direct traffic has unknown origin.",
                 "Social referrals do not establish an affiliate purchase or causal attribution."]
-    result = {"ga4": {"window": list(ga4_window), "sessions": total,
+    if ga4.get("truncated") is True:
+        warnings.append("GA4 row list is truncated: observed sessions exclude omitted rows.")
+    elif ga4.get("truncated") is not False:
+        warnings.append("GA4 row completeness was not provided; sums may omit rows.")
+    result = {"ga4": {"window": list(ga4_window), "sessions_in_supplied_rows": total,
                       "source_groups": dict(sorted(traffic.items()))},
               "affiliate": {"state": "not_supplied"},
               "periods_match": None, "scope_match": None,
