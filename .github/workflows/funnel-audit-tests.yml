@@ -1,0 +1,22 @@
+name: Read-only funnel safeguards
+on:
+  pull_request:
+    paths:
+      - 'scripts/analytics/**'
+      - '.github/workflows/funnel-audit-tests.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test offline GA4/A8 data guardrails
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+        run: python3 -m unittest discover -s scripts/analytics -p 'test_*.py' -v
