@@ -20,12 +20,12 @@ EXAMPLE = {
 class FunnelAuditTest(unittest.TestCase):
     def test_pinterest_lookalike_is_unclassified(self):
         result = audit_funnel(EXAMPLE)
-        self.assertEqual(result["ga4"]["source_groups"]["unclassified_referral"], 3)
+        self.assertEqual(result["ga4"]["source_groups"]["unclassified_source"], 3)
         self.assertNotIn("pinterest", result["ga4"]["source_groups"])
 
     def test_totals_are_not_mistaken_for_conversions(self):
         result = audit_funnel(EXAMPLE)
-        self.assertEqual(result["ga4"]["sessions"], 10)
+        self.assertEqual(result["ga4"]["sessions_in_supplied_rows"], 10)
         self.assertEqual(result["affiliate"]["ctr_percent"], 25.0)
         self.assertEqual(result["affiliate"]["state"], "zero_recorded_results")
         self.assertIsNone(result["cross_system_conversion_rate"])
@@ -84,6 +84,18 @@ class FunnelAuditTest(unittest.TestCase):
         sample["ga4"]["source_medium"].append({"key": "m.facebook.com / referral", "sessions": 4})
         with self.assertRaises(AuditInputError):
             audit_funnel(sample)
+
+    def test_google_organic_is_not_mislabeled_as_referral(self):
+        sample = copy.deepcopy(EXAMPLE)
+        sample["ga4"]["source_medium"].append({"key": "google / organic", "sessions": 7})
+        result = audit_funnel(sample)
+        self.assertEqual(result["ga4"]["source_groups"]["organic_search"], 7)
+        self.assertNotIn("unclassified_referral", result["ga4"]["source_groups"])
+
+    def test_partial_ga4_rows_warn(self):
+        sample = copy.deepcopy(EXAMPLE)
+        sample["ga4"]["truncated"] = True
+        self.assertTrue(any("truncated" in w for w in audit_funnel(sample)["warnings"]))
 
     def test_approved_pinterest_host_recognized(self):
         sample = copy.deepcopy(EXAMPLE)
