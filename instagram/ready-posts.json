@@ -4,22 +4,72 @@
   "source": "verified_Pinterest_static_feed",
   "items": [
     {
-      "article_id": 512,
-      "title": "眼精疲労に目のマッサージは効く？40代男性の疲れ目対策と休憩のコツ",
-      "article_url": "https://www.survival40.com/40s-eye-strain-massage-breaks/",
-      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/512.png",
-      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/512.png",
-      "caption_draft": "【PR】\n眼精疲労に目のマッサージは効く？40代男性の疲れ目対策と休憩のコツ\n\n日本眼科学会や厚生労働省の資料をもとに、40代男性の疲れ目対策、20-20-20ルール、作業休止と受診の目安を解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
-      "status": "assets_ready_not_published",
-      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
-    },
-    {
       "article_id": 516,
       "title": "女性は男性の身だしなみのどこを見る？調査でわかる清潔感とヒゲ・髪・体臭",
       "article_url": "https://www.survival40.com/women-men-grooming-impression-survey/",
       "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/516.png",
       "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/516.png",
       "caption_draft": "【PR】\n女性は男性の身だしなみのどこを見る？調査でわかる清潔感とヒゲ・髪・体臭\n\n婚活アプリ会員2,090人と男女505人の調査を、対象・質問内容の違いも含めて解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 592,
+      "title": "木綿豆腐と絹ごし豆腐の違いは？栄養・食感・鍋での使い分け",
+      "article_url": "https://www.survival40.com/momen-kinugoshi-tofu-difference/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/592.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/592.png",
+      "caption_draft": "【PR】\n木綿豆腐と絹ごし豆腐の違いは？栄養・食感・鍋での使い分け\n\n製法や食感、たんぱく質など100g当たりの栄養を比較。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 594,
+      "title": "40代になると焼肉の脂がきつい？霜降りで胃もたれする理由と楽しみ方",
+      "article_url": "https://www.survival40.com/40s-yakiniku-fat-indigestion-tips/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/594.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/594.png",
+      "caption_draft": "【PR】\n40代になると焼肉の脂がきつい？霜降りで胃もたれする理由と楽しみ方\n\n脂っこい食事と胃もたれの関係、タンや赤身の選び方、家族で食べ放題を楽しむ工夫、症状が続くときの受診の目安を解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 579,
+      "title": "秋冬の手荒れ対策｜40代男性の手洗い・保湿・仕事中の手袋の選び方",
+      "article_url": "https://www.survival40.com/40s-male-autumn-winter-hand-care/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/579.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/579.png",
+      "caption_draft": "【PR】\n秋冬の手荒れ対策｜40代男性の手洗い・保湿・仕事中の手袋の選び方\n\n秋冬に手の甲や指先が荒れる40代男性へ。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 596,
+      "title": "加湿器は必要？冬の湿度の目安と4方式の違い｜40代の乾燥対策",
+      "article_url": "https://www.survival40.com/40s-winter-dry-air-humidifier-guide/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/596.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/596.png",
+      "caption_draft": "【PR】\n加湿器は必要？冬の湿度の目安と4方式の違い｜40代の乾燥対策\n\n湿度を測る目安、気化式・スチーム式・超音波式・ハイブリッド式の違いを比較。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 599,
+      "title": "40代で夜中にトイレに起きるのはなぜ？夜間頻尿の原因と見直し方",
+      "article_url": "https://www.survival40.com/40s-nighttime-urination-causes/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/599.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/599.png",
+      "caption_draft": "【PR】\n40代で夜中にトイレに起きるのはなぜ？夜間頻尿の原因と見直し方\n\n夜間頻尿の3つの主なタイプ、寝る前の水分・カフェインの見直し、排尿日誌のつけ方、受診すべき症状を日本泌尿器科学会の解説をもとに整理。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "assets_ready_not_published",
+      "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
+    },
+    {
+      "article_id": 601,
+      "title": "白髪は抜くと増える？40代で気になる原因と目立たせない方法",
+      "article_url": "https://www.survival40.com/40s-gray-hair-plucking-myth-care/",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/601.png",
+      "social_og_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/601.png",
+      "caption_draft": "【PR】\n白髪は抜くと増える？40代で気になる原因と目立たせない方法\n\n40代の白髪の原因、抜かない方がよい理由、目立たなくする切り方・染め方、ヘアカラーのパッチテストを専門資料やメーカー公式Q&Aをもとに解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
       "status": "assets_ready_not_published",
       "requires": "verified connected Instagram business account; no automatic scheduling without publication gate"
     }

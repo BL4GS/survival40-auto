@@ -10,5 +10,60 @@
     "Check plan limits and future publication slot",
     "Schedule at most one image-backed post; verify persisted PENDING"
   ],
-  "items": []
+  "items": [
+    {
+      "article_id": 592,
+      "article_url": "https://www.survival40.com/momen-kinugoshi-tofu-difference/",
+      "title": "木綿豆腐と絹ごし豆腐の違いは？栄養・食感・鍋での使い分け",
+      "published_at": "2026-10-17T09:52:19+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/592.png",
+      "caption_draft": "【PR】\n木綿豆腐と絹ごし豆腐の違いは？栄養・食感・鍋での使い分け\n\n製法や食感、たんぱく質など100g当たりの栄養を比較。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    },
+    {
+      "article_id": 594,
+      "article_url": "https://www.survival40.com/40s-yakiniku-fat-indigestion-tips/",
+      "title": "40代になると焼肉の脂がきつい？霜降りで胃もたれする理由と楽しみ方",
+      "published_at": "2026-10-17T11:55:59+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/594.png",
+      "caption_draft": "【PR】\n40代になると焼肉の脂がきつい？霜降りで胃もたれする理由と楽しみ方\n\n脂っこい食事と胃もたれの関係、タンや赤身の選び方、家族で食べ放題を楽しむ工夫、症状が続くときの受診の目安を解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    },
+    {
+      "article_id": 579,
+      "article_url": "https://www.survival40.com/40s-male-autumn-winter-hand-care/",
+      "title": "秋冬の手荒れ対策｜40代男性の手洗い・保湿・仕事中の手袋の選び方",
+      "published_at": "2026-10-17T12:00:00+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/579.png",
+      "caption_draft": "【PR】\n秋冬の手荒れ対策｜40代男性の手洗い・保湿・仕事中の手袋の選び方\n\n秋冬に手の甲や指先が荒れる40代男性へ。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    },
+    {
+      "article_id": 596,
+      "article_url": "https://www.survival40.com/40s-winter-dry-air-humidifier-guide/",
+      "title": "加湿器は必要？冬の湿度の目安と4方式の違い｜40代の乾燥対策",
+      "published_at": "2026-10-17T12:05:00+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/596.png",
+      "caption_draft": "【PR】\n加湿器は必要？冬の湿度の目安と4方式の違い｜40代の乾燥対策\n\n湿度を測る目安、気化式・スチーム式・超音波式・ハイブリッド式の違いを比較。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    },
+    {
+      "article_id": 599,
+      "article_url": "https://www.survival40.com/40s-nighttime-urination-causes/",
+      "title": "40代で夜中にトイレに起きるのはなぜ？夜間頻尿の原因と見直し方",
+      "published_at": "2026-10-17T12:47:30+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/599.png",
+      "caption_draft": "【PR】\n40代で夜中にトイレに起きるのはなぜ？夜間頻尿の原因と見直し方\n\n夜間頻尿の3つの主なタイプ、寝る前の水分・カフェインの見直し、排尿日誌のつけ方、受診すべき症状を日本泌尿器科学会の解説をもとに整理。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    },
+    {
+      "article_id": 601,
+      "article_url": "https://www.survival40.com/40s-gray-hair-plucking-myth-care/",
+      "title": "白髪は抜くと増える？40代で気になる原因と目立たせない方法",
+      "published_at": "2026-10-17T12:47:30+00:00",
+      "instagram_image": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/601.png",
+      "caption_draft": "【PR】\n白髪は抜くと増える？40代で気になる原因と目立たせない方法\n\n40代の白髪の原因、抜かない方がよい理由、目立たなくする切り方・染め方、ヘアカラーのパッチテストを専門資料やメーカー公式Q&Aをもとに解説。\n\n詳しくはプロフィールのリンクからSurvival40へ。\n\n#40代男性 #Survival40",
+      "status": "NOT_SCHEDULED_REQUIRES_METRICOOL_CHECK"
+    }
+  ]
 }
