@@ -52,6 +52,43 @@ jobs:
           # Read-only discovery hint from existing GitHub state branch; optional.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 -m scripts.threads.prepare_schedule
+      # Check independently of the pinned generator code: the checkout uses an
+      # approved immutable SHA, so fixes on main alone are not loaded by it.
+      # Fail closed rather than silently rewriting or publishing a mismatched persona.
+      - name: Reject first-person beard-shaving stories attributed to Shiori
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import re
+
+          path = pathlib.Path("threads-output/draft.json")
+          if not path.is_file():
+              raise SystemExit("STOP: no prepared Threads draft")
+          draft = json.loads(path.read_text(encoding="utf-8"))
+          if not isinstance(draft, dict):
+              raise SystemExit("STOP: invalid Threads draft format")
+
+          beard = re.compile(r"(?:ひげ|ヒゲ|髭)")
+          shave = re.compile(r"(?:剃|そり|シェービング)")
+          def self_shaving_conflict(text):
+              # Ordinary Shiori posts must never narrate shaving facial hair,
+              # even when Japanese omits the implicit first-person subject.
+              if not isinstance(text, str):
+                  return True
+              return bool(beard.search(text) and shave.search(text))
+
+          # Self-checks make the failure mode auditable without calling Gemini.
+          assert self_shaving_conflict("ひげを剃ったあとに保湿をしました。")
+          assert self_shaving_conflict("ヒゲ剃りをした後にクリームを塗りました。")
+          assert not self_shaving_conflict("ハンドクリームを置き忘れました。")
+
+          if draft.get("kind") == "everyday" and self_shaving_conflict(draft.get("text")):
+              raise SystemExit("STOP: Shiori persona conflict in everyday post")
+          if "fallback_everyday_text" in draft and self_shaving_conflict(draft["fallback_everyday_text"]):
+              raise SystemExit("STOP: Shiori persona conflict in fallback everyday post")
+          print("PASS: Shiori everyday post has no facial-hair shaving claim")
+          PY
       - name: Publish once to verified @survival40_jp if scheduled (no retries)
         if: github.event_name == 'schedule'
         env:
