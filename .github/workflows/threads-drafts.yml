@@ -47,6 +47,38 @@ jobs:
           GEMINI_API_KEY: ''
           GOOGLE_API_KEY: ''
         run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      # Runtime persona guardrails are applied to the pinned checkout (which
+      # deliberately does not read main). They do not change the immutable SHA.
+      - name: Remove incompatible male self-grooming scene from Shiori topics
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("threads/editorial.json")
+          config = json.loads(path.read_text(encoding="utf-8"))
+          grooming = config["topic_groups"]["grooming"]
+          incompatible = "ひげ剃りの後に保湿するタイミング"
+          if incompatible in grooming:
+              config["topic_groups"]["grooming"] = [
+                  topic for topic in grooming if topic != incompatible
+              ]
+          # Shiori is a woman writing to readers, not a 40s male narrator.
+          # Men-specific experiences may be discussed as general information,
+          # never narrated as Shiori's own facial-hair shaving experience.
+          persona = ("栞さんは女性。40代男性向けの記事テーマと本人の"
+                     "一人称体験は区別し、男性のひげを自分で剃ったと"
+                     "いう設定や行動を創作しない。")
+          config["character"]["identity"] += " " + persona
+          config["character"]["boundaries"] += " " + persona
+          config["voice"]["persona_policy"] += " " + persona
+          assert incompatible not in config["topic_groups"]["grooming"]
+          path.write_text(
+              json.dumps(config, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8"
+          )
+          print("PASS: incompatible Shiori topic removed for this run")
+          PY
       - name: Prepare Shiori text (first approved, otherwise Gemini or sourced article)
         env:
           # Read-only discovery hint from existing GitHub state branch; optional.
