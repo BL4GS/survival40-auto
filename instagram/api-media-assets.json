@@ -6,38 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 516,
-      "article_url": "https://www.survival40.com/women-men-grooming-impression-survey/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/516.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/516.jpg",
-      "sha256": "9fbe0f3e673209870fbd1d2f313865cc5cf76766ccc499ec442af1780373099c",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
-      "article_id": 592,
-      "article_url": "https://www.survival40.com/momen-kinugoshi-tofu-difference/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/592.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/592.jpg",
-      "sha256": "d16b126275792d42980619cb67ae6480fd98c66122e353f5a004eabf693b3cd0",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
-      "article_id": 594,
-      "article_url": "https://www.survival40.com/40s-yakiniku-fat-indigestion-tips/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/594.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/594.jpg",
-      "sha256": "09c1a6f60ac4419742ef3ffcd361f4edb4b98a060f363ce323b22133b616ca98",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
-      "article_id": 579,
-      "article_url": "https://www.survival40.com/40s-male-autumn-winter-hand-care/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/579.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/579.jpg",
-      "sha256": "dc7f835b52c341a71d4a8755a5f5f8b2e27abeed57edc0656fc9be82801c047e",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 596,
       "article_url": "https://www.survival40.com/40s-winter-dry-air-humidifier-guide/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/596.png",
