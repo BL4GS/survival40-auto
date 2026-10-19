@@ -57,6 +57,30 @@ class PinterestRssTests(unittest.TestCase):
         self.assertIsNone(m.verify_rss_item(item(date="Fri, 17 Oct 2099 09:21:16 +0000")))
         self.assertIsNone(m.verify_rss_item(item(title="Title")))
 
+    def test_rest_published_canonical_guid_and_fail_closed(self):
+        new = item(pid=606,
+                   date="Sun, 18 Oct 2026 09:36:53 +0000",
+                   url="https://www.survival40.com/40s-spu-style-up-subscription/")
+        new.find("guid").text = "https://www.survival40.com/40s-spu-style-up-subscription/"
+        parsed = m.verify_rss_item(new)
+        self.assertIsNotNone(parsed)
+        self.assertEqual(parsed["id"], 606)
+        self.assertEqual(parsed["link"], new.findtext("guid"))
+        # A different claimed-domain URL cannot impersonate this item.
+        new.find("guid").text = "https://www.survival40.com/other-post/"
+        self.assertIsNone(m.verify_rss_item(new))
+        # A legacy ?p=ID must still agree with the WordPress namespace ID.
+        new.find("guid").text = "https://www.survival40.com/?p=607"
+        self.assertIsNone(m.verify_rss_item(new))
+        # Other query, external domain, or a non-positive post-id is invalid.
+        new.find("guid").text = "https://www.survival40.com/?p=606&x=1"
+        self.assertIsNone(m.verify_rss_item(new))
+        new.find("guid").text = "https://evil.example/40s-spu-style-up-subscription/"
+        self.assertIsNone(m.verify_rss_item(new))
+        new.find("guid").text = parsed["link"]
+        new.find("{com-wordpress:feed-additions:1}post-id").text = "0"
+        self.assertIsNone(m.verify_rss_item(new))
+
     def test_feed_selection_one_seed_then_new_articles_no_backfill(self):
         base = item()
         old = item(pid=450, date="Tue, 06 Oct 2026 15:42:05 +0000",
