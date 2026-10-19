@@ -69,9 +69,14 @@ def verify_rss_item(item, now=None):
         return None
     pid = item.findtext("{com-wordpress:feed-additions:1}post-id")
     guid = item.findtext("guid") or ""
-    # Both ID representations must agree to eliminate accidental re-mapping.
-    match = re.fullmatch(r"https://www[.]survival40[.]com/\?p=([1-9][0-9]{0,17})",guid)
-    if not match or not pid or not pid.isdigit() or int(pid) != int(match.group(1)):
+    # WordPress posts created by REST can have a canonical permalink GUID,
+    # while older posts retain the original ?p=ID GUID. Accept only these
+    # first-party forms, anchored to the same verified item URL and post ID.
+    if not pid or not re.fullmatch(r"[1-9][0-9]{0,17}", pid):
+        return None
+    legacy = re.fullmatch(r"https://www[.]survival40[.]com/\?p=([1-9][0-9]{0,17})", guid)
+    if not ((legacy is not None and int(legacy.group(1)) == int(pid))
+            or guid == url):
         return None
     try:
         when = parsedate_to_datetime(item.findtext("pubDate") or "")
