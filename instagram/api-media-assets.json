@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 596,
-      "article_url": "https://www.survival40.com/40s-winter-dry-air-humidifier-guide/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/596.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/596.jpg",
-      "sha256": "578f6c3bf5c22a3e2dedca2b65f5fff5c6fdb0d17abe7553f9a4f91de2a454b6",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 599,
       "article_url": "https://www.survival40.com/40s-nighttime-urination-causes/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/599.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/617.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/617.jpg",
       "sha256": "90d90e4486a7bcc0cf3c3f644aef7f59aa00e420d3221d6457606ea06cdcc935",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 518,
+      "article_url": "https://www.survival40.com/40s-year-end-party-morning-after-care/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/518.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/518.jpg",
+      "sha256": "2e1fd60958faeab3f0cae6331c27caf520a25a16e3f6509c4ada13927bc22ed8",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
