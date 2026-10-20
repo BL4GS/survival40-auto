@@ -62,7 +62,7 @@ class InternalLinkCandidateTests(unittest.TestCase):
             article(20, "プロテインの種類と飲み方について"),
             article(30, "ホエイプロテインの飲み方の疑問"),
         ]
-        output = review_candidates(posts, inbound_counts={"20": 0, "30": 3}, limit=2)
+        output = review_candidates(posts, inbound_counts={"10": 2, "20": 0, "30": 3}, limit=2)
         self.assertLessEqual(len(output["candidates"]), 2)
         self.assertTrue(all(c["target_known_body_inbound"] is not None for c in output["candidates"]))
         self.assertIn("No links were added", output["limitations"])
