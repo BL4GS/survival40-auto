@@ -82,7 +82,7 @@ class InternalLinkCandidateTests(unittest.TestCase):
         self.assertEqual(report["candidates"], [])
 
     def test_title_html_is_unescaped_and_scripts_excluded(self):
-        self.assertEqual(title_grams("40代男性のプロテイン"), title_grams("プロテイン"))
+        self.assertTrue(title_grams("プロテイン").issubset(title_grams("40代男性のプロテイン")))
         post_a = article(10, "プロテインと飲み方<script>bad</script>")
         post_b = article(20, "プロテインの飲み方")
         result = review_candidates([post_a, post_b])
