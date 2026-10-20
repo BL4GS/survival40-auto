@@ -4,12 +4,36 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 
 def run(*args):
     return subprocess.run(args, text=True, capture_output=True, check=True).stdout
+
+def request_bounded_advisory(request, opener=urllib.request.urlopen, wait=time.sleep):
+    """One extra attempt ONLY for 503 on read-only candidate generation.
+
+    No alternate model, no output publication, no POST to Meta/WordPress, and
+    no retry for rate limits, auth failures or unknown network states.
+    """
+    for attempt in range(2):
+        try:
+            with opener(request, timeout=90) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            if error.code == 503 and attempt == 0:
+                print("Gemini temporarily unavailable (HTTP 503); one bounded retry", file=sys.stderr)
+                wait(2)
+                continue
+            raise SystemExit("Gemini API request failed (HTTP " +
+                             str(error.code) + "); response withheld") from None
+        except (urllib.error.URLError, TimeoutError) as error:
+            raise SystemExit("Gemini connection failed: " +
+                             type(error).__name__) from None
+    raise AssertionError("Bounded Gemini request loop unexpectedly exhausted")
+
 
 def main():
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
@@ -53,13 +77,7 @@ AI-proposed command will be executed. Keep JSON under 6000 tokens.
         "https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent",
         data=json.dumps(payload).encode(),
         headers={"x-goog-api-key":key,"Content-Type":"application/json"},method="POST")
-    try:
-        with urllib.request.urlopen(request, timeout=90) as response:
-            result=json.load(response)
-    except urllib.error.HTTPError as error:
-        raise SystemExit("Gemini API request failed (HTTP "+str(error.code)+"); response withheld")
-    except (urllib.error.URLError,TimeoutError) as error:
-        raise SystemExit("Gemini connection failed: "+type(error).__name__)
+    result = request_bounded_advisory(request)
     raw="\n".join(part.get("text","") for candidate in result.get("candidates",[])
         for part in candidate.get("content",{}).get("parts",[])
         if isinstance(part,dict)).strip()
