@@ -56,7 +56,8 @@ class OverlayTests(unittest.TestCase):
         return draft
 
     def apply(self, now=None):
-        return o.apply(self.draft, self.approved, now or self.now, validate_post)
+        return o.apply(self.draft, self.approved, now or self.now, validate_post,
+                       live_check=lambda selected: True)
 
     def test_four_existing_thursday_slots_only_no_extra_posts(self):
         for idx, post_id in enumerate((608, 610, 616, 617)):
@@ -146,6 +147,41 @@ class OverlayTests(unittest.TestCase):
             "SKIPPED_SOURCE_INVALID_ORDINARY_PRESERVED",
         )
         self.assertEqual(self.draft.read_bytes(), old)
+
+    def test_current_public_canonical_and_real_article_topic_checked(self):
+        candidate = {
+            "source_url": "https://www.survival40.com/topic-608/",
+            "evidence_terms": ["肩幅", "身幅", "着丈"],
+        }
+        doc = ('<html><head><link rel="canonical" href="' +
+               candidate["source_url"] + '">'
+               '<meta property="og:url" content="' +
+               candidate["source_url"] + '"></head><body>'
+               '<main><p>' + "通販の服の肩幅と身幅、着丈を確かめましょう。" * 10 +
+               '</p></main></body></html>')
+        self.assertTrue(o.verify_live_article(candidate, fetcher=lambda url: doc))
+        self.assertFalse(o.verify_live_article(candidate, fetcher=lambda url:
+            doc.replace(candidate["source_url"], "https://evil.test/redirect/")))
+        self.assertFalse(o.verify_live_article(candidate, fetcher=lambda url:
+            doc.replace("肩幅", "袖口").replace("身幅", "生地")))
+        self.assertFalse(o.verify_live_article(candidate, fetcher=lambda url:
+            "<html><body>article not available</body></html>"))
+
+    def test_unavailable_live_page_keeps_original_ordinary_post(self):
+        old = self.draft.read_bytes()
+        status = o.apply(self.draft, self.approved, self.now, validate_post,
+                         live_check=lambda selected: False)
+        self.assertEqual(status, "SKIPPED_SOURCE_INVALID_ORDINARY_PRESERVED")
+        self.assertEqual(old, self.draft.read_bytes())
+
+    def test_live_check_never_accepts_different_host(self):
+        candidate = {
+            "source_url": "https://attacker.example/article/",
+            "evidence_terms": ["肩幅", "身幅"],
+        }
+        self.assertFalse(o.verify_live_article(candidate))
+        with self.assertRaisesRegex(ValueError, "Unverified"):
+            o.fetch_public_article(candidate["source_url"])
 
     def test_approved_snapshot_does_not_include_meta_posting(self):
         source = Path(o.__file__).read_text(encoding="utf-8")
