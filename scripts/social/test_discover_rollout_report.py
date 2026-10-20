@@ -145,7 +145,7 @@ class ReviewTests(unittest.TestCase):
             with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": ""}):
                 result = d.run(src, manifest, report)
             self.assertEqual(result["sampled_articles"], 2)
-            self.assertEqual(list(Path(tmp).glob("*")), [src, manifest, report])
+            self.assertEqual(set(Path(tmp).glob("*")), {src, manifest, report})
 
     def test_writes_only_diagnostic_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
