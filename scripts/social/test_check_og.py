@@ -23,6 +23,60 @@ class OGTests(unittest.TestCase):
                                                "type": "image/png"})
         self.feed.write_bytes(ET.tostring(channel))
 
+    def test_discover_large_preview_present_as_html_hint_only(self):
+        item = og.source_items(self.feed)[0]
+        html = (
+            '<head><meta name="robots" content="index, max-image-preview:large">'
+            '<meta property="og:image" content="' + item["expected_social_image"] + '">'
+            '<meta property="og:image:width" content="1200">'
+            '<meta property="og:image:height" content="630"></head>'
+        )
+        result = og.inspect(item, html)["discover_metadata"]
+        self.assertEqual(result["html_large_image_preview_hint"], "LARGE_DECLARED_IN_HTML")
+        self.assertFalse(result["discover_appearance_checked"])
+        self.assertFalse(result["image_bytes_or_dimensions_verified"])
+        self.assertEqual(result["og_image_width_claim"], ["1200"])
+        self.assertEqual(result["og_image_height_claim"], ["630"])
+
+    def test_discover_unknown_is_not_called_blocked(self):
+        item = og.source_items(self.feed)[0]
+        result = og.inspect(item, "<head></head>")["discover_metadata"]
+        self.assertEqual(
+            result["html_large_image_preview_hint"],
+            "NOT_DECLARED_IN_HTML_HEADER_NOT_CHECKED",
+        )
+        self.assertFalse(result["http_x_robots_tag_checked"])
+        self.assertFalse(result["schema_images_checked"])
+
+    def test_discover_standard_or_none_and_conflicts_are_review_only(self):
+        item = og.source_items(self.feed)[0]
+        cases = [
+            ('<meta name="robots" content="max-image-preview:none">',
+             "LARGE_NOT_ALLOWED_BY_HTML_DIRECTIVE_REVIEW"),
+            ('<meta name="googlebot" content="max-image-preview:standard">',
+             "LARGE_NOT_ALLOWED_BY_HTML_DIRECTIVE_REVIEW"),
+            ('<meta name="robots" content="max-image-preview:large">'
+             '<meta name="googlebot" content="max-image-preview:none">',
+             "CONFLICTING_HTML_PREVIEW_DIRECTIVES_REVIEW"),
+        ]
+        for snippet, expectation in cases:
+            with self.subTest(snippet=snippet):
+                result = og.inspect(item, "<head>" + snippet + "</head>")
+                self.assertEqual(
+                    result["discover_metadata"]["html_large_image_preview_hint"],
+                    expectation,
+                )
+
+    def test_discover_noindex_signal_is_evidence_not_eligibility(self):
+        item = og.source_items(self.feed)[0]
+        result = og.inspect(
+            item, '<head><meta name="robots" content="noindex, max-image-preview:large">'
+                  '</head>'
+        )["discover_metadata"]
+        self.assertTrue(result["html_noindex_hint"])
+        self.assertFalse(result["google_indexing_checked"])
+        self.assertFalse(result["discover_appearance_checked"])
+
     def test_missing_og_stays_explicit(self):
         data = og.run(self.feed, self.report, fetcher=lambda u: (
             '<html><head><meta property="og:title" content="記事">'
