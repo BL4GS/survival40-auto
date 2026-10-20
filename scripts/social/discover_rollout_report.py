@@ -175,7 +175,8 @@ def run(source=SOURCE, manifest=MANIFEST, output=OUTPUT):
     destination.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
     # Only a GitHub Actions-provided path is written; otherwise return JSON only.
-    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    summary = (os.environ.get("GITHUB_STEP_SUMMARY")
+               if os.environ.get("SURVIVAL40_REAL_OG_AUDIT") == "1" else None)
     if summary:
         with open(summary, "a", encoding="utf-8") as file:
             file.write(render_review_summary(result))
