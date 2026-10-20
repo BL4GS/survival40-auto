@@ -1,6 +1,6 @@
 # Survival40 — Discover visibility and useful Shiori posts (2026-10-20)
 
-Status: owner direction accepted in conversation; **implementation is incremental, not a claim of Discover placement or new live posting**. \`PROJECT_VISION.md\` is authoritative if there is any conflict.
+Status: owner direction accepted in conversation; **implementation is incremental, not a claim of Discover placement or new live posting**. `PROJECT_VISION.md` is authoritative if there is any conflict.
 
 ## Objective
 Stop relying only on users actively searching. Keep search as a durable channel, while strengthening *interest-based discovery* (Google Discover and Pinterest) and useful native Threads publishing under 栞さん's existing identity. The owner's personal X/Threads profiles remain personal and unmodified. Do not create new daily work.
@@ -13,16 +13,16 @@ Official Google documentation:
 
 1. Content indexed by Google and compliant with Discover policies is **automatically eligible**, without application, special Discover markup, or guaranteed placement.
 2. Article titles should be informative and natural, not sensational or misleading.
-3. Google recommends relevant high-quality images at least 1200 px wide and over 300,000 total pixels, with sufficient landscape cropping room; use \`max-image-preview:large\` or AMP. Use a representative \`og:image\` or schema image to help Google select the preferred image. Avoid generic logos and overly text-heavy cover art.
+3. Google recommends relevant high-quality images at least 1200 px wide and over 300,000 total pixels, with sufficient landscape cropping room; use `max-image-preview:large` or AMP. Use a representative `og:image` or schema image to help Google select the preferred image. Avoid generic logos and overly text-heavy cover art.
 4. Published articles may be selected even when older; do not stamp fake freshness, invent testimonials, write dubious medical promises, or change canonical URLs for Discover.
 5. Search Console's Discover performance section may appear only after sufficient impressions. A missing report **does not prove ineligibility**.
 
 ### Existing implementation and current gap
-- Original brand social assets can be generated in GitHub, but image files by themselves **do not add WordPress \`og:image\` metadata**.
-- The existing \`scripts/social/check_og.py\` daily 10:25 JST workflow is read-only and inspects the public HTML of up to ten items already in the verified Pinterest RSS.
-- This PR extends its same fetched HTML head to report HTML robot preview hints, \`og:image\` count and declared dimensions as **observations**, not claims about the image's actual bytes or Discover eligibility.
-- HTML \`meta\` cannot detect the HTTP \`X-Robots-Tag\`, schema images, search index state, or live Google Discover impressions. The report explicitly labels these unverified.
-- Any future change to AIOSEO's metadata, WordPress media/featured images or \`max-image-preview\` must first be isolated, independently backed up and regression-tested. Only the existing SEO component should emit these tags; **never inject competing duplicate metadata**.
+- Original brand social assets can be generated in GitHub, but image files by themselves **do not add WordPress `og:image` metadata**.
+- The existing `scripts/social/check_og.py` daily 10:25 JST workflow is read-only and inspects the public HTML of up to ten items already in the verified Pinterest RSS.
+- This PR extends its same fetched HTML head to report HTML robot preview hints, `og:image` count and declared dimensions as **observations**, not claims about the image's actual bytes or Discover eligibility.
+- HTML `meta` cannot detect the HTTP `X-Robots-Tag`, schema images, search index state, or live Google Discover impressions. The report explicitly labels these unverified.
+- Any future change to AIOSEO's metadata, WordPress media/featured images or `max-image-preview` must first be isolated, independently backed up and regression-tested. Only the existing SEO component should emit these tags; **never inject competing duplicate metadata**.
 - Do not replace site layout, Shiori visual identity, or live affiliate banners in the article to solve the card-preview problem.
 
 ### Future release checkpoint (separate PR)
@@ -30,7 +30,7 @@ A staging-only proof on one safe article should verify original image provenance
 
 ## B. 栞さん Threads: use more of the existing reach without turning her into an advice bot
 
-The existing scheduled workflow publishes to verified \`@survival40_jp\` in its four daily slots and a separate, source-checked nightly article mention. **The 4-slot workflow checks out immutable SHA \`030e1f8a4cb23550802653b1dbcc97a263473566\`**, so a change to main's \`threads/editorial.json\` or \`scripts/threads/compose.py\` alone has **zero proven effect on live copy**. Never silently swap pinned refs or issue live Meta posts to test tone.
+The existing scheduled workflow publishes to verified `@survival40_jp` in its four daily slots and a separate, source-checked nightly article mention. **The 4-slot workflow checks out immutable SHA `030e1f8a4cb23550802653b1dbcc97a263473566`**, so a change to main's `threads/editorial.json` or `scripts/threads/compose.py` alone has **zero proven effect on live copy**. Never silently swap pinned refs or issue live Meta posts to test tone.
 
 Editorial principle: keep ordinary comments, small personal quirks, occasional dry humor, and existing natural Japanese voice. Add **some** genuinely useful short notes, not a generic tip to every post. No forced questions, exaggerated empathy, three-step "self-improvement" templates, or recurring "save this" engagement bait. No automatic increase in post slots and no login/use of owner's personal account.
 
@@ -49,3 +49,23 @@ Editorial principle: keep ordinary comments, small personal quirks, occasional d
 
 ## Protected invariants
 No WPVibe use for normal development. No WordPress writes, no media/SEO/plugin changes, no SNS account switches, no marketing on the owner's personal profiles, no additional recurring fees, and no new release until restore guarantees are verified.
+
+
+## Verified implementation checkpoint — 2026-10-20 23:40 JST
+
+### Discover/social cards
+- Read-only social OG workflow run [39355845878](https://github.com/BL4GS/survival40-auto/actions/runs/39355845878) found **10/10 sampled published articles declare an og:image**, pointing to the site's same-article original `assets/instagram/auto/<id>.png` files (post IDs 599, 601, 606, 607, 608, 609, 610, 616, 617, 518).
+- This supersedes the **older** October 16 observation that three other previously sampled articles had no OG image: different sample/time. **Do not claim current site-wide OG coverage from either sample.**
+- [Merged PR #98](https://github.com/BL4GS/survival40-auto/pull/98) teaches the read-only auditor to classify those known original portrait images separately rather than mark them as unknown. Real pixel width is **not** checked by that HTML audit. Instagram artwork is intended for a 1080px-wide portrait layout, which must not be assumed to meet Google's 1200px-wide recommendation. Future WordPress/AIOSEO image selection remains a separate, backup-gated stage.
+- [Merged PR #97](https://github.com/BL4GS/survival40-auto/pull/97) now inspects `max-image-preview` in HTML metadata without inferring Discover eligibility, impressions or Google indexing from this.
+- The first *post-merge* scheduled audit evidence and any actual Discover performance are not yet reviewed; no WordPress image, SEO plugin, canonical or theme data was modified.
+
+### 栞さん's helpful note rollout
+- [Merged PR #99](https://github.com/BL4GS/survival40-auto/pull/99) adds four hand-reviewed, source-gated practical-note drafts derived only from verified same-article title, description and image identity in GitHub's Pinterest RSS: clothing size, laundry odor, clothing quantity, shoe odor. Generated output is `publish:false` and requires independent live-post verification before any social publication.
+- GitHub Actions now has a no-token/no-network weekly Monday 07:15 JST **preview-only** workflow; two PR CI workflows succeeded before merge. It does **not** use Gemini, access Meta or update any of the existing 08/12/16/20/22 Threads posts. This feature adds no new audience-facing publication yet.
+- The existing daily four-slot poster uses an immutable pinned source SHA. Changing copy preferences on main by itself **cannot** change the live posting. A future replacement of one existing slot needs source, duplication, Persona and publishing-gate tests first.
+
+### 22:00 article-introduction resilience
+- Separate existing workflow was failing on Oct 19–20 with `STOP: Too much article data; no automatic retry`. The pinned article source's public WordPress REST request fetched **40 full article bodies** with a 600 KB response cap.
+- [Merged PR #100](https://github.com/BL4GS/survival40-auto/pull/100) retains the reviewed immutable checkout, cap, credentials, identity checks, and at-most-once ledger; in the ephemeral workflow runner only, narrows the public query to **the latest eight** posts. Tests succeed; PR execution deliberately skips WordPress GET and Meta publication.
+- Next scheduled execution must verify the response is within limit and the correct published article is selected. This correction is not proof that every future payload will fit. No Threads post was sent as part of the PR.
