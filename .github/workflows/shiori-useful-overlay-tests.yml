@@ -1,0 +1,29 @@
+name: Shiori optional useful-post overlay tests (NO PUBLISH)
+on:
+  pull_request:
+    paths:
+      - 'ops/threads/**'
+      - 'scripts/threads/useful_preview.py'
+      - 'scripts/threads/test_useful_preview.py'
+      - '.github/workflows/shiori-useful-overlay-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GITHUB_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate source-pinned 4-slot overlay behavior (no Meta)
+        run: python3 -m unittest discover -s ops/threads -p 'test_*.py' -v
+      - name: Validate curated source and persona constraints
+        run: python3 -m unittest discover -s scripts/threads -p 'test_useful_preview.py' -v
