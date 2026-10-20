@@ -112,6 +112,41 @@ class ReviewTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             d.summarize(self.og, self.manifest)
 
+    def test_action_summary_labels_current_live_findings_without_live_changes(self):
+        self.og["items"][0]["status"] = "MISSING_OG_IMAGE"
+        self.og["items"][1]["status"] = "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED"
+        result = d.summarize(self.og, self.manifest)
+        summary = d.render_review_summary(result)
+        self.assertIn("公開HTML監査", summary)
+        self.assertIn("| 512 | OG画像が不足／別画像／重複 |", summary)
+        self.assertIn("| 516 | 栞さん縦長OG画像・横長候補あり |", summary)
+        self.assertIn("Google Discover掲載", summary)
+        self.assertIn("本番WordPressでの一括変更は行わず", summary)
+
+    def test_summary_rejects_unknown_status_or_mutation(self):
+        result = d.summarize(self.og, self.manifest)
+        result["items"][0]["review_category"] = "UNKNOWN | injected"
+        with self.assertRaisesRegex(ValueError, "Untrusted"):
+            d.render_review_summary(result)
+        result = d.summarize(self.og, self.manifest)
+        result["wordpress_modified"] = True
+        with self.assertRaisesRegex(ValueError, "mutated"):
+            d.render_review_summary(result)
+
+    def test_no_summary_file_created_without_actions_environment(self):
+        import os
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "observed.json"
+            manifest = Path(tmp) / "manifest.json"
+            report = Path(tmp) / "report.json"
+            src.write_text(json.dumps(self.og))
+            manifest.write_text(json.dumps(self.manifest))
+            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": ""}):
+                result = d.run(src, manifest, report)
+            self.assertEqual(result["sampled_articles"], 2)
+            self.assertEqual(list(Path(tmp).glob("*")), [src, manifest, report])
+
     def test_writes_only_diagnostic_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
             src = Path(tmp) / "observed.json"
