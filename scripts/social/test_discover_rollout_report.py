@@ -147,6 +147,30 @@ class ReviewTests(unittest.TestCase):
             self.assertEqual(result["sampled_articles"], 2)
             self.assertEqual(set(Path(tmp).glob("*")), {src, manifest, report})
 
+    def test_only_real_live_audit_opt_in_may_append_actions_summary(self):
+        import os
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "observed.json"
+            manifest = Path(tmp) / "manifest.json"
+            report = Path(tmp) / "report.json"
+            summary = Path(tmp) / "actions.md"
+            src.write_text(json.dumps(self.og))
+            manifest.write_text(json.dumps(self.manifest))
+            with patch.dict(os.environ, {
+                "GITHUB_STEP_SUMMARY": str(summary),
+                "SURVIVAL40_REAL_OG_AUDIT": "",
+            }):
+                d.run(src, manifest, report)
+            self.assertFalse(summary.exists(), "Synthetic test data must not appear in GH run summary")
+            with patch.dict(os.environ, {
+                "GITHUB_STEP_SUMMARY": str(summary),
+                "SURVIVAL40_REAL_OG_AUDIT": "1",
+            }):
+                d.run(src, manifest, report)
+            self.assertIn("Survival40 Discover画像", summary.read_text(encoding="utf-8"))
+            self.assertIn("| 512 |", summary.read_text(encoding="utf-8"))
+
     def test_writes_only_diagnostic_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:
             src = Path(tmp) / "observed.json"
