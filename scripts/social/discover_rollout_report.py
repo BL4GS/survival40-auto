@@ -6,6 +6,7 @@ change live WordPress/SNS data.
 """
 import datetime as dt
 import json
+import os
 from pathlib import Path
 
 SOURCE = Path("social-audit/og-status.json")
@@ -121,6 +122,49 @@ def summarize(observation, manifest):
     }
 
 
+
+REVIEW_LABELS = {
+    "LIVE_HTML_UNAVAILABLE_NEEDS_RECHECK": "公開HTMLの取得不可（再確認）",
+    "DISCOVER_HTML_HINTS_UNAVAILABLE": "画像プレビュー情報が不明",
+    "HTML_NOINDEX_REQUIRES_REVIEW": "HTMLのnoindex指定を確認",
+    "IMAGE_PREVIEW_DIRECTIVE_REQUIRES_REVIEW": "画像プレビュー制限を確認",
+    "KNOWN_PORTRAIT_OG_OPTIONAL_STAGE_ONLY_REVIEW": "栞さん縦長OG画像・横長候補あり",
+    "ORIGINAL_LANDSCAPE_OG_DECLARED_NOT_GOOGLE_VERIFIED": "横長OG画像が指定済み・Google表示未確認",
+    "EXISTING_OG_SELECTION_NEEDS_REVIEW": "OG画像が不足／別画像／重複",
+    "NO_SAFE_AUTOMATIC_OG_CONCLUSION": "自動判定不可",
+}
+
+
+def render_review_summary(result):
+    """GitHub Actions-readable audit only, never a repair authorization."""
+    if result.get("read_only") is not True or result.get("wordpress_modified") is not False:
+        raise ValueError("Refusing to summarize a mutated site")
+    lines = [
+        "### Survival40 Discover画像の公開HTML監査",
+        "",
+        "この表は実サイトの一部記事を対象にした**読み取り専用**の分類です。",
+        "Google Discover掲載・画像品質・実際の流入は確認していません。",
+        "",
+        "| 投稿ID | 監査による分類 |",
+        "|---:|---|",
+    ]
+    for row in result["items"]:
+        ident, category = row["article_id"], row["review_category"]
+        if (type(ident) is not int or ident < 1 or category not in REVIEW_LABELS):
+            raise ValueError("Untrusted report row")
+        lines.append(f"| {ident} | {REVIEW_LABELS[category]} |")
+    lines += [
+        "",
+        f"確認した記事数：{result['sampled_articles']}件（サイト全体ではありません）",
+        "",
+        "OG画像が不足していてもGoogle Discoverに掲載されないと断定はできません。",
+        "本番WordPressでの一括変更は行わず、復元可能な検証環境での確認を優先してください。",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+
 def run(source=SOURCE, manifest=MANIFEST, output=OUTPUT):
     result = summarize(
         json.loads(Path(source).read_text(encoding="utf-8")),
@@ -130,6 +174,11 @@ def run(source=SOURCE, manifest=MANIFEST, output=OUTPUT):
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n",
                            encoding="utf-8")
+    # Only a GitHub Actions-provided path is written; otherwise return JSON only.
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as file:
+            file.write(render_review_summary(result))
     print("DISCOVER AUDIT TRIAGE: " + str(result["sampled_articles"]) +
           " sampled articles, " +
           str(result["review_category_counts"]) +
