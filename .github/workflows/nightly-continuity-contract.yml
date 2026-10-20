@@ -5,6 +5,8 @@ on:
       - '.github/workflows/nightly-ai-review.yml'
       - '.github/workflows/nightly-continuity-contract.yml'
       - '.github/agent/test_nightly_continuity.py'
+      - '.github/agent/nightly_review.py'
+      - '.github/agent/test_nightly_503.py'
 permissions:
   contents: read
 jobs:
@@ -19,4 +21,4 @@ jobs:
         env:
           GEMINI_API_KEY: ''
           GOOGLE_API_KEY: ''
-        run: python3 -m unittest discover -s .github/agent -p test_nightly_continuity.py -v
+        run: python3 -m unittest discover -s .github/agent -p 'test_nightly_*.py' -v
