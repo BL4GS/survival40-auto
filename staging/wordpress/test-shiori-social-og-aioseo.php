@@ -58,6 +58,63 @@ $twitterOwner = array('twitter:image' => 'https://www.survival40.com/own-card.jp
 check($tw($twitterOwner) === $twitterOwner, 'Owner Twitter image never overwritten');
 check($fb('unexpected') === 'unexpected', 'Unexpected tag representation preserved');
 
+// Current public articles may already have the original portrait from an
+// earlier rollout. Replace ONLY exact same-article original art in staging.
+$portrait = 'https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/516.png';
+$portraitTags = array(
+    'og:image' => $portrait,
+    'og:image:secure_url' => $portrait,
+    'og:image:width' => '1080',
+    'og:image:height' => '1350',
+    'og:title' => 'AIOSEO original title',
+    'og:description' => 'AIOSEO original description',
+);
+$updated = $fb($portraitTags);
+check($updated['og:image'] === $image
+    && $updated['og:image:secure_url'] === $image
+    && $updated['og:image:width'] === '1200'
+    && $updated['og:image:height'] === '630',
+    'Exact old portrait card switches to 1200x630 in staging');
+check($updated['og:title'] === $portraitTags['og:title']
+    && $updated['og:description'] === $portraitTags['og:description'],
+    'Other AIOSEO metadata must survive the image switch unchanged');
+$twPortrait = array(
+    'twitter:image' => $portrait,
+    'twitter:image:src' => $portrait,
+    'twitter:card' => 'summary_large_image',
+    'twitter:description' => 'Preserve this',
+);
+$twUpdated = $tw($twPortrait);
+check($twUpdated['twitter:image'] === $image
+    && $twUpdated['twitter:image:src'] === $image
+    && $twUpdated['twitter:description'] === 'Preserve this',
+    'Exact portrait Twitter card switches without changing other metadata');
+
+// Protect any distinct social image or contradictory metadata, including
+// possible owner choices unknown to this prototype.
+$portraitTags['og:image'] = 'https://www.survival40.com/owner-cover.jpg';
+check($fb($portraitTags) === $portraitTags, 'Owner-selected image wins even with old dimensions');
+$portraitTags['og:image'] = $portrait;
+$portraitTags['og:image:secure_url'] = 'https://www.survival40.com/custom-secure.jpg';
+check($fb($portraitTags) === $portraitTags, 'Conflicting secure image blocks replacement');
+$portraitTags['og:image:secure_url'] = $portrait;
+$portraitTags['og:image:width'] = '1920';
+check($fb($portraitTags) === $portraitTags, 'Conflicting custom width blocks replacement');
+$portraitTags['og:image:width'] = '1080';
+$portraitTags['og:image:height'] = '1440';
+check($fb($portraitTags) === $portraitTags, 'Conflicting custom height blocks replacement');
+check($fb(array('og:image:width' => '777')) === array('og:image:width' => '777'),
+      'Unmatched dimensions without an image remain unchanged');
+$otherTwitter = array(
+    'twitter:image' => $portrait,
+    'twitter:image:src' => 'https://www.survival40.com/owner-image.jpg',
+);
+check($tw($otherTwitter) === $otherTwitter, 'Conflicting Twitter src blocks replacement');
+$twitterCardOwner = array('twitter:image' => $portrait, 'twitter:card' => 'summary');
+$twitterResult = $tw($twitterCardOwner);
+check($twitterResult['twitter:card'] === 'summary', 'Existing Twitter card setting preserved');
+check($twitterResult['twitter:image'] === $image, 'Image switches without card preference mutation');
+
 $GLOBALS['active_type'] = false;
 check($fb($base) === $base, 'Non-post pages unchanged');
 $GLOBALS['active_type'] = true;
