@@ -33,6 +33,8 @@ jobs:
         run: python3 -m scripts.social.check_og
       - name: Join observed OG tags with original-image source mapping (READ ONLY)
         if: github.event_name != 'pull_request'
+        env:
+          SURVIVAL40_REAL_OG_AUDIT: '1'
         run: python3 -m scripts.social.discover_rollout_report
       - name: Save diagnostic evidence only
         if: github.event_name != 'pull_request'
