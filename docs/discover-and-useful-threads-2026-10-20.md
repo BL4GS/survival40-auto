@@ -49,3 +49,23 @@ Editorial principle: keep ordinary comments, small personal quirks, occasional d
 
 ## Protected invariants
 No WPVibe use for normal development. No WordPress writes, no media/SEO/plugin changes, no SNS account switches, no marketing on the owner's personal profiles, no additional recurring fees, and no new release until restore guarantees are verified.
+
+
+## Verified implementation checkpoint — 2026-10-20 23:40 JST
+
+### Discover/social cards
+- Read-only social OG workflow run [39355845878](https://github.com/BL4GS/survival40-auto/actions/runs/39355845878) found **10/10 sampled published articles declare an og:image**, pointing to the site's same-article original \`assets/instagram/auto/<id>.png\` files (post IDs 599, 601, 606, 607, 608, 609, 610, 616, 617, 518).
+- This supersedes the **older** October 16 observation that three other previously sampled articles had no OG image: different sample/time. **Do not claim current site-wide OG coverage from either sample.**
+- [Merged PR #98](https://github.com/BL4GS/survival40-auto/pull/98) teaches the read-only auditor to classify those known original portrait images separately rather than mark them as unknown. Real pixel width is **not** checked by that HTML audit. Instagram artwork is intended for a 1080px-wide portrait layout, which must not be assumed to meet Google's 1200px-wide recommendation. Future WordPress/AIOSEO image selection remains a separate, backup-gated stage.
+- [Merged PR #97](https://github.com/BL4GS/survival40-auto/pull/97) now inspects \`max-image-preview\` in HTML metadata without inferring Discover eligibility, impressions or Google indexing from this.
+- The first *post-merge* scheduled audit evidence and any actual Discover performance are not yet reviewed; no WordPress image, SEO plugin, canonical or theme data was modified.
+
+### 栞さん's helpful note rollout
+- [Merged PR #99](https://github.com/BL4GS/survival40-auto/pull/99) adds four hand-reviewed, source-gated practical-note drafts derived only from verified same-article title, description and image identity in GitHub's Pinterest RSS: clothing size, laundry odor, clothing quantity, shoe odor. Generated output is \`publish:false\` and requires independent live-post verification before any social publication.
+- GitHub Actions now has a no-token/no-network weekly Monday 07:15 JST **preview-only** workflow; two PR CI workflows succeeded before merge. It does **not** use Gemini, access Meta or update any of the existing 08/12/16/20/22 Threads posts. This feature adds no new audience-facing publication yet.
+- The existing daily four-slot poster uses an immutable pinned source SHA. Changing copy preferences on main by itself **cannot** change the live posting. A future replacement of one existing slot needs source, duplication, Persona and publishing-gate tests first.
+
+### 22:00 article-introduction resilience
+- Separate existing workflow was failing on Oct 19–20 with \`STOP: Too much article data; no automatic retry\`. The pinned article source's public WordPress REST request fetched **40 full article bodies** with a 600 KB response cap.
+- [Merged PR #100](https://github.com/BL4GS/survival40-auto/pull/100) retains the reviewed immutable checkout, cap, credentials, identity checks, and at-most-once ledger; in the ephemeral workflow runner only, narrows the public query to **the latest eight** posts. Tests succeed; PR execution deliberately skips WordPress GET and Meta publication.
+- Next scheduled execution must verify the response is within limit and the correct published article is selected. This correction is not proof that every future payload will fit. No Threads post was sent as part of the PR.
