@@ -13,6 +13,9 @@ on:
     - cron: '20 3 * * *'
     - cron: '20 7 * * *'
     - cron: '20 11 * * *'
+  pull_request:
+    paths:
+      - '.github/workflows/threads-drafts.yml'
   workflow_dispatch:
     inputs:
       slot:
@@ -27,6 +30,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   generate:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 9
     env:
@@ -41,6 +45,13 @@ jobs:
         with:
           # Reviewed and offline tested: Shiori copy + single bounded Gemini draft-only HTTP503 retry; publishing unchanged.
           ref: 030e1f8a4cb23550802653b1dbcc97a263473566
+          persist-credentials: false
+      - name: Checkout immutable reviewed helpful-note source (separate from pinned publisher)
+        uses: actions/checkout@v4
+        with:
+          repository: BL4GS/survival40-auto
+          ref: 8189c0900e137c6fcf572b301dfa600a45a09ca2
+          path: approved-helpful
           persist-credentials: false
       - name: Unit tests (no credentials)
         env:
@@ -92,6 +103,15 @@ jobs:
           # Read-only discovery hint from existing GitHub state branch; optional.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 -m scripts.threads.prepare_schedule
+      - name: Replace ONE previously approved 16h Thursday draft with a sourced useful note (4-week pilot only)
+        env:
+          # No social publishing token and no generative API access for overlay.
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          GITHUB_TOKEN: ''
+        run: PYTHONPATH=. python3 approved-helpful/ops/threads/useful_pilot_overlay.py
       # Check independently of the pinned generator code: the checkout uses an
       # approved immutable SHA, so fixes on main alone are not loaded by it.
       # Fail closed rather than silently rewriting or publishing a mismatched persona.
@@ -160,3 +180,34 @@ jobs:
           path: threads-output/draft.json
           if-no-files-found: ignore
           retention-days: 14
+
+  offline-helpful-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GITHUB_TOKEN: ''
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+    steps:
+      - name: Checkout immutable original 4-slot publishing source
+        uses: actions/checkout@v4
+        with:
+          ref: 030e1f8a4cb23550802653b1dbcc97a263473566
+          persist-credentials: false
+      - name: Offline pinned publisher and ledger tests
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Checkout separately approved helpful content at immutable SHA
+        uses: actions/checkout@v4
+        with:
+          repository: BL4GS/survival40-auto
+          ref: 8189c0900e137c6fcf572b301dfa600a45a09ca2
+          path: approved-helpful
+          persist-credentials: false
+      - name: Offline approved useful-post and source-validation tests
+        run: |
+          cd approved-helpful
+          python3 -m unittest discover -s ops/threads -p 'test_*.py' -v
+          python3 -m unittest discover -s scripts/threads -p 'test_useful_preview.py' -v
