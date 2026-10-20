@@ -34,7 +34,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: survival40-native-rss-transport-\${{ github.run_id }}
+          name: survival40-native-rss-transport-${{ github.run_id }}
           path: pinterest-audit/rss-delivery.json
           retention-days: 14
           if-no-files-found: warn
