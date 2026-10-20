@@ -35,15 +35,29 @@ jobs:
         run: |
           python3 -m unittest discover -s scripts/instagram -p 'test_*.py' -v
           python3 -m py_compile scripts/instagram/build_assets.py
+      - name: Verify checked-in OG card provenance on PR (NO NETWORK)
+        if: github.event_name == 'pull_request'
+        run: python3 -m scripts.instagram.discover_ready
       - name: Generate safe Instagram and OG assets from verified Pinterest feed
         if: github.event_name != 'pull_request'
         run: python3 -m scripts.instagram.build_assets
+      - name: Verify freshly generated 1200x630 OG cards against article IDs
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.instagram.discover_ready
       - name: Prepare verified Instagram candidates (NO PUBLISHING)
         if: github.event_name != 'pull_request'
         run: python3 -m scripts.instagram.prepare_queue
       - name: Convert verified Instagram cards to original JPEG (NO PUBLISHING)
         if: github.event_name != 'pull_request'
         run: python3 -m scripts.instagram.prepare_api_images
+      - name: Upload offline Discover image-readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-discover-image-readiness-${{ github.run_id }}
+          path: social-audit/discover-image-readiness.json
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Save only the image assets and offline review manifest to GitHub
         if: github.event_name != 'pull_request'
         run: |
