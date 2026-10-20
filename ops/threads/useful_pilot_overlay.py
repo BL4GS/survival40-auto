@@ -8,6 +8,11 @@ The source is a separately pinned and reviewed GitHub checkout.
 import datetime as dt
 import importlib.util
 import json
+import re
+import urllib.error
+import urllib.request
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -79,7 +84,93 @@ def choose_helpful(now, approved_root):
     return selected
 
 
-def apply(draft_path, approved_root, now, validate_post):
+
+class PublishedArticleHead(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.canonical_urls = []
+        self.og_urls = []
+        self.body_parts = []
+        self.in_body = False
+        self.hidden = 0
+
+    def handle_starttag(self, tag, attrs):
+        props = dict(attrs)
+        if tag == "body":
+            self.in_body = True
+        if tag in ("script", "style", "noscript"):
+            self.hidden += 1
+        if tag == "link" and "canonical" in props.get("rel", "").split():
+            self.canonical_urls.append(props.get("href"))
+        if tag == "meta" and props.get("property") == "og:url":
+            self.og_urls.append(props.get("content"))
+
+    def handle_endtag(self, tag):
+        if tag == "body":
+            self.in_body = False
+        if tag in ("script", "style", "noscript") and self.hidden:
+            self.hidden -= 1
+
+    def handle_data(self, data):
+        if self.in_body and not self.hidden:
+            self.body_parts.append(data)
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError("Unexpected published-article redirect")
+
+
+def fetch_public_article(url):
+    parsed = urlsplit(url)
+    if (parsed.scheme != "https"
+            or parsed.netloc != "www.survival40.com"
+            or not re.fullmatch(r"/[a-z0-9][a-z0-9-]*/", parsed.path)
+            or parsed.query or parsed.fragment):
+        raise ValueError("Unverified site article URL")
+    request = urllib.request.Request(url, method="GET", headers={
+        "User-Agent": "Survival40-Shiori-helpful-article-readonly/1.0",
+        "Accept": "text/html",
+    })
+    with urllib.request.build_opener(NoRedirect()).open(request, timeout=12) as response:
+        if response.status != 200 or response.headers.get_content_type() != "text/html":
+            raise ValueError("Article not publicly served as HTML")
+        payload = response.read(450_001)
+    if len(payload) > 450_000:
+        raise ValueError("Article HTML exceeds read-only limit")
+    return payload.decode("utf-8", errors="replace")
+
+
+def verify_live_article(selected, fetcher=fetch_public_article):
+    """Current *public HTML* proof, not a WordPress authenticated status query."""
+    if not isinstance(selected, dict):
+        return False
+    url = selected.get("source_url")
+    evidence = selected.get("evidence_terms")
+    if (not isinstance(url, str)
+            or not isinstance(evidence, list) or len(evidence) < 2
+            or any(not isinstance(term, str) or not term for term in evidence)):
+        return False
+    try:
+        body = fetcher(url)
+        if not isinstance(body, str) or len(body) > 450_000:
+            return False
+        parser = PublishedArticleHead()
+        parser.feed(body)
+        visible = " ".join(parser.body_parts)
+        if (parser.canonical_urls != [url] or
+                any(other != url for other in parser.og_urls) or
+                len(visible.strip()) < 120):
+            return False
+        # Require two independently sourced literal topic anchors actually
+        # present in the CURRENT publicly rendered article body.
+        return sum(term in visible for term in evidence) >= 2
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError,
+            OSError, UnicodeError, ValueError, TypeError):
+        return False
+
+
+def apply(draft_path, approved_root, now, validate_post, live_check=verify_live_article):
     """Only mutates one pre-existing draft on a 4-date pilot; never posts."""
     path = Path(draft_path)
     draft = json.loads(path.read_text(encoding="utf-8"))
@@ -90,6 +181,8 @@ def apply(draft_path, approved_root, now, validate_post):
         reviewed_text = validate_post(selected["text"], "afternoon", 300)
         if reviewed_text != selected["text"]:
             raise ValueError("Reviewed wording mutated")
+        if live_check(selected) is not True:
+            raise ValueError("Current public article check unavailable")
     except (ValueError, OSError, UnicodeError, KeyError, TypeError,
             ImportError, AttributeError):
         # Source/wording drift: preserve vetted Gemini everyday draft as-is.
