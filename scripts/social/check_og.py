@@ -105,6 +105,58 @@ def fetch_public_head(url):
     return text[:text.lower().index("</head>") + len("</head>")]
 
 
+
+def inspect_discover_metadata(meta):
+    """Report *HTML head metadata*, never assert Google Discover eligibility.
+
+    This audit cannot inspect X-Robots-Tag HTTP headers, AMP, Google indexing,
+    Google Search Console Discover impressions, or actual image dimensions.
+    Missing an explicit HTML large-preview tag is not a negative eligibility
+    verdict: Google might have other signals and settings.
+    """
+    values = (meta.tags.get("robots", []) +
+              meta.tags.get("googlebot", []))
+    directives = []
+    for value in values:
+        if isinstance(value, str):
+            directives.extend(
+                part.strip().casefold() for part in value.split(",")
+                if part.strip()
+            )
+    previews = {d for d in directives if d.startswith("max-image-preview:")}
+    if len(previews) > 1:
+        preview = "CONFLICTING_HTML_PREVIEW_DIRECTIVES_REVIEW"
+    elif "max-image-preview:large" in previews:
+        preview = "LARGE_DECLARED_IN_HTML"
+    elif previews & {"max-image-preview:standard", "max-image-preview:none"}:
+        preview = "LARGE_NOT_ALLOWED_BY_HTML_DIRECTIVE_REVIEW"
+    elif previews:
+        preview = "UNRECOGNIZED_HTML_PREVIEW_DIRECTIVE_REVIEW"
+    else:
+        preview = "NOT_DECLARED_IN_HTML_HEADER_NOT_CHECKED"
+
+    image_candidates = (meta.tags.get("og:image", []) +
+                        meta.tags.get("og:image:url", []))
+    width = meta.tags.get("og:image:width", [])
+    height = meta.tags.get("og:image:height", [])
+    return {
+        "html_large_image_preview_hint": preview,
+        "html_noindex_hint": "noindex" in directives,
+        "og_image_count": len(image_candidates),
+        "og_image_width_claim": width[:2],
+        "og_image_height_claim": height[:2],
+        "schema_images_checked": False,
+        "http_x_robots_tag_checked": False,
+        "image_bytes_or_dimensions_verified": False,
+        "google_indexing_checked": False,
+        "discover_appearance_checked": False,
+        "note": (
+            "Read-only HTML metadata observations, not Google Discover "
+            "eligibility or appearance. Absence of og:image does not prove "
+            "absence of a schema image. Dimensions are untrusted declarations."
+        ),
+    }
+
 def inspect(item, html):
     meta = MetaParser()
     meta.feed(html)
@@ -124,6 +176,7 @@ def inspect(item, html):
         "og_images": og[:5], "twitter_images": twitter[:5],
         "og_title_present": bool(meta.tags.get("og:title")),
         "twitter_card": (meta.tags.get("twitter:card") or [None])[0],
+        "discover_metadata": inspect_discover_metadata(meta),
         "note": "Metadata audit only: not proof of social cache or image legibility",
     }
 
