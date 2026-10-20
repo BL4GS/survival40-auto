@@ -31,11 +31,16 @@ jobs:
           THREADS_ACCESS_TOKEN: ''
           INSTAGRAM_ACCESS_TOKEN: ''
         run: python3 -m scripts.social.check_og
+      - name: Join observed OG tags with original-image source mapping (READ ONLY)
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.social.discover_rollout_report
       - name: Save diagnostic evidence only
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: survival40-og-readonly-${{ github.run_id }}
-          path: social-audit/og-status.json
+          path: |
+            social-audit/og-status.json
+            social-audit/discover-rollout-review.json
           retention-days: 14
           if-no-files-found: warn
