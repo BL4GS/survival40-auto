@@ -18,6 +18,7 @@ import urllib.parse
 import urllib.request
 
 from site_audit.discovery import analyze_discovery
+from site_audit.link_opportunities import review_candidates
 
 ORIGIN = "https://survival40.com"
 REST_URL = ORIGIN + "/index.php?rest_route=%2Fwp%2Fv2%2Fposts"
@@ -133,7 +134,7 @@ def fetch_posts():
         params = urllib.parse.urlencode({
             "status": "publish", "orderby": "date", "order": "desc",
             "page": page, "per_page": PAGE_SIZE,
-            "_fields": "id,status,link,date_gmt,modified_gmt,title,excerpt,content",
+            "_fields": "id,status,link,categories,date_gmt,modified_gmt,title,excerpt,content",
         })
         status, headers, raw = public_get(REST_URL + "&" + params)
         if status != 200:
@@ -311,6 +312,23 @@ def write_reports(report, destination=REPORT_DIR):
                  f"Post IDs with no inbound link in another article's REST body: {discovery['no_other_post_body_inbound_ids']}",
                  f"Priority for link review (not found on homepage OR other article body): {discovery['not_linked_from_home_or_post_body_ids']}",
                  discovery['scope_note']]
+    link_review = report.get("link_review")
+    if isinstance(link_review, dict):
+        rows += ["", "## Potential editorial crosslinks (review only)",
+                 "These are same-category and overlapping-title candidates, NOT verified recommendations.",
+                 "No article was modified; check topic fit and reader value before linking."]
+        for suggestion in link_review.get("candidates", []):
+            source_title = re.sub(r"\s+", " ", suggestion["source_title"]).strip()[:100]
+            target_title = re.sub(r"\s+", " ", suggestion["target_title"]).strip()[:100]
+            rows.append(
+                f"- Source #{suggestion['source_post_id']} ({source_title})"
+                f" → Target #{suggestion['target_post_id']} ({target_title});"
+                f" shared category IDs {suggestion['shared_category_ids']};"
+                f" title overlap {suggestion['overlapping_title_grams']};"
+                " **NOT APPLIED**."
+            )
+        if not link_review.get("candidates"):
+            rows.append("- No candidate pairs met the conservative lexical filter.")
     rows += ["", "## Public page GET checks"]
     for result in report["page_checks"]:
         rows.append(f"- {result['status'] or 'N/A'} {result['outcome']}: {result['url']}" + (f" — links to other published posts in rendered page: {result['rendered_other_post_links']}" if "rendered_other_post_links" in result else ""))
@@ -333,6 +351,9 @@ def main():
     report["page_checks"] = probe_public_pages(posts)
     first = report["page_checks"][0] if report["page_checks"] else {}
     report["discovery"] = first.pop("discovery", analyze_discovery(posts))
+    report["link_review"] = review_candidates(
+        posts, report["discovery"].get("body_inbound_counts")
+    )
     write_reports(report)
     print(f"PASS: Read-only audit of {report['post_count']} public posts")
     print(f"FINDINGS: {report['finding_counts']}")
