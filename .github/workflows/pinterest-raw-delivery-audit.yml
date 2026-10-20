@@ -1,0 +1,40 @@
+name: Survival40 native Pinterest RSS delivery audit (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'ops/pinterest/verify_raw_delivery.py'
+      - 'ops/pinterest/test_verify_raw_delivery.py'
+      - '.github/workflows/pinterest-raw-delivery-audit.yml'
+  schedule:
+    # 11:00 JST daily, after the existing image-backed RSS build.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      GITHUB_TOKEN: ''
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+      INSTAGRAM_ACCESS_TOKEN: ''
+      WORDPRESS_APP_PASSWORD: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate fixed allowlist, RSS and fail-closed statements
+        run: python3 -m unittest discover -s ops/pinterest -p 'test_verify_raw_delivery.py' -v
+      - name: Public GET only of the existing RAW XML and one PNG
+        if: github.event_name != 'pull_request'
+        run: python3 -m ops.pinterest.verify_raw_delivery
+      - name: Save read-only evidence, never a Pin-published claim
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-native-rss-transport-${{ github.run_id }}
+          path: pinterest-audit/rss-delivery.json
+          retention-days: 14
+          if-no-files-found: warn
