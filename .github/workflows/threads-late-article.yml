@@ -4,6 +4,9 @@ on:
     # 22:00 JST = 13:00 UTC. Actual starts can be delayed by GitHub Actions.
     - cron: '0 13 * * *'
   workflow_dispatch: # Preview-only; publisher is explicitly schedule-gated.
+  pull_request:
+    paths:
+      - '.github/workflows/threads-late-article.yml'
 permissions:
   contents: write # Durable duplicate ledger on state/threads-ledger only.
 concurrency:
@@ -19,6 +22,30 @@ jobs:
           # Pinned source: tested JST calendar-day article selection; no WordPress deployment.
           ref: dbc5291990a270fb4d0cef8498d5e5fd36986bee
           persist-credentials: false
+      - name: Bound nightly article GET size in immutable pinned source
+        # The old 40 full article bodies exceeded a 600 KB response cap
+        # on 2026-10-19/20. Only the newest eight are needed at 22:00.
+        # Changing the checkout commit is deliberately out of scope.
+        env:
+          THREADS_ACCESS_TOKEN: ''
+          THREADS_USER_ID: ''
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          file = Path("scripts/threads/article_feed.py")
+          before = file.read_text(encoding="utf-8")
+          needle = '"status": "publish", "per_page": 40, "orderby": "date", "order": "desc",'
+          replacement = '"status": "publish", "per_page": 8, "orderby": "date", "order": "desc",'
+          if before.count(needle) != 1 or "MAX_BYTES = 600_000" not in before:
+              raise SystemExit("STOP: pinned article feed source no longer matches reviewed version")
+          file.write_text(before.replace(needle, replacement), encoding="utf-8")
+          from scripts.threads import article_feed
+          import inspect
+          source = inspect.getsource(article_feed.fetch_public_posts)
+          if '"per_page": 8' not in source or '"per_page": 40' in source:
+              raise SystemExit("STOP: bounded fetch not active")
+          print("PASS: latest eight only; same HTTPS allowlist, 600 KB cap and publication checks")
+          PY
       - name: Run complete offline tests without credentials
         env:
           GEMINI_API_KEY: ''
@@ -27,6 +54,7 @@ jobs:
           THREADS_USER_ID: ''
         run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
       - name: Read today's genuinely published Survival40 article
+        if: github.event_name != 'pull_request'
         env:
           THREADS_ACCESS_TOKEN: ''
           THREADS_USER_ID: ''
