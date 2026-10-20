@@ -1,0 +1,42 @@
+name: Shiori verified helpful notes (PREVIEW ONLY)
+on:
+  pull_request:
+    paths:
+      - 'scripts/threads/useful_preview.py'
+      - 'scripts/threads/test_useful_preview.py'
+      - '.github/workflows/shiori-helpful-preview.yml'
+      - 'pinterest/survival40-pins.xml'
+  schedule:
+    # Monday 07:15 JST = Sunday 22:15 UTC; not an additional live post.
+    - cron: '15 22 * * 0'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verified-helpful-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+      INSTAGRAM_ACCESS_TOKEN: ''
+      WORDPRESS_APP_PASSWORD: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate sourced Shiori short notes without network
+        run: python3 -m unittest discover -s scripts/threads -p 'test_useful_preview.py' -v
+      - name: Generate source-checked sample copy from existing Pinterest RSS
+        if: github.event_name != 'pull_request'
+        run: python3 -m scripts.threads.useful_preview
+      - name: Save offline review samples (not Threads drafts)
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiori-source-gated-helpful-preview
+          path: threads-output/useful-preview.json
+          if-no-files-found: warn
+          retention-days: 14
