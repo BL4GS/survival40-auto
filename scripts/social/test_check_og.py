@@ -97,6 +97,35 @@ class OGTests(unittest.TestCase):
         self.assertEqual(result["status"], "EXACT_ORIGINAL_SOCIAL_CARD")
         self.assertEqual(len(result["twitter_images"]), 1)
 
+    def test_known_original_instagram_og_image_is_not_unknown_or_missing(self):
+        item = og.source_items(self.feed)[0]
+        image = og.INSTAGRAM_PREFIX + str(item["article_id"]) + ".png"
+        html = ('<head><meta property="og:image" content="' + image +
+                '"><meta name="twitter:image" content="' + image +
+                '"></head>')
+        result = og.inspect(item, html)
+        self.assertEqual(result["status"], "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED")
+        self.assertEqual(result["og_images"], [image])
+        self.assertFalse(result["discover_metadata"]["image_bytes_or_dimensions_verified"])
+
+    def test_wrong_article_instagram_og_is_not_accepted(self):
+        item = og.source_items(self.feed)[0]
+        wrong = og.INSTAGRAM_PREFIX + "9999.png"
+        result = og.inspect(
+            item, '<head><meta property="og:image" content="' + wrong + '"></head>'
+        )
+        self.assertEqual(result["status"], "OTHER_IMAGE_REVIEW")
+
+    def test_known_instagram_cards_still_do_not_verify_discover_width(self):
+        def fetcher(url):
+            number = "512" if "/article-512/" in url else "516"
+            return ('<head><meta property="og:image" content="' +
+                    og.INSTAGRAM_PREFIX + number + '.png"></head>')
+        output = og.run(self.feed, self.report, fetcher=fetcher)
+        self.assertTrue(output["all_original_og_verified"])
+        self.assertFalse(output["all_discover_image_width_verified"])
+        self.assertEqual(len(output["items"]), 2)
+
     def test_another_image_is_review_not_automatically_banner(self):
         item = og.source_items(self.feed)[0]
         result = og.inspect(item, '<head><meta property="og:image" '

@@ -18,6 +18,7 @@ FEED = Path("pinterest/survival40-pins.xml")
 REPORT = Path("social-audit/og-status.json")
 PIN_PREFIX = "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/pinterest/auto/"
 OG_PREFIX = "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/social/og/"
+INSTAGRAM_PREFIX = "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/"
 MAX_HTML_BYTES = 450_000
 MAX_ITEMS = 10
 
@@ -169,6 +170,11 @@ def inspect(item, html):
         status = "MULTIPLE_OG_IMAGES_REVIEW"
     elif og[0] == expected:
         status = "EXACT_ORIGINAL_SOCIAL_CARD"
+    elif og[0] == INSTAGRAM_PREFIX + str(item["article_id"]) + ".png":
+        # An earlier release intentionally added an original vertical IG card
+        # as the OG image. It is not an unknown/missing card. Its actual size
+        # and suitability for Discover must be checked independently.
+        status = "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED"
     else:
         status = "OTHER_IMAGE_REVIEW"
     return {
@@ -177,7 +183,11 @@ def inspect(item, html):
         "og_title_present": bool(meta.tags.get("og:title")),
         "twitter_card": (meta.tags.get("twitter:card") or [None])[0],
         "discover_metadata": inspect_discover_metadata(meta),
-        "note": "Metadata audit only: not proof of social cache or image legibility",
+        "note": (
+            "Metadata audit only. Known original Instagram asset is a valid "
+            "existing OG declaration, but not confirmation of 1200px width, "
+            "Discover eligibility, live social preview or image legibility."
+        ),
     }
 
 
@@ -196,7 +206,11 @@ def run(feed=FEED, report=REPORT, fetcher=fetch_public_head):
         "checked_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "checked": len(rows), "items": rows,
         "all_original_og_verified": bool(rows) and all(
-            row["status"] == "EXACT_ORIGINAL_SOCIAL_CARD" for row in rows),
+            row["status"] in (
+                "EXACT_ORIGINAL_SOCIAL_CARD",
+                "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED",
+            ) for row in rows),
+        "all_discover_image_width_verified": False,
     }
     report = Path(report)
     report.parent.mkdir(parents=True, exist_ok=True)
