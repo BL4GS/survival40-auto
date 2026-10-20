@@ -318,8 +318,8 @@ def write_reports(report, destination=REPORT_DIR):
                  "These are same-category and overlapping-title candidates, NOT verified recommendations.",
                  "No article was modified; check topic fit and reader value before linking."]
         for suggestion in link_review.get("candidates", []):
-            source_title = re.sub(r"\\s+", " ", suggestion["source_title"]).strip()[:100]
-            target_title = re.sub(r"\\s+", " ", suggestion["target_title"]).strip()[:100]
+            source_title = re.sub(r"\s+", " ", suggestion["source_title"]).strip()[:100]
+            target_title = re.sub(r"\s+", " ", suggestion["target_title"]).strip()[:100]
             rows.append(
                 f"- Source #{suggestion['source_post_id']} ({source_title})"
                 f" → Target #{suggestion['target_post_id']} ({target_title});"
