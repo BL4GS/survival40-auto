@@ -6,22 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 599,
-      "article_url": "https://www.survival40.com/40s-nighttime-urination-causes/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/599.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/599.jpg",
-      "sha256": "5e915c32e4005180c19e04c1ec711d37ff79837f63b4b6f115d2d7d62ef6509d",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
-      "article_id": 601,
-      "article_url": "https://www.survival40.com/40s-gray-hair-plucking-myth-care/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/601.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/601.jpg",
-      "sha256": "31b5b809d82a041cd5605c5e4a0e984f30e3016e87da29a5cd9a7c7d6ec59042",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 606,
       "article_url": "https://www.survival40.com/40s-spu-style-up-subscription/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/606.png",
@@ -83,6 +67,22 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/518.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/518.jpg",
       "sha256": "2e1fd60958faeab3f0cae6331c27caf520a25a16e3f6509c4ada13927bc22ed8",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 635,
+      "article_url": "https://www.survival40.com/40s-mens-pillow-smell-cover-washing-care/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/635.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/635.jpg",
+      "sha256": "b702d5a25853505d4d5d1fd941bfc6f2975ebf30b5e7e136cf3a40a5d9c2a0ca",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 530,
+      "article_url": "https://www.survival40.com/40s-alcohol-after-strength-training/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/530.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/530.jpg",
+      "sha256": "00b806a08a01ce71b7ad3c03ac2d495ac1f097e83a432c85c06b6d8cac3b2492",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
