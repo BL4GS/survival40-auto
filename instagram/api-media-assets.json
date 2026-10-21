@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 606,
-      "article_url": "https://www.survival40.com/40s-spu-style-up-subscription/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/606.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/606.jpg",
-      "sha256": "58849f2c796033c0ce8520f36b4a1eee3500db1d03968bcd20afc47f1a28a4d1",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 607,
       "article_url": "https://www.survival40.com/40s-anotheraddress-clothing-rental/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/607.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/530.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/530.jpg",
       "sha256": "00b806a08a01ce71b7ad3c03ac2d495ac1f097e83a432c85c06b6d8cac3b2492",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 542,
+      "article_url": "https://www.survival40.com/40s-frozen-meal-delivery-cost-subscription/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/542.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/542.jpg",
+      "sha256": "e47cab99559f87986c3fbfe77de35b6d6e4157f1c88592763436c3fd6d2bed7d",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
