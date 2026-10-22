@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 607,
-      "article_url": "https://www.survival40.com/40s-anotheraddress-clothing-rental/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/607.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/607.jpg",
-      "sha256": "abe853a3051bb5b6f3f5285582447527914c3aa8e3f5396abee3e6c9fccb3f90",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 608,
       "article_url": "https://www.survival40.com/40s-mens-clothing-size-fit-guide/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/608.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/542.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/542.jpg",
       "sha256": "e47cab99559f87986c3fbfe77de35b6d6e4157f1c88592763436c3fd6d2bed7d",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 543,
+      "article_url": "https://www.survival40.com/40s-custom-pillow-vs-adjustable/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/543.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/543.jpg",
+      "sha256": "d0255510e63633e38a47510e72f14084f559d6ba4d140ffe61fcfea1259c15e5",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
