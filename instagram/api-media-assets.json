@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 608,
-      "article_url": "https://www.survival40.com/40s-mens-clothing-size-fit-guide/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/608.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/608.jpg",
-      "sha256": "e6e1143843f0d6d5c27d075ffeb5c534b7b57249a0a25480628756069c8b6fa6",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 609,
       "article_url": "https://www.survival40.com/40s-clothing-subscription-buy-or-rent/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/609.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/543.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/543.jpg",
       "sha256": "d0255510e63633e38a47510e72f14084f559d6ba4d140ffe61fcfea1259c15e5",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 544,
+      "article_url": "https://www.survival40.com/40s-wpc-vs-wpi-protein/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/544.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/544.jpg",
+      "sha256": "a1cd37e5b6c35464a530d022f448a08e03fcefa6fbf2325bae39c96ebfec8afa",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
