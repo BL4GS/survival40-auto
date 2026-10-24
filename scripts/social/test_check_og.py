@@ -153,6 +153,19 @@ class OGTests(unittest.TestCase):
         self.assertEqual(report["items"][0]["status"], "UNAVAILABLE_UNVERIFIED")
         self.assertNotIn("bad network", str(report))
 
+    def test_raw_url_controls_are_rejected_before_urlsplit_normalization(self):
+        # Python urlsplit() strips these characters and would otherwise
+        # accept the altered URL as a canonical public article link.
+        clean = "https://www.survival40.com/article-512/"
+        self.assertEqual(og.canonical(clean), clean)
+        for candidate in (clean + "\n", clean + "\t",
+                          clean.replace("/article-", "/\narticle-"),
+                          clean.replace("https://", "https://\t"),
+                          clean + " ", clean + "\x7f"):
+            with self.subTest(candidate=repr(candidate)):
+                with self.assertRaises(ValueError):
+                    og.canonical(candidate)
+
     def test_invalid_urls_and_untrusted_rss_rejected(self):
         for url in ("http://www.survival40.com/a/",
                     "https://www.survival40.com.evil.com/a/",
