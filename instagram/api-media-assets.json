@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 609,
-      "article_url": "https://www.survival40.com/40s-clothing-subscription-buy-or-rent/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/609.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/609.jpg",
-      "sha256": "d2b6bcf1107e5b6a73888dc97b3f1b7da1df061a2d9aa346683b107c0fd7fb61",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 610,
       "article_url": "https://www.survival40.com/40s-clothes-odor-after-washing-guide/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/610.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/544.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/544.jpg",
       "sha256": "a1cd37e5b6c35464a530d022f448a08e03fcefa6fbf2325bae39c96ebfec8afa",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 568,
+      "article_url": "https://www.survival40.com/40s-winter-bedroom-temperature-sleep/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/568.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/568.jpg",
+      "sha256": "047e07a241b30b60f1c2b6f3002abed1db3bfd2145b21ada20836fb186d04388",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
