@@ -83,6 +83,7 @@ jobs:
           python .github/scripts/patch_navigator_visibility_01913.py
           python .github/scripts/patch_navigator_timing_01914.py
           python .github/scripts/patch_navigator_anchor_01915.py
+          python .github/scripts/patch_shiori_mobile_switch_116.py
           python .github/scripts/patch_home_guide_01916.py
           python .github/scripts/patch_brand_separation_01917.py
           python .github/scripts/patch_affiliate_ledger_01918.py
