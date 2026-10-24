@@ -48,6 +48,11 @@ class MetaParser(HTMLParser):
 def canonical(url):
     if not isinstance(url, str):
         raise ValueError("Non-text canonical URL")
+    # urlsplit() silently strips some ASCII controls (e.g. tabs/newlines).
+    # Reject the original bytes before parsing so an RSS URL cannot be
+    # normalized into an apparently verified public permalink.
+    if any(ord(char) <= 0x20 or ord(char) == 0x7f for char in url):
+        raise ValueError("Control or whitespace in canonical URL")
     parsed = urlsplit(url)
     if (parsed.scheme != "https" or parsed.netloc != "www.survival40.com"
             or parsed.query or parsed.fragment
