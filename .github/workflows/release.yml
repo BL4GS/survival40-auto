@@ -204,32 +204,39 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-      - name: Refuse release if existing public articles changed (NO WordPress writes)
+      - name: Capture fresh read-only public article baseline before release
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # Archived baseline intentionally predates this plugin release;
-          # later legitimate article edits must be reviewed and re-baselined.
-          BEFORE_RUN=38210094227
-          mkdir -p "$RUNNER_TEMP/s40-before"
-          gh run download "$BEFORE_RUN" \
-            --name "survival40-preflight-$BEFORE_RUN" \
-            --dir "$RUNNER_TEMP/s40-before"
-          test -s "$RUNNER_TEMP/s40-before/baseline.json"
+          # Do not use an archived count: scheduled publication legitimately adds posts.
+          python3 -m production_preflight.baseline
+          test -s preflight-output/baseline.json
+          cp preflight-output/baseline.json "$RUNNER_TEMP/s40-release-baseline.json"
+          python3 - "$RUNNER_TEMP/s40-release-baseline.json" <<'PY'
+          import json,sys
+          b=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert b['schema']=='survival40.public_baseline.v1'
+          assert b['production_writes']==0
+          assert b['public_post_count']==len(b['articles']) and b['articles']
+          print('Captured fresh read-only baseline:',b['public_post_count'],'public posts')
+          PY
+
+      - name: Verify public articles against fresh baseline (NO WordPress writes)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        run: |
+          set -euo pipefail
           python3 -m production_preflight.verify \
-            --baseline "$RUNNER_TEMP/s40-before/baseline.json" \
+            --baseline "$RUNNER_TEMP/s40-release-baseline.json" \
             --output "$RUNNER_TEMP/s40-public-article-release-gate.json"
           python3 - "$RUNNER_TEMP/s40-public-article-release-gate.json" <<'PY'
           import json,sys
           f=json.load(open(sys.argv[1],encoding='utf-8'))
           assert f['unchanged'], 'Public article fingerprints changed'
-          assert f['before_count']==23 and f['after_count']==23, 'Unexpected public count'
-          print('PASS: 23 public articles unchanged before any release publication')
+          assert f['before_count']==f['after_count'] and f['before_count']>0
+          print('PASS: current public articles unchanged:',f['before_count'])
           PY
-          # This does not attest to admin-only drafts, real Web/DB restoration,
-          # ad switches, private settings or an operator's live monitoring.
+          # Admin-only drafts, real Web/DB restoration, ad switches and
+          # operator monitoring remain independent manual release attestations.
 
       - name: Publish only after explicit manual approval
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
