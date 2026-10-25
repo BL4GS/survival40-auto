@@ -20,5 +20,5 @@ jobs:
         run: python3 -m unittest discover -s release_guard -p 'test_*.py' -v
       - name: Confirm no release or version change is performed
         run: |
-          test "$(cat version.txt)" = '0.19.20'
+          test "$(cat version.txt)" = '0.19.21'
           git diff --exit-code
