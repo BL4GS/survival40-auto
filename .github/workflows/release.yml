@@ -112,9 +112,9 @@ jobs:
           p=Path('survival40-auto/survival40-auto.php')
           s=p.read_text(encoding='utf-8')
           keys=[
-            (' * Version: 0.19.21',' * Version: 0.19.22'),
-            ("const VERSION = '0.19.21';","const VERSION = '0.19.22';"),
-            ('Survival40 Auto v0.19.21</h1>','Survival40 Auto v0.19.22</h1>')
+            (' * Version: 0.19.20',' * Version: 0.19.22'),
+            ("const VERSION = '0.19.20';","const VERSION = '0.19.22';"),
+            ('Survival40 Auto v0.19.20</h1>','Survival40 Auto v0.19.22</h1>')
           ]
           for before,after in keys:
             assert s.count(before)==1, 'version marker mismatch: '+before
