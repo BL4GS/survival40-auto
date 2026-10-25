@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).with_name("patch_shiori_mobile_switch_116.py")
+SCRIPT = Path(__file__).resolve().with_name("patch_shiori_mobile_switch_116.py")
 OLD = (
     "var switchLine=mobile.matches\n"
     "              ? Math.min(window.innerHeight*.45,350)\n"
