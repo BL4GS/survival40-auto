@@ -6,14 +6,6 @@
   "requires": "Meta Business Login, verified app/token, pilot PUBLISHED, duplicate ledger and owner approval before new publisher",
   "items": [
     {
-      "article_id": 610,
-      "article_url": "https://www.survival40.com/40s-clothes-odor-after-washing-guide/",
-      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/610.png",
-      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/610.jpg",
-      "sha256": "c41803c90dfc6009ac47d68fe6686b8902ca1bcbe5f36387693a1481f4d6c6d5",
-      "status": "MEDIA_ONLY_NOT_PUBLISHED"
-    },
-    {
       "article_id": 616,
       "article_url": "https://www.survival40.com/40s-mens-casual-clothes-how-many/",
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/616.png",
@@ -83,6 +75,14 @@
       "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/568.png",
       "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/568.jpg",
       "sha256": "047e07a241b30b60f1c2b6f3002abed1db3bfd2145b21ada20836fb186d04388",
+      "status": "MEDIA_ONLY_NOT_PUBLISHED"
+    },
+    {
+      "article_id": 569,
+      "article_url": "https://www.survival40.com/40s-warm-food-winter-meals/",
+      "source_png": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/569.png",
+      "public_jpeg_url": "https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/api-jpeg/569.jpg",
+      "sha256": "76929b97d2e6229ccb201118da65a96fb389905fd42d3d62e086b93e96977a2b",
       "status": "MEDIA_ONLY_NOT_PUBLISHED"
     }
   ]
