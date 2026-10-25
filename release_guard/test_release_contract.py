@@ -25,12 +25,15 @@ def approval_shell():
 
 class ReleaseContractTests(unittest.TestCase):
     def test_main_version_remains_unpublished(self):
-        self.assertEqual(VERSION.read_text(encoding="utf-8").strip(), "0.19.20")
+        self.assertEqual(VERSION.read_text(encoding="utf-8").strip(), "0.19.21")
 
     def test_manual_approval_cannot_be_bypassed_by_push(self):
         header, script, text = approval_shell()
         self.assertIn("github.event_name == 'workflow_dispatch'", header)
-        self.assertIn("inputs.confirm_release == 'RELEASE-0.19.21'", header)
+        self.assertIn("inputs.confirm_release == 'RELEASE-0.19.22'", header)
+        self.assertIn("confirm_backup", header)
+        self.assertIn("confirm_live", header)
+        self.assertIn("confirm_monitor", header)
         self.assertIn("contents: write", text)
         self.assertIn("version.txt", text)
 
@@ -55,18 +58,18 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertLess(compare, update)
         self.assertLess(update, confirm)
         self.assertIn("contents/version.txt", script[update:])
-        self.assertIn("test \"$REMOTE_VERSION\" = '0.19.20'", script)
+        self.assertIn("test \"$REMOTE_VERSION\" = '0.19.21'", script)
         self.assertIn("-f sha=\"$REMOTE_SHA\"", script)
-        self.assertIn("test \"$FINAL_CONTENT\" = '0.19.21'", script)
+        self.assertIn("test \"$FINAL_CONTENT\" = '0.19.22'", script)
 
     def test_version_strip_handles_actual_newlines(self):
         _, script, _ = approval_shell()
         strip = "tr -d '" + chr(92) + "r" + chr(92) + "n'"
         self.assertEqual(script.count(strip), 3)
-        result = subprocess.run(["bash", "-c", "printf '0.19.20\\n' | " + strip],
+        result = subprocess.run(["bash", "-c", "printf '0.19.21\\n' | " + strip],
                                 text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "0.19.20")
+        self.assertEqual(result.stdout, "0.19.21")
 
     def test_recovery_live_state_and_monitoring_are_required(self):
         header, _, text = approval_shell()
@@ -102,7 +105,7 @@ class ReleaseContractTests(unittest.TestCase):
     def test_artifact_is_exact_zip_and_no_auto_publication(self):
         _, _, text = approval_shell()
         self.assertIn("unzip -t dist/survival40-auto.zip", text)
-        self.assertIn("survival40-0.19.21-release-review", text)
+        self.assertIn("survival40-0.19.22-release-review", text)
         self.assertIn("get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'", text)
 
 
