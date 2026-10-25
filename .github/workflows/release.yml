@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_release:
-        description: 'Enter RELEASE-0.19.21 after reviewing staging validation and backup plan'
+        description: 'Enter RELEASE-0.19.22 after reviewing staging validation and backup plan'
         required: true
         type: string
       confirm_backup:
@@ -112,9 +112,9 @@ jobs:
           p=Path('survival40-auto/survival40-auto.php')
           s=p.read_text(encoding='utf-8')
           keys=[
-            (' * Version: 0.19.20',' * Version: 0.19.21'),
-            ("const VERSION = '0.19.20';","const VERSION = '0.19.21';"),
-            ('Survival40 Auto v0.19.20</h1>','Survival40 Auto v0.19.21</h1>')
+            (' * Version: 0.19.20',' * Version: 0.19.22'),
+            ("const VERSION = '0.19.20';","const VERSION = '0.19.22';"),
+            ('Survival40 Auto v0.19.20</h1>','Survival40 Auto v0.19.22</h1>')
           ]
           for before,after in keys:
             assert s.count(before)==1, 'version marker mismatch: '+before
@@ -127,9 +127,9 @@ jobs:
           grep -n "Version:" survival40-auto/survival40-auto.php | head -1
           grep -n "const VERSION" survival40-auto/survival40-auto.php | head -1
           grep -n "Survival40 Auto v" survival40-auto/survival40-auto.php | head -1
-          grep -q "Version: 0.19.21" survival40-auto/survival40-auto.php
-          grep -q "const VERSION = '0.19.21';" survival40-auto/survival40-auto.php
-          grep -q "Survival40 Auto v0.19.21" survival40-auto/survival40-auto.php
+          grep -q "Version: 0.19.22" survival40-auto/survival40-auto.php
+          grep -q "const VERSION = '0.19.22';" survival40-auto/survival40-auto.php
+          grep -q "Survival40 Auto v0.19.22" survival40-auto/survival40-auto.php
 
       - name: Validate PHP
         run: php -l survival40-auto/survival40-auto.php
@@ -160,25 +160,25 @@ jobs:
               assert set(z.namelist()) == expected, z.namelist()
               code=z.read('survival40-auto/survival40-auto.php').decode('utf-8')
               assert "get_option('s40_affiliate_frontend_enabled', 'no') !== 'yes'" in code
-              assert ' * Version: 0.19.21' in code
+              assert ' * Version: 0.19.22' in code
           PY
           sha256sum dist/survival40-auto.zip > dist/SHA256SUMS
 
       - name: Store release build for review (no public publishing)
         uses: actions/upload-artifact@v4
         with:
-          name: survival40-0.19.21-release-review
+          name: survival40-0.19.22-release-review
           path: dist/
           retention-days: 14
 
       - name: Verify previously published ZIP can be recovered
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.22' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
-          test "$(gh release view latest --json name --jq '.name')" = 'Survival40 Auto v0.19.20'
+          test "$(tr -d '\r\n' < version.txt)" = '0.19.21'
+          test "$(gh release view latest --json name --jq '.name')" = 'Survival40 Auto v0.19.21'
           mkdir -p rollback
           gh release download latest --pattern 'survival40-auto.zip' --dir rollback
           test -s rollback/survival40-auto.zip
@@ -187,25 +187,25 @@ jobs:
           import zipfile
           with zipfile.ZipFile('rollback/survival40-auto.zip') as archive:
               main = archive.read('survival40-auto/survival40-auto.php').decode('utf-8')
-              assert ' * Version: 0.19.20' in main
-              assert "const VERSION = '0.19.20';" in main
+              assert ' * Version: 0.19.21' in main
+              assert "const VERSION = '0.19.21';" in main
               assert 'survival40-auto/assets/navigator/normal.webp' in archive.namelist()
           PY
-          mv rollback/survival40-auto.zip rollback/survival40-auto-0.19.20-rollback.zip
-          (cd rollback && sha256sum survival40-auto-0.19.20-rollback.zip > SHA256SUMS)
+          mv rollback/survival40-auto.zip rollback/survival40-auto-0.19.21-rollback.zip
+          (cd rollback && sha256sum survival40-auto-0.19.21-rollback.zip > SHA256SUMS)
           echo 'Rollback ZIP checked; live restoration must also have been independently verified.'
 
       - name: Save verified rollback artifact before touching public release
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.22' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         uses: actions/upload-artifact@v4
         with:
-          name: survival40-01920-before-release-${{ github.run_id }}
+          name: survival40-01921-before-release-${{ github.run_id }}
           path: rollback/
           retention-days: 90
           if-no-files-found: error
 
       - name: Capture fresh read-only public article baseline before release
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.22' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         run: |
           set -euo pipefail
           # Do not use an archived count: scheduled publication legitimately adds posts.
@@ -222,7 +222,7 @@ jobs:
           PY
 
       - name: Verify public articles against fresh baseline (NO WordPress writes)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.22' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         run: |
           set -euo pipefail
           python3 -m production_preflight.verify \
@@ -239,23 +239,23 @@ jobs:
           # operator monitoring remain independent manual release attestations.
 
       - name: Publish only after explicit manual approval
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.21' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_release == 'RELEASE-0.19.22' && inputs.confirm_backup == 'WEB-DB-RESTORE-VERIFIED' && inputs.confirm_live == 'WP-BASELINE-VERIFIED' && inputs.confirm_monitor == 'LIVE-MONITORING-READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # NEVER advertise 0.19.21 until its downloadable, verified ZIP exists.
+          # NEVER advertise 0.19.22 until its downloadable, verified ZIP exists.
           # Typed gates attest to independent recovery checks; CI cannot prove real restore.
-          test "$(tr -d '\r\n' < version.txt)" = '0.19.20'
+          test "$(tr -d '\r\n' < version.txt)" = '0.19.21'
           test -s dist/survival40-auto.zip
           unzip -tq dist/survival40-auto.zip
           if gh release view latest >/dev/null 2>&1; then
-            gh release edit latest --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
+            gh release edit latest --title "Survival40 Auto v0.19.22" --notes "Validated 0.19.22 release build"
           else
-            gh release create latest --target main --title "Survival40 Auto v0.19.21" --notes "Validated 0.19.21 release build"
+            gh release create latest --target main --title "Survival40 Auto v0.19.22" --notes "Validated 0.19.22 release build"
           fi
 
-          # Upload first; failure must leave version.txt at old 0.19.20.
+          # Upload first; failure must leave version.txt at old 0.19.21.
           gh release upload latest dist/survival40-auto.zip --clobber
 
           ASSET_ID="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/latest" \
@@ -279,15 +279,15 @@ jobs:
           METADATA="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main")"
           REMOTE_SHA="$(printf '%s' "$METADATA" | jq -r '.sha')"
           REMOTE_VERSION="$(printf '%s' "$METADATA" | jq -r '.content' | base64 -d | tr -d '\r\n')"
-          test "$REMOTE_VERSION" = '0.19.20'
-          NEW_CONTENT="$(printf '0.19.21\n' | base64 -w 0)"
+          test "$REMOTE_VERSION" = '0.19.21'
+          NEW_CONTENT="$(printf '0.19.22\n' | base64 -w 0)"
           gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/version.txt" \
-            -f message='release: advertise distributed Survival40 Auto 0.19.21' \
+            -f message='release: advertise distributed Survival40 Auto 0.19.22' \
             -f branch=main \
             -f sha="$REMOTE_SHA" \
             -f content="$NEW_CONTENT" > /dev/null
 
           FINAL_CONTENT="$(gh api "repos/${GITHUB_REPOSITORY}/contents/version.txt?ref=main" \
             --jq '.content' | base64 -d | tr -d '\r\n')"
-          test "$FINAL_CONTENT" = '0.19.21'
-          echo 'Release ZIP uploaded before advancing public version.txt to 0.19.21.'
+          test "$FINAL_CONTENT" = '0.19.22'
+          echo 'Release ZIP uploaded before advancing public version.txt to 0.19.22.'
