@@ -1,15 +1,24 @@
-"""Advance Shiori's mobile heading-title switch without touching desktop behavior.
+"""Advance Shiori's mobile heading-title switch without changing desktop behavior.
 
-Run against the reconstructed PHP during the reviewed release build, after
-patch_navigator_anchor_01915.py and before packaging. Fail closed on drift.
+Run against reconstructed PHP after patch_navigator_anchor_01915.py.
+Match the entire switchLine expression to fail closed if either branch drifts.
+This script never updates WordPress or publishes a release.
 """
 from pathlib import Path
 
 p = Path("survival40-auto/survival40-auto.php")
 source = p.read_text(encoding="utf-8")
-old = "? Math.min(window.innerHeight*.45,350)"
-new = "? Math.min(window.innerHeight*.65,420)"
-assert source.count(old) == 1, "Shiori mobile switch threshold changed; review manually"
+old = (
+    "var switchLine=mobile.matches\n"
+    "              ? Math.min(window.innerHeight*.45,350)\n"
+    "              : Math.min(window.innerHeight-48,Math.max(window.innerHeight*.52,panel.getBoundingClientRect().bottom-42));"
+)
+new = old.replace(
+    "? Math.min(window.innerHeight*.45,350)",
+    "? Math.min(window.innerHeight*.82,600)",
+    1,
+)
+assert source.count(old) == 1, "Shiori switchLine changed or duplicated; review manually"
 assert source.count(new) == 0, "Shiori mobile switch fix already applied"
 p.write_text(source.replace(old, new, 1), encoding="utf-8")
-print("Shiori mobile heading switch moved earlier; desktop untouched")
+print("Shiori mobile switch moved earlier; desktop expression preserved")

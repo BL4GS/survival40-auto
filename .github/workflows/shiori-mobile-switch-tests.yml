@@ -1,0 +1,31 @@
+name: Shiori mobile heading switch tests (NO DEPLOY)
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/patch_shiori_mobile_switch_116.py'
+      - '.github/scripts/test_shiori_mobile_switch_116.py'
+      - '.github/workflows/shiori-mobile-switch-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      GITHUB_TOKEN: ''
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      THREADS_ACCESS_TOKEN: ''
+      THREADS_USER_ID: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate Shiori switch in disposable fixtures only
+        run: python3 -m unittest discover -s .github/scripts -p 'test_shiori_mobile_switch_116.py' -v
+      - name: Verify no repository files changed
+        run: git diff --exit-code
