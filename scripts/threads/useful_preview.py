@@ -164,7 +164,8 @@ def make_previews(entries):
 
 
 def main():
-    entries = verified_articles()
+    # Resolve the configured feed at call time (tests and preview runs may override FEED).
+    entries = verified_articles(FEED)
     result = {
         "generated_at_jst": dt.datetime.now(JST).isoformat(timespec="seconds"),
         "account": ACCOUNT,
