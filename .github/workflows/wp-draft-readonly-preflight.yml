@@ -1,0 +1,69 @@
+name: Survival40 WordPress Draft Preflight (READ ONLY)
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/wordpress/draft_preflight.py'
+      - 'scripts/wordpress/test_draft_preflight.py'
+      - '.github/workflows/wp-draft-readonly-preflight.yml'
+  workflow_dispatch:
+    inputs:
+      post_id:
+        description: 'Existing WordPress draft ID (read only)'
+        required: true
+        type: string
+        default: '620'
+      expected_slug:
+        description: 'Exact slug for identity validation'
+        required: true
+        type: string
+        default: '40s-male-razor-burn-shaving-care'
+      confirm_readonly:
+        description: 'Type READ-ONLY-WP-DRAFT. This never edits or publishes.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Credential-free no-network safety tests
+        env:
+          S40_WP_INBOX_USER: ''
+          S40_WP_INBOX_APP_PASSWORD: ''
+        run: python3 -m unittest discover -s scripts/wordpress -p test_draft_preflight.py -v
+
+  draft-readonly:
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm_readonly == 'READ-ONLY-WP-DRAFT'
+    needs: offline-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Snapshot current raw draft fingerprint (GET only)
+        env:
+          S40_WP_INBOX_USER: ${{ secrets.S40_WP_INBOX_USER }}
+          S40_WP_INBOX_APP_PASSWORD: ${{ secrets.S40_WP_INBOX_APP_PASSWORD }}
+          WP_POST_ID: ${{ inputs.post_id }}
+          WP_EXPECTED_SLUG: ${{ inputs.expected_slug }}
+        run: |
+          python3 scripts/wordpress/draft_preflight.py \
+            --post-id "$WP_POST_ID" \
+            --expected-slug "$WP_EXPECTED_SLUG" \
+            --output draft-preflight-output/post.json
+      - name: Archive fingerprint only (never article body)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-draft-readonly-preflight-${{ github.run_id }}
+          path: draft-preflight-output/post.json
+          retention-days: 7
+          if-no-files-found: error
