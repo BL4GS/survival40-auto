@@ -136,5 +136,26 @@ class UsefulPreviewTests(unittest.TestCase):
             self.assertEqual(len(data["posts"]), 4)
 
 
+    def test_main_respects_configured_feed_when_one_approved_source_is_absent(self):
+        # Regression: the old default argument captured the production FEED at
+        # import time, ignoring the patched feed passed to main() in tests.
+        root = sample_feed()
+        root.find("channel").remove(root.findall("./channel/item")[0])
+        self.feed.write_bytes(ET.tostring(root, encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "sample.json"
+            with (patch.object(preview, "FEED", self.feed),
+                  patch.object(preview, "OUTPUT", output),
+                  patch("urllib.request.urlopen") as network):
+                preview.main()
+                network.assert_not_called()
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {p["source_post_id"] for p in data["posts"]},
+                {610, 616, 617},
+            )
+            self.assertFalse(data["publish"])
+
+
 if __name__ == "__main__":
     unittest.main()
