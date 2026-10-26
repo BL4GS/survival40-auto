@@ -236,7 +236,9 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           workflow = Path('workflow-guard-review/.github/workflows/threads-drafts.yml').read_text(encoding='utf-8')
-          assert workflow.count("if: steps.prepared_draft.outputs.exists == 'true'") == 2
+          # Restrict assertions to the scheduled job, not this test's own source.
+          generate = workflow.split('\n  offline-helpful-contract:', 1)[0]
+          assert generate.count("if: steps.prepared_draft.outputs.exists == 'true'") == 2
           assert "if: github.event_name == 'schedule' && steps.prepared_draft.outputs.exists == 'true'" in workflow
           assert "id: prepared_draft" in workflow
           assert "if [ -f threads-output/draft.json ]; then" in workflow
