@@ -103,7 +103,20 @@ jobs:
           # Read-only discovery hint from existing GitHub state branch; optional.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 -m scripts.threads.prepare_schedule
+      # The pinned generator intentionally emits no draft when a delayed or
+      # duplicate schedule trigger falls outside its approved slot. No draft
+      # means no overlay, persona inspection or Meta publication attempt.
+      - name: Check whether a draft was prepared (no write)
+        id: prepared_draft
+        run: |
+          if [ -f threads-output/draft.json ]; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+            echo 'SKIP: no draft for this schedule trigger; do not publish.'
+          fi
       - name: Replace ONE previously approved 16h Thursday draft with a sourced useful note (4-week pilot only)
+        if: steps.prepared_draft.outputs.exists == 'true'
         env:
           # No social publishing token and no generative API access for overlay.
           THREADS_ACCESS_TOKEN: ''
@@ -116,6 +129,7 @@ jobs:
       # approved immutable SHA, so fixes on main alone are not loaded by it.
       # Fail closed rather than silently rewriting or publishing a mismatched persona.
       - name: Reject Shiori gender and relationship persona conflicts
+        if: steps.prepared_draft.outputs.exists == 'true'
         run: |
           python3 - <<'PY'
           import json
@@ -166,7 +180,7 @@ jobs:
           print("PASS: Shiori gender and private-relationship boundaries respected")
           PY
       - name: Publish once to verified @survival40_jp if scheduled (no retries)
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' && steps.prepared_draft.outputs.exists == 'true'
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
@@ -211,3 +225,24 @@ jobs:
           cd approved-helpful
           python3 -m unittest discover -s ops/threads -p 'test_*.py' -v
           python3 -m unittest discover -s scripts/threads -p 'test_useful_preview.py' -v
+      - name: Checkout PR workflow for static review (never execute PR code)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: workflow-guard-review
+          persist-credentials: false
+      - name: Assert no-draft gate protects every downstream action
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          workflow = Path('workflow-guard-review/.github/workflows/threads-drafts.yml').read_text(encoding='utf-8')
+          assert workflow.count("if: steps.prepared_draft.outputs.exists == 'true'") == 2
+          assert "if: github.event_name == 'schedule' && steps.prepared_draft.outputs.exists == 'true'" in workflow
+          assert "id: prepared_draft" in workflow
+          assert "if [ -f threads-output/draft.json ]; then" in workflow
+          assert "echo 'exists=false' >> \"$GITHUB_OUTPUT\"" in workflow
+          assert "ref: 030e1f8a4cb23550802653b1dbcc97a263473566" in workflow
+          assert "ref: 8189c0900e137c6fcf572b301dfa600a45a09ca2" in workflow
+          assert "run: python3 -m scripts.threads.scheduled_publisher" in workflow
+          print('PASS: no-draft runs skip overlay, persona and publishing; immutable sources unchanged')
+          PY
