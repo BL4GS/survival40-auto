@@ -246,5 +246,32 @@ jobs:
           assert "ref: 030e1f8a4cb23550802653b1dbcc97a263473566" in workflow
           assert "ref: 8189c0900e137c6fcf572b301dfa600a45a09ca2" in workflow
           assert "run: python3 -m scripts.threads.scheduled_publisher" in workflow
+          # Execute only the extracted no-secret shell gate in a temporary
+          # directory. This does not execute the publisher or contact Meta.
+          import os
+          import subprocess
+          import tempfile
+          gate = generate.split('      - name: Check whether a draft was prepared (no write)', 1)[1]
+          gate = gate.split('      - name: Replace ONE previously approved', 1)[0]
+          shell = '\n'.join(line[10:] for line in gate.splitlines() if line.startswith('          '))
+          assert shell.startswith('if [ -f threads-output/draft.json ]; then')
+          assert generate.index('run: python3 -m scripts.threads.prepare_schedule') < generate.index('id: prepared_draft') < generate.index('run: PYTHONPATH=. python3 approved-helpful/ops/threads/useful_pilot_overlay.py')
+          with tempfile.TemporaryDirectory() as temp:
+              root = Path(temp)
+              output = root / 'step-output'
+              env = os.environ.copy()
+              env['GITHUB_OUTPUT'] = str(output)
+              def run_gate(expected):
+                  output.write_text('', encoding='utf-8')
+                  subprocess.run(['bash', '-e', '-c', shell], cwd=root, env=env, check=True, capture_output=True, text=True)
+                  assert output.read_text(encoding='utf-8').strip() == 'exists=' + expected
+              run_gate('false')
+              draft = root / 'threads-output' / 'draft.json'
+              draft.parent.mkdir()
+              payload = b'{"kind":"everyday","text":"offline fixture"}'
+              draft.write_bytes(payload)
+              run_gate('true')
+              assert draft.read_bytes() == payload
+          print('PASS: absent/present draft gate works offline and never alters a draft')
           print('PASS: no-draft runs skip overlay, persona and publishing; immutable sources unchanged')
           PY
