@@ -13,6 +13,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from scripts.social.schema_image_review import review_schema_images
+
 SITE = "https://www.survival40.com"
 FEED = Path("pinterest/survival40-pins.xml")
 REPORT = Path("social-audit/og-status.json")
@@ -187,7 +189,7 @@ def inspect(item, html):
         "og_images": og[:5], "twitter_images": twitter[:5],
         "og_title_present": bool(meta.tags.get("og:title")),
         "twitter_card": (meta.tags.get("twitter:card") or [None])[0],
-        "discover_metadata": inspect_discover_metadata(meta),
+        "discover_metadata": {**inspect_discover_metadata(meta), **review_schema_images(html)},
         "note": (
             "Metadata audit only. Known original Instagram asset is a valid "
             "existing OG declaration, but not confirmation of 1200px width, "

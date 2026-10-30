@@ -70,6 +70,10 @@ def summarize(observation, manifest):
             "UNRECOGNIZED_HTML_PREVIEW_DIRECTIVE_REVIEW",
         ):
             category = "IMAGE_PREVIEW_DIRECTIVE_REQUIRES_REVIEW"
+        elif metadata.get("article_schema_image_source_hint") == "POSSIBLE_A8_AFFILIATE_IMAGE_REVIEW":
+            category = "ARTICLE_SCHEMA_AFFILIATE_IMAGE_REVIEW"
+        elif metadata.get("article_schema_image_source_hint") == "GRAVATAR_AVATAR_IMAGE_REVIEW":
+            category = "ARTICLE_SCHEMA_AVATAR_IMAGE_REVIEW"
         elif state == "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED" and candidate:
             category = "KNOWN_PORTRAIT_OG_OPTIONAL_STAGE_ONLY_REVIEW"
         elif state == "EXACT_ORIGINAL_SOCIAL_CARD" and candidate:
@@ -130,6 +134,8 @@ REVIEW_LABELS = {
     "IMAGE_PREVIEW_DIRECTIVE_REQUIRES_REVIEW": "画像プレビュー制限を確認",
     "KNOWN_PORTRAIT_OG_OPTIONAL_STAGE_ONLY_REVIEW": "栞さん縦長OG画像・横長候補あり",
     "ORIGINAL_LANDSCAPE_OG_DECLARED_NOT_GOOGLE_VERIFIED": "横長OG画像が指定済み・Google表示未確認",
+    "ARTICLE_SCHEMA_AFFILIATE_IMAGE_REVIEW": "記事の構造化データにA8画像候補（要確認）",
+    "ARTICLE_SCHEMA_AVATAR_IMAGE_REVIEW": "記事の構造化データにアバター画像候補（要確認）",
     "EXISTING_OG_SELECTION_NEEDS_REVIEW": "OG画像が不足／別画像／重複",
     "NO_SAFE_AUTOMATIC_OG_CONCLUSION": "自動判定不可",
 }
