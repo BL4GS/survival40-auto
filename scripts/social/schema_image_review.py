@@ -135,7 +135,7 @@ def review_schema_images(html):
         state = "NO_ARTICLE_SCHEMA_IMAGE_OBSERVED"
 
     return {
-        "schema_images_checked": not incomplete,
+        "schema_images_checked": bool(parser.scripts) and not incomplete,
         "schema_json_ld_scripts_seen": len(parser.scripts),
         "schema_parse_incomplete": incomplete,
         "article_schema_image_count": len(images),
