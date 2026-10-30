@@ -28,7 +28,7 @@ class _HeadJSONLD(HTMLParser):
             self.in_head = True
         if tag == "script" and self.in_head and not self.in_ld:
             attributes = dict(attrs)
-            mime = attributes.get("type", "").split(";", 1)[0].strip().lower()
+            mime = (attributes.get("type") or "").split(";", 1)[0].strip().lower()
             if mime == "application/ld+json":
                 self.in_ld = True
                 self.parts = []
@@ -77,7 +77,8 @@ def _image_urls(image):
         yield image
     elif isinstance(image, list):
         for value in image[:20]:
-            yield from _image_urls(value) if not isinstance(value, list) else ()
+            if isinstance(value, (str, dict)):
+                yield from _image_urls(value)
     elif isinstance(image, dict):
         for key in ("url", "contentUrl"):
             value = image.get(key)
