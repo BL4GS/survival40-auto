@@ -76,6 +76,21 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(result["items"][1]["review_category"],
                          "IMAGE_PREVIEW_DIRECTIVE_REQUIRES_REVIEW")
 
+    def test_article_schema_a8_or_avatar_image_prioritized_for_review(self):
+        self.og["items"][0]["discover_metadata"]["article_schema_image_source_hint"] = (
+            "POSSIBLE_A8_AFFILIATE_IMAGE_REVIEW")
+        self.og["items"][1]["discover_metadata"]["article_schema_image_source_hint"] = (
+            "GRAVATAR_AVATAR_IMAGE_REVIEW")
+        result = d.summarize(self.og, self.manifest)
+        self.assertEqual(result["items"][0]["review_category"],
+                         "ARTICLE_SCHEMA_AFFILIATE_IMAGE_REVIEW")
+        self.assertEqual(result["items"][1]["review_category"],
+                         "ARTICLE_SCHEMA_AVATAR_IMAGE_REVIEW")
+        summary = d.render_review_summary(result)
+        self.assertIn("A8画像候補", summary)
+        self.assertIn("アバター画像候補", summary)
+        self.assertFalse(result["wordpress_modified"])
+
     def test_missing_html_preview_is_not_called_a_block(self):
         self.og["items"][0]["discover_metadata"][
             "html_large_image_preview_hint"] = "NOT_DECLARED_IN_HTML_HEADER_NOT_CHECKED"
