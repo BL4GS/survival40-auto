@@ -61,6 +61,12 @@ class SchemaImageReviewTests(unittest.TestCase):
         self.assertFalse(r["schema_images_checked"])
         self.assertEqual(r["article_schema_image_count"], 0)
 
+    def test_valueless_script_type_does_not_break_read_only_audit(self):
+        html = '<head><script type>not JSON-LD</script></head>'
+        r = review(html)
+        self.assertEqual(r["article_schema_image_count"], 0)
+        self.assertFalse(r["schema_images_checked"])
+
     def test_no_script_is_observation_not_discover_verdict(self):
         r = review('<head><meta name="robots" content="max-image-preview:large"></head>')
         self.assertEqual(r["schema_json_ld_scripts_seen"], 0)
