@@ -16,6 +16,22 @@ class DraftHtmlEscapeTests(unittest.TestCase):
     def test_valid_html_and_actual_newlines_are_clean(self):
         self.assertEqual(checker.lint_html('<p>Text</p>\n<h2>Heading</h2><a href="https://example.org">Link</a>'), [])
 
+    def test_json_transport_escaping_is_not_a_markup_defect(self):
+        # WordPress REST JSON encodes real newlines and attribute quotes.
+        # Inspect the decoded content.raw, never the JSON wire representation.
+        html = '<p>Text</p>\n<h2>Next</h2><a href="https://example.org">Link</a>'
+        wire = json.dumps({"content": {"raw": html}}, ensure_ascii=False)
+        self.assertIn(r'\n', wire)
+        self.assertIn(r'\"', wire)
+        decoded = json.loads(wire)
+        self.assertEqual(checker.lint_html(checker.extract_raw_html(decoded)), [])
+
+    def test_nested_connector_text_must_be_decoded_before_lint(self):
+        html = '<p>Text</p>\n<a href="https://example.org">Link</a>'
+        wrapped = {"text": json.dumps({"content": {"raw": html}})}
+        decoded = json.loads(wrapped["text"])
+        self.assertEqual(checker.lint_html(checker.extract_raw_html(decoded)), [])
+
     def test_literal_backslash_n_before_heading_is_flagged(self):
         findings = checker.lint_html(r"<p>Text</p>\n<h2>Heading</h2>")
         self.assertEqual([f["code"] for f in findings], ["literal_backslash_n_before_html_tag"])
