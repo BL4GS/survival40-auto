@@ -53,7 +53,7 @@ class PriorityOGTests(unittest.TestCase):
         self.assertNotIn("aid=123", str(result))
         self.assertEqual(result["items"][3]["discover_metadata"]
                          ["html_large_image_preview_hint"], "LARGE_DECLARED_IN_HTML")
-        self.assertEqual(result["items"][2]["discover_metadata"]
+        self.assertEqual(result["items"][3]["discover_metadata"]
                          ["image_bytes_or_dimensions_verified"], False)
 
     def test_one_unavailable_page_never_becomes_a_pass(self):
