@@ -1,0 +1,82 @@
+name: Survival40 Threads Article Drafts (NO POSTING)
+on:
+  pull_request:
+    paths:
+      - 'scripts/threads/**'
+      - '.github/workflows/threads-article-drafts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  article-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate article selection and copy rules offline
+        env:
+          GEMINI_API_KEY: ''
+          GOOGLE_API_KEY: ''
+          THREADS_ACCESS_TOKEN: ''
+        run: python3 -m unittest discover -s scripts/threads -p 'test_*.py' -v
+      - name: Diagnose public site routes (GET, no credentials)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import urllib.error, urllib.request
+          routes = [
+              ("homepage", "https://survival40.com/"),
+              ("rss", "https://survival40.com/feed/"),
+              ("rest-root", "https://survival40.com/wp-json/"),
+              ("rest-posts", "https://survival40.com/wp-json/wp/v2/posts?per_page=1"),
+              ("rest-query", "https://survival40.com/index.php?rest_route=%2Fwp%2Fv2%2Fposts"),
+          ]
+          for label, url in routes:
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "Survival40-Threads-Diagnostic/0.1"})
+                  with urllib.request.urlopen(req, timeout=15) as response:
+                      print(f"{label}: HTTP {response.status}, type {response.headers.get('Content-Type','unknown')}")
+              except urllib.error.HTTPError as error:
+                  print(f"{label}: HTTP {error.code}")
+              except Exception as error:
+                  print(f"{label}: {type(error).__name__}")
+          PY
+      - name: Verify article REST listing via allowed fallback (no credentials)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          from scripts.threads.articles import fetch_public_posts, select_article, ArticleSourceError
+          from datetime import datetime, timezone
+          try:
+              posts = fetch_public_posts()
+              candidate = select_article(posts, now=datetime.now(timezone.utc))
+              print(f"Public posts retrieved: {len(posts)}")
+              print(f"Eligible last-24h article: {'yes' if candidate else 'no'}")
+          except ArticleSourceError as exc:
+              print(f"Source still unavailable: {exc}")
+              raise
+          PY
+  generate-preview:
+    if: github.event_name == 'workflow_dispatch'
+    needs: article-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: \${{ secrets.GOOGLE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Draft latest published article for Shiori (no publish)
+        run: python3 -m scripts.threads.compose_articles
+      - name: Store preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival40-threads-article-\${{ github.run_id }}
+          path: threads-output/article-draft.json
+          if-no-files-found: ignore
+          retention-days: 14
