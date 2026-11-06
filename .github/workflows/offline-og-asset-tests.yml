@@ -1,0 +1,31 @@
+name: Offline OG asset width audit tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/social/check_local_og_assets.py"
+      - "scripts/social/test_check_local_og_assets.py"
+      - "assets/social/og/**"
+      - "assets/instagram/auto/**"
+      - "assets/pinterest/auto/**"
+      - ".github/workflows/offline-og-asset-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run offline tests (no secrets or network requests)
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m unittest scripts.social.test_check_local_og_assets -v
