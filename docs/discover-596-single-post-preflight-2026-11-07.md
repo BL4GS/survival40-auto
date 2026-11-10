@@ -21,6 +21,15 @@ Status: **EVIDENCE ONLY / NO PRODUCTION CHANGE**. This is a non-deployable decis
 - Authenticated WordPress post GET on 2026-11-09 still reports ID 596 `publish`, slug unchanged, `featured_media=0`. No new live `<head>` retrieval succeeded; the OG/schema observations above remain dated 2026-11-07 rather than re-certified tonight.
 - The read-only OG diagnostic was expanded in merged PR #137 to five target posts (387, 389, 438, **442**, 596). This record still concerns post 596 only. No other posts, ads, schedules, SNS ledgers, PHP or sitewide settings were changed.
 
+## 2026-11-10 22:03 JST checkpoint — fresh live head (read-only)
+
+- Rechecked the connected Survival40 WordPress site's **rendered `<head>`** for the exact canonical article URL through the read-only page HTML inspector. Unlike the 2026-11-09 checkpoint, this **fresh HTML inspection succeeded**. It is an authenticated/connector-assisted inspection, **not proof of an independent anonymous Googlebot fetch**.
+- AIOSEO 5.0.3 emits `<meta name="robots" content="max-image-preview:large">` and a canonical URL matching post 596. `og:image`, `og:image:secure_url`, and `twitter:image` all still reference the **1080×1350 Instagram asset** at `https://raw.githubusercontent.com/BL4GS/survival40-auto/main/assets/instagram/auto/596.png` (dimensions from the earlier repository-only check, not an HTTP response).
+- Fresh `BlogPosting.image` JSON-LD still identifies the **96×96 Gravatar**, not the article topic. The current metadata is internally inconsistent: a social card is selected for OG, while the article schema uses an author avatar. No extra OG tags were injected and no SEO settings were changed.
+- A separate authenticated WordPress REST GET reconfirmed `id=596`, `status=publish`, unchanged slug/canonical URL, `featured_media=0`, and WordPress post modification timestamp **2026-11-03 09:59:14** (site-reported). The inspection did **not** edit or republish the post.
+- An independent public fetch of the article and the GitHub RAW image was attempted, but the external retrieval environments could not reach those URLs. Therefore **HTTP status, MIME, image bytes, anonymous crawler access, and Discover eligibility remain unverified**; a successful connected-site HTML read does not close that gate.
+- Do not reuse the already-reviewed text-heavy 1200×630 branded OG card as a workaround. The next safe step is a reviewed, licensed, topic-relevant low-text image, followed by anonymous image GET and isolated staging with backup/rollback. **No production, social, ad, or PHP changes authorized.**
+
 ## Decision and safety gates
 
 1. **Do not change the live article yet.** Existing 1200×630 branded cards can contain prominent overlaid headline text; width alone does not establish editorial suitability for Discover. Inspect the actual pixels, licensing, relevance, cropping, and text overlay first. Prefer an approved topic-relevant, low-text image.
