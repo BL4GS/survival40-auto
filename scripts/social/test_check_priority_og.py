@@ -1,4 +1,4 @@
-"""Offline regression coverage for the optional 387/389/438/442/596 OG diagnostic."""
+"""Offline regression coverage for the optional 387/389/438/442/512/579/596 OG diagnostic."""
 import unittest
 
 from scripts.social import check_priority_og as audit
@@ -6,8 +6,8 @@ from scripts.social.check_og import INSTAGRAM_PREFIX
 
 
 class PriorityOGTests(unittest.TestCase):
-    def test_five_fixed_canonical_articles_only(self):
-        self.assertEqual([ident for ident, _ in audit.TARGETS], [387, 389, 438, 442, 596])
+    def test_seven_fixed_canonical_articles_only(self):
+        self.assertEqual([ident for ident, _ in audit.TARGETS], [387, 389, 438, 442, 512, 579, 596])
         self.assertTrue(all(
             audit.canonical(url) == url for _, url in audit.TARGETS
         ))
@@ -19,7 +19,9 @@ class PriorityOGTests(unittest.TestCase):
             is_humidifier = "/40s-winter-dry-air-humidifier-guide/" in url
             image = (
                 "https://secure.gravatar.com/avatar/sample?s=96"
-                if "/40s-male-bad-breath-care/" in url or is_humidifier
+                if any(x in url for x in ("/40s-male-bad-breath-care/",
+                                         "/40s-eye-strain-massage-breaks/",
+                                         "/40s-male-autumn-winter-hand-care/")) or is_humidifier
                 else "https://www26.a8.net/svt/bgt?aid=123&amp;wid=005"
             )
             og = ('<meta property="og:image" content="' +
@@ -36,6 +38,7 @@ class PriorityOGTests(unittest.TestCase):
         self.assertEqual([row["status"] for row in result["items"]],
                          ["MISSING_OG_IMAGE", "MISSING_OG_IMAGE",
                           "MISSING_OG_IMAGE", "MISSING_OG_IMAGE",
+                          "MISSING_OG_IMAGE", "MISSING_OG_IMAGE",
                           "ORIGINAL_INSTAGRAM_CARD_WIDTH_UNVERIFIED"])
         self.assertEqual(
             [row["discover_metadata"]["article_schema_image_source_hint"]
@@ -44,6 +47,8 @@ class PriorityOGTests(unittest.TestCase):
              "GRAVATAR_AVATAR_IMAGE_REVIEW",
              "POSSIBLE_A8_AFFILIATE_IMAGE_REVIEW",
              "POSSIBLE_A8_AFFILIATE_IMAGE_REVIEW",
+             "GRAVATAR_AVATAR_IMAGE_REVIEW",
+             "GRAVATAR_AVATAR_IMAGE_REVIEW",
              "GRAVATAR_AVATAR_IMAGE_REVIEW"],
         )
         self.assertTrue(result["read_only"])
@@ -52,9 +57,9 @@ class PriorityOGTests(unittest.TestCase):
         self.assertFalse(result["google_discover_appearance_verified"])
         self.assertFalse(result["image_bytes_or_dimensions_verified"])
         self.assertNotIn("aid=123", str(result))
-        self.assertEqual(result["items"][4]["discover_metadata"]
+        self.assertEqual(result["items"][6]["discover_metadata"]
                          ["html_large_image_preview_hint"], "LARGE_DECLARED_IN_HTML")
-        self.assertEqual(result["items"][4]["discover_metadata"]
+        self.assertEqual(result["items"][6]["discover_metadata"]
                          ["image_bytes_or_dimensions_verified"], False)
 
     def test_one_unavailable_page_never_becomes_a_pass(self):
@@ -70,6 +75,8 @@ class PriorityOGTests(unittest.TestCase):
         self.assertEqual(result["items"][2]["status"], "MISSING_OG_IMAGE")
         self.assertEqual(result["items"][3]["status"], "MISSING_OG_IMAGE")
         self.assertEqual(result["items"][4]["status"], "MISSING_OG_IMAGE")
+        self.assertEqual(result["items"][5]["status"], "MISSING_OG_IMAGE")
+        self.assertEqual(result["items"][6]["status"], "MISSING_OG_IMAGE")
 
 
 if __name__ == "__main__":
