@@ -1,7 +1,7 @@
-"""On-demand, read-only OG/Article-image triage for five verified published posts.
+"""On-demand, read-only OG/Article-image triage for seven verified published posts.
 
 The daily Pinterest RSS audit samples only ten items. This optional diagnostic
-covers posts 387, 389, 438, 442 and 596 without changing that sample, a workflow, or WordPress.
+covers posts 387, 389, 438, 442, 512, 579 and 596 without changing that sample, a workflow, or WordPress.
 No image fetch, social publishing, SEO mutation, or Google indexing assertion.
 """
 from urllib.error import HTTPError, URLError
@@ -12,12 +12,16 @@ from scripts.social.check_og import (
 
 # 389/438 verified 2026-10-31; 596 verified 2026-11-03;
 # 387 public metadata reviewed 2026-11-04; 442 reviewed 2026-11-08.
+# 512 reviewed 2026-11-10; 579 reviewed 2026-11-11; both published IDs/URLs
+# rechecked via authenticated WordPress REST API 2026-11-11.
 # Never accept a URL or ID from CLI input or a remote feed in this diagnostic.
 TARGETS = (
     (387, "https://www.survival40.com/40s-fatigue-sleep-habits/"),
     (389, "https://www.survival40.com/40s-male-bad-breath-care/"),
     (438, "https://www.survival40.com/40s-male-all-in-one-skincare-guide/"),
     (442, "https://www.survival40.com/40s-male-scalp-shampoo-guide/"),
+    (512, "https://www.survival40.com/40s-eye-strain-massage-breaks/"),
+    (579, "https://www.survival40.com/40s-male-autumn-winter-hand-care/"),
     (596, "https://www.survival40.com/40s-winter-dry-air-humidifier-guide/"),
 )
 
@@ -46,7 +50,7 @@ def run(fetcher=fetch_public_head):
         "social_published": False,
         "google_discover_appearance_verified": False,
         "image_bytes_or_dimensions_verified": False,
-        "scope": "five preverified published articles; not a sitewide audit",
+        "scope": "seven preverified published articles; not a sitewide audit",
         "items": rows,
     }
 
