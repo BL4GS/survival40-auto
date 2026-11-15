@@ -1,6 +1,6 @@
 {
   "project": "Survival40",
-  "updated_on_jst": "2026-10-15",
+  "updated_on_jst": "2026-11-15",
   "purpose": "Durable audit trail of owner-authorized A8 placements in live WordPress posts. This planning ledger is separate from the WordPress plugin's s40_affiliate_ledger_v1 option; updating this file does not auto-render banners or change plugin configuration.",
   "scope": "Existing WordPress posts edited with exact-match /wpvibe/v1/content/edit and checked for public rendered A8 banner/link/PR disclosure. Future post recorded as future, not publicly live yet.",
   "canonical_creative_sources": [
@@ -56,8 +56,9 @@
       "advertiser": "RingConn 第2世代",
       "creative_ref": "planning/a8-banner-assets-unified-2026-10.json",
       "inserted_before": "S40_RELATED_START",
-      "observed_status": "publish",
-      "verified_public_html": true
+      "observed_status": "ended_removed_from_wordpress_2026-11-15",
+      "verified_public_html": false,
+      "notes": "2026-11-15 WP saved-content removal reported; public full-HTML verification and automation reinsertion audit pending. Do not use as an active placement."
     },
     {
       "post_id": 387,
@@ -134,10 +135,10 @@
       "advertiser": "ROOT BEAUTÉ スカルプマッサージシャンプー",
       "creative_ref": "planning/a8-owner-submitted-2026-10-14.json",
       "inserted_before": "H2 抜け毛や薄毛が気になるときに知っておきたいこと",
-      "observed_status": "publish",
+      "observed_status": "ended_removed_from_wordpress_2026-11-15",
       "verified_wordpress_api": true,
-      "verified_public_html": true,
-      "notes": "Second option in same shampoo article, distinct from existing Premium Black Shampoo; no unverified hair growth claims, PR disclosure"
+      "verified_public_html": false,
+      "notes": "Second option in same shampoo article, distinct from existing Premium Black Shampoo; no unverified hair growth claims, PR disclosure | 2026-11-15 WP saved-content removal reported; public full-HTML verification and automation reinsertion audit pending. Do not use as an active placement."
     },
     {
       "post_id": 380,
@@ -309,5 +310,6 @@
       "verified_public_html": true,
       "notes": "Screen-breaks article to a 40s ergonomic chair decision guide; does not claim chair treats eye strain."
     }
-  ]
+  ],
+  "status_note": "Historical placements ledger; ended entries are NOT active. WordPress removal is separate from this GitHub change. Do not auto-insert ended program IDs."
 }
