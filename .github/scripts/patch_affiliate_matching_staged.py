@@ -9,7 +9,6 @@ needle="            ['id'=>'aono','name'=>'マンダム aono'"
 assert s.count(needle)==1, "Expected existing A8 seed was not found"
 insert="""            ['id'=>'s00000015223035','name'=>'ハウスクリーニング110番','category'=>'住まい・季節の掃除','reward'=>'新規見積依頼1,300円','status'=>'approved','notes'=>'WEB・電話申込後30日以内の加盟店手配完了が成果条件。重複、同一世帯2回以上の申込、SNSの連投誘導は否認対象。EPC 1.77、確定率33.33%。'],
             ['id'=>'s00000022315001','name'=>'SharkNinja公式ストア','category'=>'家電・家事効率化','reward'=>'購入2%','status'=>'approved','notes'=>'WEB注文後決済完了。アクセサリー・アウトレット商品のみの購入は対象外。提供素材以外の無断利用禁止。EPC 9.66、確定率59.32%。'],
-            ['id'=>'s00000026776002','name'=>'RingConn 第2世代','category'=>'睡眠・健康管理','reward'=>'購入7%','status'=>'approved','notes'=>'対象はLP掲載の第2世代のみ。WEB注文後30日以内の入金確認。LINE経由購入は対象外。価格・機能・機種世代の誤記禁止。'],
 """
 s=s.replace(needle,insert+needle,1)
 anchor="    public function s40_affiliate_ledger_menu() {"
@@ -20,7 +19,6 @@ method="""    private function s40_affiliate_match_preview($article_topic) {
         $mapped = [
             'aircon-cleaning' => ['s00000015223035'],
             'cordless-vacuum' => ['s00000022315001'],
-            'sleep-tracking' => ['s00000026776002'],
         ];
         if (!isset($mapped[$article_topic])) return [];
         $ledger = $this->s40_affiliate_ledger_get();
@@ -28,6 +26,7 @@ method="""    private function s40_affiliate_match_preview($article_topic) {
         foreach ($mapped[$article_topic] as $id) {
             if (!isset($ledger[$id])) continue;
             $row = $ledger[$id];
+            if (in_array($id, ['s00000026776002', 's00000021920005'], true)) continue;
             if ($row['status'] !== 'approved') continue;
             if (empty($row['url']) || !wp_http_validate_url($row['url'])) continue;
             if (strpos($row['url'], 'https://') !== 0) continue;
