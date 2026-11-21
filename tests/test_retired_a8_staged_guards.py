@@ -20,6 +20,8 @@ class RetiredAffiliateGuards(unittest.TestCase):
         self.assertIn("$is_retired = in_array($id, ['s00000026776002', 's00000021920005'], true)", source)
         self.assertIn("($is_unverified || $is_retired) ? 'inactive' : 'approved'", source)
         self.assertIn("'s00000026776002', 's00000021920005'], true)) continue;", source)
+        self.assertIn("if (in_array($id, ['s00000026776002', 's00000021920005'], true)) $status = 'inactive';", source)
+        self.assertLess(source.index("$status = in_array($extra['status']"), source.index("$status = 'inactive';"))
         self.assertIn(ACTIVE, source)
 
 
