@@ -14,7 +14,7 @@ match = {
     "protein":["s00000021719001","s00000024389001"],
     "skincare":["s00000014286004","s00000020317006"],
     "haircare":["s00000007191012"],
-    "sleep":["s00000016652002","s00000026776002","s00000022516001"],
+    "sleep":["s00000016652002","s00000022516001"],
     "cleaning":["s00000015223035"],
     "vacuum":["s00000022315001"],
     "meal-delivery":["s00000023792001"],
@@ -83,10 +83,11 @@ method = """    private function s40_a8_creatives() {
             if (isset($canonical[$id])) continue;
             // Additional approved advertisements, but unknown campaigns remain disabled.
             $is_unverified = ($id === 's00000022947002');
+            $is_retired = in_array($id, ['s00000026776002', 's00000021920005'], true);
             $canonical[$id] = [
                 'id'=>$id, 'name'=>$creative['name'],
                 'category'=>'追加提携案件', 'reward'=>'要照合',
-                'status'=>$is_unverified ? 'inactive' : 'approved',
+                'status'=>($is_unverified || $is_retired) ? 'inactive' : 'approved',
                 'notes'=>$is_unverified ? '広告主・成果条件の確認待ち。掲載禁止。' : 'ASP=A8。成果条件を広告主LPで確認。'
             ];
         }
@@ -97,6 +98,8 @@ method = """    private function s40_a8_creatives() {
             $saved_url = isset($extra['url']) ? trim((string)$extra['url']) : '';\n            $url = $saved_url !== '' ? $saved_url : ($creative['click_url'] ?? '');
             $status = in_array($extra['status'] ?? '', ['approved','pending','inactive'],true)
                 ? $extra['status'] : $seed['status'];
+            // Retired campaigns override any previously saved approved status.
+            if (in_array($id, ['s00000026776002', 's00000021920005'], true)) $status = 'inactive';
             $notes = isset($extra['notes']) ? (string)$extra['notes'] : $seed['notes'];
             $rows[$id] = array_merge($seed, [
                 'asp'=> $creative ? 'A8' : 'A8（確認待ち）',
@@ -118,7 +121,7 @@ end=s.index("    public function s40_affiliate_ledger_menu() {",start)
 s=s[:start]+method+s[end:]
 # Explicitly disallow an unverified cleaning campaign even if status is edited.
 s=s.replace("            if (($row['status'] ?? '') !== 'approved') continue;",
-            "            if ($id === 's00000022947002') continue;\n            if (($row['status'] ?? '') !== 'approved') continue;",1)
+            "            if (in_array($id, ['s00000022947002', 's00000026776002', 's00000021920005'], true)) continue;\n            if (($row['status'] ?? '') !== 'approved') continue;",1)
 # Add a private, read-only topic/advertiser preview. An admin view must not fire tracking beacons.
 anchor = "          <?php submit_button('広告台帳を保存'); ?>"
 assert s.count(anchor)==1
