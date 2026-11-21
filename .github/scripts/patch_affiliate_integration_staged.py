@@ -98,6 +98,8 @@ method = """    private function s40_a8_creatives() {
             $saved_url = isset($extra['url']) ? trim((string)$extra['url']) : '';\n            $url = $saved_url !== '' ? $saved_url : ($creative['click_url'] ?? '');
             $status = in_array($extra['status'] ?? '', ['approved','pending','inactive'],true)
                 ? $extra['status'] : $seed['status'];
+            // Retired campaigns override any previously saved approved status.
+            if (in_array($id, ['s00000026776002', 's00000021920005'], true)) $status = 'inactive';
             $notes = isset($extra['notes']) ? (string)$extra['notes'] : $seed['notes'];
             $rows[$id] = array_merge($seed, [
                 'asp'=> $creative ? 'A8' : 'A8（確認待ち）',
